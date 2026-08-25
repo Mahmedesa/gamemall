@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأسئلة - لوحة التحكم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { cairo: ['Cairo','sans-serif'] } } } }
+    </script>
+    <style>
+        :root { --pri:#059669; --priL:#10B981; --acc:#D97706; --accL:#F59E0B; --dan:#DC2626; --bg:#F0F4F8; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Cairo',sans-serif; background:var(--bg); color:#0F172A; min-height:100vh; }
+        ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--pri); border-radius:3px; }
+
+        .top-bar { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(255,255,255,.92); backdrop-filter:blur(16px); border-bottom:1px solid #E2E8F0; height:64px; }
+
+        .stat-card { background:#fff; border:1px solid #E2E8F0; border-radius:16px; padding:20px 24px; transition:all .3s; position:relative; overflow:hidden; }
+        .stat-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; transform:translate(30%,-30%); opacity:.1; }
+        .stat-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.06); }
+        .stat-card.s1::before { background:var(--pri); } .stat-card.s2::before { background:var(--acc); }
+        .stat-card.s3::before { background:var(--dan); } .stat-card.s4::before { background:#6366F1; }
+
+        .q-card { background:#fff; border:1px solid #E2E8F0; border-radius:14px; overflow:hidden; transition:all .3s; }
+        .q-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.06); }
+        .q-card.disabled-card { opacity:.6; }
+
+        .toggle { width:48px; height:26px; border-radius:13px; position:relative; cursor:pointer; transition:all .3s; flex-shrink:0; }
+        .toggle.on { background:var(--pri); } .toggle.off { background:#CBD5E1; }
+        .toggle .dot { width:20px; height:20px; border-radius:50%; background:#fff; position:absolute; top:3px; transition:all .3s; box-shadow:0 1px 4px rgba(0,0,0,.15); }
+        .toggle.on .dot { left:3px; } .toggle.off .dot { right:3px; }
+
+        .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,.45); backdrop-filter:blur(6px); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+        .modal-overlay.active { display:flex; }
+        .modal-box { background:#fff; border:1px solid #E2E8F0; border-radius:20px; max-width:680px; width:100%; max-height:90vh; overflow-y:auto; animation:mIn .3s ease; box-shadow:0 20px 60px rgba(0,0,0,.12); }
+        @keyframes mIn { from{opacity:0;transform:scale(.95) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .fade-up { animation:fadeUp .4s ease forwards; opacity:0; }
+
+        .custom-input { width:100%; padding:11px 16px; background:#F8FAFC; border:1.5px solid #E2E8F0; border-radius:10px; color:#0F172A; font-family:'Cairo'; font-size:14px; transition:all .3s; outline:none; }
+        .custom-input:focus { border-color:var(--pri); box-shadow:0 0 0 3px rgba(5,150,105,.08); background:#fff; }
+        textarea.custom-input { resize:vertical; min-height:90px; line-height:1.7; }
+
+        .btn-pri { padding:10px 24px; background:linear-gradient(135deg,#059669,#10B981); color:#fff; border:none; border-radius:10px; font-family:'Cairo'; font-weight:700; font-size:14px; cursor:pointer; transition:all .3s; }
+        .btn-pri:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(5,150,105,.3); }
+        .btn-sec { padding:10px 24px; background:#fff; color:#64748B; border:1.5px solid #E2E8F0; border-radius:10px; font-family:'Cairo'; font-weight:600; font-size:14px; cursor:pointer; transition:all .3s; }
+        .btn-sec:hover { border-color:#94A3B8; color:#0F172A; }
+        .btn-dan { padding:10px 24px; background:linear-gradient(135deg,#DC2626,#EF4444); color:#fff; border:none; border-radius:10px; font-family:'Cairo'; font-weight:700; font-size:14px; cursor:pointer; transition:all .3s; }
+        .btn-dan:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(220,38,38,.3); }
+        .btn-icon { width:36px; height:36px; border-radius:10px; border:1px solid #E2E8F0; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; font-size:13px; }
+        .btn-icon:hover { transform:scale(1.08); }
+        .btn-icon.edit { color:var(--acc); } .btn-icon.edit:hover { background:#FFFBEB; border-color:var(--acc); }
+        .btn-icon.del { color:var(--dan); } .btn-icon.del:hover { background:#FEF2F2; border-color:var(--dan); }
+
+        .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); padding:14px 28px; border-radius:12px; font-size:14px; font-weight:600; z-index:9999; transition:transform .4s cubic-bezier(.34,1.56,.64,1); box-shadow:0 8px 30px rgba(0,0,0,.12); color:#fff; }
+        .toast.show { transform:translateX(-50%) translateY(0); }
+        .toast.success { background:linear-gradient(135deg,#059669,#10B981); }
+        .toast.error { background:linear-gradient(135deg,#DC2626,#EF4444); }
+        .toast.warn { background:linear-gradient(135deg,#D97706,#F59E0B); }
+
+        .search-box { position:relative; }
+        .search-box input { padding-right:42px; }
+        .search-box i { position:absolute; right:14px; top:50%; transform:translateY(-50%); color:#94A3B8; font-size:14px; }
+
+        .badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+        .badge-on { background:#ECFDF5; color:#059669; } .badge-off { background:#F1F5F9; color:#94A3B8; }
+
+        .empty-state { text-align:center; padding:60px 20px; }
+        .empty-state i { font-size:64px; color:#CBD5E1; margin-bottom:16px; }
+
+        .confirm-box { text-align:center; padding:32px; }
+        .confirm-box i { font-size:56px; color:var(--dan); margin-bottom:16px; }
+
+        .lang-tab { padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all .3s; border:1px solid transparent; }
+        .lang-tab.active { background:var(--pri); color:#fff; }
+        .lang-tab:not(.active) { background:#F1F5F9; color:#64748B; }
+        .lang-tab:not(.active):hover { background:#E2E8F0; }
+
+        @media(max-width:768px) { .stat-grid { grid-template-columns:1fr 1fr !important; } .actions-row { flex-direction:column; } }
+        @media(max-width:480px) { .stat-grid { grid-template-columns:1fr !important; } }
+    </style>
+</head>
+<body>
+
+<!-- الشريط العلوي -->
+<header class="top-bar">
+    <div class="flex items-center justify-between h-full px-6 max-w-[1400px] mx-auto">
+        <div class="flex items-center gap-4">
+            <button onclick="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-emerald-600 transition-colors text-sm font-semibold">
+                <i class="fas fa-arrow-right"></i><span data-t="back">الرجوع للوحة التحكم</span>
+            </button>
+            <div class="w-px h-8 bg-gray-200"></div>
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center"><i class="fas fa-question-circle text-emerald-600"></i></div>
+                <h1 class="text-lg font-bold text-gray-800" data-t="title">إدارة الأسئلة</h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="toggleLang()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-amber-600 hover:border-amber-400 hover:bg-amber-50 transition-all text-sm font-bold" id="langBtn">
+                <i class="fas fa-language"></i><span>English</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- المحتوى -->
+<main class="pt-[80px] pb-12 px-4 lg:px-8 max-w-[1400px] mx-auto" id="app"></main>
+
+<!-- مودال إضافة/تعديل -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal-box">
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800" id="modalTitle">إضافة سؤال جديد</h3>
+            <button onclick="closeModal('formModal')" class="btn-icon" style="color:#94A3B8"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="p-6 space-y-5">
+            <!-- تبويب اللغة -->
+            <div class="flex gap-2" id="langTabs">
+                <div class="lang-tab active" onclick="switchFormLang('ar')" id="tabAr">العربية</div>
+                <div class="lang-tab" onclick="switchFormLang('en')" id="tabEn">English</div>
+            </div>
+            <!-- حقل السؤال -->
+            <div id="fieldAr">
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">السؤال بالعربية</label>
+                <textarea class="custom-input" id="qAr" placeholder="اكتب السؤال باللغة العربية..."></textarea>
+            </div>
+            <div id="fieldEn" style="display:none">
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Question in English</label>
+                <textarea class="custom-input" id="qEn" placeholder="Type the question in English..." dir="ltr"></textarea>
+            </div>
+            <!-- حالة التفعيل -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div>
+                    <p class="font-semibold text-sm text-gray-700" data-t="activeLabel">حالة التفعيل</p>
+                    <p class="text-xs text-gray-400" data-t="activeDesc">تفعيل السؤال ليظهر للمستخدمين</p>
+                </div>
+                <div class="toggle on" id="toggleActive" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="dot"></div></div>
+            </div>
+            <!-- ترتيب -->
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide" data-t="orderLabel">ترتيب العرض</label>
+                <input type="number" class="custom-input" id="qOrder" value="0" min="0" style="max-width:160px">
+            </div>
+        </div>
+        <div class="flex gap-3 p-6 border-t border-gray-100">
+            <button onclick="saveQ()" class="btn-pri flex-1" id="saveBtn"><i class="fas fa-check ml-2"></i>حفظ</button>
+            <button onclick="closeModal('formModal')" class="btn-sec" data-t="cancel">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- مودال تأكيد الحذف -->
+<div class="modal-overlay" id="delModal">
+    <div class="modal-box" style="max-width:440px">
+        <div class="confirm-box">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3 class="text-xl font-bold text-gray-800 mb-2" data-t="confirmDel">تأكيد الحذف</h3>
+            <p class="text-gray-500 text-sm mb-6" data-t="confirmDelMsg">هل أنت متأكد من حذف هذا السؤال؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="confirmDel()" class="btn-dan px-8"><i class="fas fa-trash ml-2"></i><span data-t="delete">حذف</span></button>
+                <button onclick="closeModal('delModal')" class="btn-sec" data-t="cancel">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال عرض التفاصيل -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal-box" style="max-width:600px">
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800" data-t="qDetails">تفاصيل السؤال</h3>
+            <button onclick="closeModal('viewModal')" class="btn-icon" style="color:#94A3B8"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="p-6" id="viewContent"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== البيانات =====================
+let lang = 'ar';
+let questions = [
+    { id:1, ar:'ما هي مدينتك المفضلة؟', en:'What is your favorite city?', active:true, order:1 },
+    { id:2, ar:'ما هو اسم أول مدرسة التحققت بها؟', en:'What is the name of your first school?', active:true, order:2 },
+    { id:3, ar:'ما هو لونك المفضل؟', en:'What is your favorite color?', active:false, order:3 },
+    { id:4, ar:'ما هي هوايتك الرئيسية؟', en:'What is your main hobby?', active:true, order:4 },
+    { id:5, ar:'في أي مدينة ولدت؟', en:'In which city were you born?', active:true, order:5 },
+    { id:6, ar:'ما هو اسم حيوانك الأليف الأول؟', en:'What was the name of your first pet?', active:false, order:6 },
+    { id:7, ar:'ما هي ماركة سيارتك الأولى؟', en:'What was your first car brand?', active:true, order:7 },
+    { id:8, ar:'ما هو الطبق المفضل لديك؟', en:'What is your favorite dish?', active:true, order:8 },
+];
+let nextId = 9;
+let editId = null;
+let delId = null;
+let formLang = 'ar';
+let searchQ = '';
+
+// ===================== الترجمات =====================
+const TR = {
+    ar: {
+        back:'الرجوع للوحة التحكم', title:'إدارة الأسئلة', addNew:'إضافة سؤال جديد',
+        search:'ابحث في الأسئلة...', all:'الكل', active:'مفعل', inactive:'معطل',
+        total:'إجمالي الأسئلة', activeCount:'الأسئلة المفعلة', inactiveCount:'الأسئلة المعطلة',
+        todayAdded:'أضيفت اليوم', edit:'تعديل', delete:'حذف', view:'عرض',
+        cancel:'إلغاء', save:'حفظ', activeLabel:'حالة التفعيل',
+        activeDesc:'تفعيل السؤال ليظهر للمستخدمين', orderLabel:'ترتيب العرض',
+        confirmDel:'تأكيد الحذف', confirmDelMsg:'هل أنت متأكد من حذف هذا السؤال؟ لا يمكن التراجع عن هذا الإجراء.',
+        qDetails:'تفاصيل السؤال', questionAr:'السؤال بالعربية', questionEn:'السؤال بالإنجليزية',
+        status:'الحالة', order:'الترتيب', actions:'الإجراءات', enabled:'مفعل', disabled:'معطل',
+        noResults:'لا توجد نتائج مطابقة', empty:'لا توجد أسئلة بعد', emptyDesc:'ابدأ بإضافة أول سؤال من خلال الزر أعلاه',
+        saved:'تم الحفظ بنجاح', deleted:'تم الحذف بنجاح', toggled:'تم تغيير الحالة',
+        editTitle:'تعديل السؤال', addTitle:'إضافة سؤال جديد',
+        filterAll:'الكل', filterActive:'مفعل', filterInactive:'معطل'
+    },
+    en: {
+        back:'Back to Dashboard', title:'Questions Management', addNew:'Add New Question',
+        search:'Search questions...', all:'All', active:'Active', inactive:'Inactive',
+        total:'Total Questions', activeCount:'Active Questions', inactiveCount:'Inactive Questions',
+        todayAdded:'Added Today', edit:'Edit', delete:'Delete', view:'View',
+        cancel:'Cancel', save:'Save', activeLabel:'Activation Status',
+        activeDesc:'Enable the question to show to users', orderLabel:'Display Order',
+        confirmDel:'Confirm Deletion', confirmDelMsg:'Are you sure you want to delete this question? This action cannot be undone.',
+        qDetails:'Question Details', questionAr:'Question in Arabic', questionEn:'Question in English',
+        status:'Status', order:'Order', actions:'Actions', enabled:'Enabled', disabled:'Disabled',
+        noResults:'No matching results', empty:'No questions yet', emptyDesc:'Start by adding your first question using the button above',
+        saved:'Saved successfully', deleted:'Deleted successfully', toggled:'Status changed',
+        editTitle:'Edit Question', addTitle:'Add New Question',
+        filterAll:'All', filterActive:'Active', filterInactive:'Inactive'
+    }
+};
+function t(k){ return TR[lang][k]||k; }
+
+// ===================== مساعدات =====================
+function showToast(m, tp='success'){ const el=document.getElementById('toast');el.textContent=m;el.className=`toast ${tp} show`;setTimeout(()=>el.classList.remove('show'),3000); }
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+
+function toggleLang(){
+    lang = lang==='ar'?'en':'ar';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang==='ar'?'rtl':'ltr';
+    const btn = document.getElementById('langBtn');
+    btn.querySelector('span').textContent = lang==='ar'?'English':'العربية';
+    render();
+}
+
+function goBack(){ showToast(lang==='ar'?'سيتم العودة للوحة التحكم':'Returning to dashboard...','warn'); }
+
+// ===================== الفلترة والبحث =====================
+let filter = 'all';
+function setFilter(f){ filter=f; render(); }
+
+function getFiltered(){
+    let list = [...questions];
+    if(filter==='active') list = list.filter(q=>q.active);
+    if(filter==='inactive') list = list.filter(q=>!q.active);
+    if(searchQ.trim()){
+        const s = searchQ.trim().toLowerCase();
+        list = list.filter(q=> q.ar.toLowerCase().includes(s) || q.en.toLowerCase().includes(s));
+    }
+    list.sort((a,b)=> a.order - b.order);
+    return list;
+}
+
+// ===================== العمليات =====================
+function openAdd(){
+    editId = null;
+    formLang = 'ar';
+    document.getElementById('modalTitle').textContent = t('addTitle');
+    document.getElementById('qAr').value = '';
+    document.getElementById('qEn').value = '';
+    document.getElementById('qOrder').value = questions.length + 1;
+    document.getElementById('toggleActive').className = 'toggle on';
+    switchFormLang('ar');
+    openModal('formModal');
+}
+
+function openEdit(id){
+    editId = id;
+    const q = questions.find(x=>x.id===id);
+    if(!q) return;
+    formLang = 'ar';
+    document.getElementById('modalTitle').textContent = t('editTitle');
+    document.getElementById('qAr').value = q.ar;
+    document.getElementById('qEn').value = q.en;
+    document.getElementById('qOrder').value = q.order;
+    document.getElementById('toggleActive').className = q.active?'toggle on':'toggle off';
+    switchFormLang('ar');
+    openModal('formModal');
+}
+
+function switchFormLang(l){
+    formLang = l;
+    document.getElementById('tabAr').className = 'lang-tab'+(l==='ar'?' active':'');
+    document.getElementById('tabEn').className = 'lang-tab'+(l==='en'?' active':'');
+    document.getElementById('fieldAr').style.display = l==='ar'?'block':'none';
+    document.getElementById('fieldEn').style.display = l==='en'?'block':'none';
+    document.getElementById('fieldEn').querySelector('textarea').dir = 'ltr';
+}
+
+function saveQ(){
+    const ar = document.getElementById('qAr').value.trim();
+    const en = document.getElementById('qEn').value.trim();
+    const order = parseInt(document.getElementById('qOrder').value)||0;
+    const active = document.getElementById('toggleActive').classList.contains('on');
+    if(!ar && !en){ showToast(lang==='ar'?'يرجى كتابة السؤال':'Please write the question','error'); return; }
+    if(editId){
+        const q = questions.find(x=>x.id===editId);
+        if(q){ q.ar=ar; q.en=en; q.order=order; q.active=active; }
+    } else {
+        questions.push({ id:nextId++, ar, en, order, active });
+    }
+    closeModal('formModal');
+    showToast(t('saved'));
+    render();
+}
+
+function openDel(id){ delId=id; openModal('delModal'); }
+function confirmDel(){
+    questions = questions.filter(q=>q.id!==delId);
+    closeModal('delModal');
+    showToast(t('deleted'));
+    render();
+}
+
+function toggleQ(id){
+    const q = questions.find(x=>x.id===id);
+    if(q){ q.active=!q.active; showToast(t('toggled'),'warn'); render(); }
+}
+
+function viewQ(id){
+    const q = questions.find(x=>x.id===id);
+    if(!q) return;
+    document.getElementById('viewContent').innerHTML = `
+        <div class="space-y-5">
+            <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                <p class="text-xs font-bold text-emerald-600 mb-2 uppercase tracking-wide">${t('questionAr')}</p>
+                <p class="text-gray-800 font-semibold leading-relaxed text-[15px]">${q.ar}</p>
+            </div>
+            <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
+                <p class="text-xs font-bold text-amber-600 mb-2 uppercase tracking-wide">${t('questionEn')}</p>
+                <p class="text-gray-800 font-semibold leading-relaxed text-[15px]" dir="ltr">${q.en}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <p class="text-xs font-bold text-gray-400 mb-1 uppercase">${t('status')}</p>
+                    <span class="badge ${q.active?'badge-on':'badge-off'}"><i class="fas fa-circle text-[6px]"></i>${q.active?t('enabled'):t('disabled')}</span>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <p class="text-xs font-bold text-gray-400 mb-1 uppercase">${t('order')}</p>
+                    <p class="text-gray-800 font-bold text-lg">${q.order}</p>
+                </div>
+            </div>
+        </div>`;
+    openModal('viewModal');
+}
+
+// ===================== العرض =====================
+function render(){
+    const filtered = getFiltered();
+    const total = questions.length;
+    const actCount = questions.filter(q=>q.active).length;
+    const inCount = total - actCount;
+
+    const dir = lang==='ar'?'rtl':'ltr';
+    const flip = lang==='ar'?'':'translate-x-[-50%]';
+
+    document.getElementById('app').innerHTML = `
+        <!-- الإحصائيات -->
+        <div class="stat-grid grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card s1 fade-up" style="animation-delay:0s">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center"><i class="fas fa-list-ol text-emerald-600 text-lg"></i></div>
+                    <span class="text-3xl font-black text-gray-800">${total}</span>
+                </div>
+                <p class="text-sm text-gray-500 font-semibold">${t('total')}</p>
+            </div>
+            <div class="stat-card s2 fade-up" style="animation-delay:.05s">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center"><i class="fas fa-check-circle text-amber-600 text-lg"></i></div>
+                    <span class="text-3xl font-black text-emerald-600">${actCount}</span>
+                </div>
+                <p class="text-sm text-gray-500 font-semibold">${t('activeCount')}</p>
+            </div>
+            <div class="stat-card s3 fade-up" style="animation-delay:.1s">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center"><i class="fas fa-times-circle text-red-500 text-lg"></i></div>
+                    <span class="text-3xl font-black text-gray-400">${inCount}</span>
+                </div>
+                <p class="text-sm text-gray-500 font-semibold">${t('inactiveCount')}</p>
+            </div>
+            <div class="stat-card s4 fade-up" style="animation-delay:.15s">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center"><i class="fas fa-percentage text-indigo-500 text-lg"></i></div>
+                    <span class="text-3xl font-black text-indigo-600">${total?Math.round(actCount/total*100):0}%</span>
+                </div>
+                <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden mt-1">
+                    <div class="h-full bg-gradient-to-l from-indigo-500 to-emerald-500 rounded-full transition-all duration-700" style="width:${total?Math.round(actCount/total*100):0}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط الأدوات -->
+        <div class="actions-row flex flex-col md:flex-row items-stretch md:items-center gap-4 mb-6 fade-up" style="animation-delay:.2s">
+            <div class="search-box flex-1">
+                <i class="fas fa-search"></i>
+                <input type="text" class="custom-input" placeholder="${t('search')}" value="${searchQ}" oninput="searchQ=this.value;render()">
+            </div>
+            <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-xl p-1">
+                <button onclick="setFilter('all')" class="px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter==='all'?'bg-emerald-600 text-white shadow-md':'text-gray-500 hover:bg-gray-50'}">${t('filterAll')}</button>
+                <button onclick="setFilter('active')" class="px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter==='active'?'bg-emerald-600 text-white shadow-md':'text-gray-500 hover:bg-gray-50'}">${t('filterActive')}</button>
+                <button onclick="setFilter('inactive')" class="px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter==='inactive'?'bg-emerald-600 text-white shadow-md':'text-gray-500 hover:bg-gray-50'}">${t('filterInactive')}</button>
+            </div>
+            <button onclick="openAdd()" class="btn-pri whitespace-nowrap"><i class="fas fa-plus ml-2"></i>${t('addNew')}</button>
+        </div>
+
+        <!-- رأس الجدول -->
+        <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 fade-up" style="animation-delay:.25s">
+            <div class="col-span-1">#</div>
+            <div class="col-span-5">${t('questionAr')}</div>
+            <div class="col-span-2">${t('status')}</div>
+            <div class="col-span-1">${t('order')}</div>
+            <div class="col-span-3 text-left">${t('actions')}</div>
+        </div>
+
+        <!-- قائمة الأسئلة -->
+        <div class="space-y-3" id="qList">
+            ${filtered.length === 0 ? `
+                <div class="empty-state fade-up" style="animation-delay:.3s">
+                    <i class="fas fa-inbox block"></i>
+                    <h3 class="text-xl font-bold text-gray-400 mb-2">${searchQ?t('noResults'):t('empty')}</h3>
+                    <p class="text-gray-400 text-sm">${searchQ?'':t('emptyDesc')}</p>
+                </div>
+            ` : filtered.map((q,i)=>`
+                <div class="q-card ${q.active?'':'disabled-card'} fade-up" style="animation-delay:${Math.min(i*0.04,0.5)}s">
+                    <!-- عرض سطح المكتب -->
+                    <div class="hidden md:grid grid-cols-12 gap-4 items-center px-6 py-4">
+                        <div class="col-span-1">
+                            <span class="text-sm font-bold text-gray-300">${String(i+1).padStart(2,'0')}</span>
+                        </div>
+                        <div class="col-span-5 min-w-0">
+                            <p class="text-sm font-semibold text-gray-800 truncate">${q.ar}</p>
+                            <p class="text-xs text-gray-400 truncate mt-0.5" dir="ltr">${q.en}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <div class="flex items-center gap-3">
+                                <div class="toggle ${q.active?'on':'off'}" onclick="toggleQ(${q.id})"><div class="dot"></div></div>
+                                <span class="badge ${q.active?'badge-on':'badge-off'}">${q.active?t('enabled'):t('disabled')}</span>
+                            </div>
+                        </div>
+                        <div class="col-span-1">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-sm font-bold text-gray-600">${q.order}</span>
+                        </div>
+                        <div class="col-span-3 flex items-center gap-2 justify-end">
+                            <button onclick="viewQ(${q.id})" class="btn-icon" style="color:#6366F1" title="${t('view')}"><i class="fas fa-eye"></i></button>
+                            <button onclick="openEdit(${q.id})" class="btn-icon edit" title="${t('edit')}"><i class="fas fa-pen"></i></button>
+                            <button onclick="openDel(${q.id})" class="btn-icon del" title="${t('delete')}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <!-- عرض الموبايل -->
+                    <div class="md:hidden p-4">
+                        <div class="flex items-start justify-between gap-3 mb-3">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-gray-800 leading-relaxed">${q.ar}</p>
+                                <p class="text-xs text-gray-400 mt-1 leading-relaxed" dir="ltr">${q.en}</p>
+                            </div>
+                            <div class="toggle ${q.active?'on':'off'} flex-shrink-0" onclick="toggleQ(${q.id})"><div class="dot"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <div class="flex items-center gap-2">
+                                <span class="badge ${q.active?'badge-on':'badge-off'}">${q.active?t('enabled'):t('disabled')}</span>
+                                <span class="text-xs text-gray-400">${t('order')}: ${q.order}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="viewQ(${q.id})" class="btn-icon" style="color:#6366F1;width:32px;height:32px;font-size:12px"><i class="fas fa-eye"></i></button>
+                                <button onclick="openEdit(${q.id})" class="btn-icon edit" style="width:32px;height:32px;font-size:12px"><i class="fas fa-pen"></i></button>
+                                <button onclick="openDel(${q.id})" class="btn-icon del" style="width:32px;height:32px;font-size:12px"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+
+        <!-- عداد النتائج -->
+        ${filtered.length > 0 ? `
+        <div class="mt-6 text-center text-sm text-gray-400 font-semibold fade-up" style="animation-delay:.6s">
+            ${lang==='ar'?`عرض ${filtered.length} من ${total} سؤال`:`Showing ${filtered.length} of ${total} questions`}
+        </div>` : ''}
+    `;
+
+    // تحديث نصوص الترجمة
+    document.querySelectorAll('[data-t]').forEach(el=>{
+        el.textContent = t(el.getAttribute('data-t'));
+    });
+}
+
+// ===================== أحداث عامة =====================
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+    o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('active'); });
+});
+document.addEventListener('keydown',e=>{
+    if(e.key==='Escape') document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+});
+
+// التهيئة
+render();
+</script>
+</body>
+</html>

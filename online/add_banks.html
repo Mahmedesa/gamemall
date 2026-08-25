@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم - إدارة البنوك</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']}}}}
+</script>
+<style>
+:root{
+  --bg:#04060b;--bg2:#090d15;--bg3:#0f1320;
+  --card:#121726;--card2:#171d30;--cardH:#1d2540;
+  --bd:#191f34;--bd2:#243050;--bd3:#324575;
+  --acc:#06b6d4;--acc2:#0891b2;--accDk:#0e7490;
+  --accGlow:rgba(6,182,212,.12);--accGlow2:rgba(6,182,212,.05);
+  --red:#ef4444;--redGlow:rgba(239,68,68,.1);
+  --green:#22c55e;--greenGlow:rgba(34,197,94,.1);
+  --amber:#f59e0b;--amberGlow:rgba(245,158,11,.1);
+  --sky:#38bdf8;--skyGlow:rgba(56,189,248,.1);
+  --violet:#a78bfa;--violetGlow:rgba(167,139,250,.1);
+  --rose:#fb7185;--roseGlow:rgba(251,113,133,.1);
+  --emerald:#34d399;--emeraldGlow:rgba(52,211,153,.1);
+  --tx:#eef2f8;--tx2:#8490a5;--tx3:#4c5872;
+  --w:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 700px 500px at 5% 0%,rgba(6,182,212,.035),transparent),
+             radial-gradient(ellipse 500px 600px at 95% 90%,rgba(167,139,250,.025),transparent),
+             radial-gradient(ellipse 400px 300px at 50% 40%,rgba(56,189,248,.012),transparent)}
+
+/* === الشريط العلوي === */
+.topbar{background:rgba(9,13,21,.92);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;backdrop-filter:blur(18px)}
+.topbar-in{max-width:1440px;margin:0 auto;padding:0 28px;height:68px;display:flex;align-items:center;gap:16px}
+.back-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:11px;border:1px solid var(--bd);background:var(--card);color:var(--tx2);font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.back-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accGlow)}
+.t-area{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+.t-ico{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0;box-shadow:0 4px 22px rgba(6,182,212,.3);position:relative;overflow:hidden}
+.t-ico::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent 50%)}
+.t-ico i{position:relative;z-index:1}
+.t-txt h1{font-size:19px;font-weight:900;letter-spacing:-.3px;line-height:1.2}
+.t-txt p{font-size:11px;color:var(--tx3);font-weight:500;margin-top:2px}
+.t-acts{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.lang-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:11px;border:1px solid var(--bd);background:var(--card);color:var(--tx2);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .25s}
+.lang-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accGlow)}
+
+/* === المحتوى === */
+.content{max-width:1440px;margin:0 auto;padding:28px;position:relative;z-index:1}
+
+/* === الإحصائيات === */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px}
+@media(max-width:1200px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.sc{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px 16px;position:relative;overflow:hidden;transition:all .3s}
+.sc:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.sc::before{content:'';position:absolute;top:0;right:0;left:0;height:3px}
+.sc.s1::before{background:var(--acc)}.sc.s2::before{background:var(--green)}.sc.s3::before{background:var(--amber)}.sc.s4::before{background:var(--violet)}.sc.s5::before{background:var(--rose)}.sc.s6::before{background:var(--emerald)}
+.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sc-i{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.sc-i.i1{background:var(--accGlow);color:var(--acc)}.sc-i.i2{background:var(--greenGlow);color:var(--green)}.sc-i.i3{background:var(--amberGlow);color:var(--amber)}.sc-i.i4{background:var(--violetGlow);color:var(--violet)}.sc-i.i5{background:var(--roseGlow);color:var(--rose)}.sc-i.i6{background:var(--emeraldGlow);color:var(--emerald)}
+.sc-val{font-size:28px;font-weight:900;line-height:1;margin-bottom:3px;letter-spacing:-.5px}
+.sc-lbl{font-size:11px;color:var(--tx3);font-weight:600}
+
+/* === شريط الأدوات === */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.search-w{position:relative;flex:1;min-width:240px;max-width:400px}
+.search-w input{width:100%;padding:11px 14px 11px 42px;background:var(--card);border:1.5px solid var(--bd);border-radius:12px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:all .25s}
+.search-w input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.search-w input::placeholder{color:var(--tx3)}
+.search-w>i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:14px;pointer-events:none}
+[dir="ltr"] .search-w input{padding:11px 42px 11px 14px}
+[dir="ltr"] .search-w>i{left:auto;right:14px}
+.filter-s{padding:11px 38px 11px 14px;background:var(--card);border:1.5px solid var(--bd);border-radius:12px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234c5872' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;transition:all .25s}
+[dir="ltr"] .filter-s{background-position:right 12px center}
+.filter-s:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.add-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 18px rgba(6,182,212,.28);white-space:nowrap}
+.add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(6,182,212,.38)}
+.add-btn:active{transform:scale(.97)}
+
+/* === الجدول === */
+.tbl-wrap{background:var(--card);border:1px solid var(--bd);border-radius:16px;overflow:hidden}
+.tbl-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--bd)}
+.tbl-head h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.tbl-head h3 i{color:var(--acc)}
+.tbl-cnt{font-size:12px;color:var(--tx3);font-weight:600;padding:3px 10px;background:var(--bg2);border-radius:8px}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead{background:var(--bg2)}
+th{padding:14px 18px;text-align:right;font-size:11px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;border-bottom:1px solid var(--bd)}
+[dir="ltr"] th{text-align:left}
+td{padding:14px 18px;font-size:13px;font-weight:500;color:var(--tx2);border-bottom:1px solid var(--bd);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:var(--card2)}
+
+/* === خلية اللوجو === */
+.logo-cell{display:flex;align-items:center;justify-content:center}
+.logo-img{width:48px;height:48px;border-radius:12px;object-fit:cover;border:1.5px solid var(--bd);background:var(--bg2);transition:transform .2s}
+tbody tr:hover .logo-img{transform:scale(1.08)}
+.logo-placeholder{width:48px;height:48px;border-radius:12px;background:var(--bg3);border:1.5px dashed var(--bd2);display:flex;align-items:center;justify-content:center;color:var(--tx3);font-size:18px}
+
+/* === خلايا الجدول === */
+.code-cell{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:900;letter-spacing:1.5px;background:var(--accGlow);color:var(--acc);border:1px solid rgba(6,182,212,.15);direction:ltr;font-family:'Courier New',monospace}
+.name-ar{color:var(--tx);font-weight:700;font-size:14px}
+.name-en{color:var(--tx3);font-size:12px;font-weight:500;margin-top:1px}
+
+/* === شارات نوع البنك === */
+.type-tag{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:800;white-space:nowrap}
+.tp-gov{background:var(--accGlow);color:var(--acc)}
+.tp-priv{background:var(--greenGlow);color:var(--green)}
+.tp-isl{background:var(--amberGlow);color:var(--amber)}
+.tp-for{background:var(--violetGlow);color:var(--violet)}
+.tp-jv{background:var(--roseGlow);color:var(--rose)}
+.tp-cen{background:var(--emeraldGlow);color:var(--emerald)}
+
+/* === أزرار الإجراءات === */
+.act-btns{display:flex;align-items:center;gap:6px}
+.ab{width:36px;height:36px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s}
+.ab:hover{transform:scale(1.08)}
+.ab.ae:hover{border-color:var(--sky);color:var(--sky);background:var(--skyGlow)}
+.ab.ad:hover{border-color:var(--red);color:var(--red);background:var(--redGlow)}
+
+/* === ترقيم الصفحات === */
+.pg-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-top:1px solid var(--bd);flex-wrap:wrap;gap:12px}
+.pg-info{font-size:12px;color:var(--tx3);font-weight:600}
+.pg-btns{display:flex;align-items:center;gap:4px}
+.pb{width:36px;height:36px;border-radius:9px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Cairo',sans-serif;transition:all .2s}
+.pb:hover{border-color:var(--bd2);color:var(--tx)}
+.pb.act{background:var(--acc);color:#fff;border-color:var(--acc);box-shadow:0 2px 12px rgba(6,182,212,.3)}
+.pb:disabled{opacity:.3;cursor:not-allowed}
+
+/* === المودال === */
+.mov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.mov.on{display:flex;animation:mfI .2s ease}
+.mbox{background:var(--card);border:1px solid var(--bd);border-radius:20px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.5);animation:msI .3s ease}
+@keyframes mfI{from{opacity:0}}@keyframes msI{from{opacity:0;transform:scale(.92)}}
+.mh{padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px}
+.mh h3{font-size:17px;font-weight:800;flex:1;display:flex;align-items:center;gap:10px}
+.mh h3 i{color:var(--acc)}
+.mx{width:36px;height:36px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx3);transition:all .2s;font-size:15px;flex-shrink:0}
+.mx:hover{background:var(--redGlow);border-color:var(--red);color:var(--red)}
+.mb{padding:24px}
+.fg{margin-bottom:18px}
+.fg:last-child{margin-bottom:0}
+.fl{display:block;font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:7px}
+.fl .rq{color:var(--red);font-size:14px}
+.fi{width:100%;padding:11px 15px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:12px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:14px;outline:none;transition:all .25s}
+.fi:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.fi::placeholder{color:var(--tx3)}
+.fi.er{border-color:var(--red);box-shadow:0 0 0 3px var(--redGlow)}
+.fi[code]{font-family:'Courier New',monospace;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.fe{font-size:11px;color:var(--red);font-weight:600;margin-top:5px;display:none}
+.fe.sh{display:block}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:540px){.frow{grid-template-columns:1fr}}
+
+/* === رفع اللوجو === */
+.logo-upload{display:flex;align-items:center;gap:16px}
+.logo-prev{width:80px;height:80px;border-radius:16px;border:2px dashed var(--bd2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;background:var(--bg2);transition:all .3s;cursor:pointer;position:relative}
+.logo-prev:hover{border-color:var(--acc);background:var(--accGlow)}
+.logo-prev.has-img{border-style:solid;border-color:var(--acc)}
+.logo-prev img{width:100%;height:100%;object-fit:cover}
+.logo-prev .ph-ico{color:var(--tx3);font-size:24px;transition:all .2s}
+.logo-prev:hover .ph-ico{color:var(--acc)}
+.logo-upload-info{flex:1;min-width:0}
+.logo-upload-info p{font-size:12px;color:var(--tx3);line-height:1.7;margin-bottom:8px}
+.logo-upload-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bg2);color:var(--tx2);font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.logo-upload-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accGlow)}
+.logo-remove{display:inline-flex;align-items:center;gap:4px;padding:8px 14px;border-radius:10px;border:1.5px solid var(--red);background:var(--redGlow);color:var(--red);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:8px}
+.logo-remove:hover{background:rgba(239,68,68,.2)}
+
+/* === تأكيد الحذف === */
+.db{padding:36px 24px;text-align:center}
+.db-ico{width:68px;height:68px;border-radius:50%;background:var(--redGlow);display:inline-flex;align-items:center;justify-content:center;font-size:30px;color:var(--red);margin-bottom:18px;animation:shk .4s ease}
+@keyframes shk{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.db-t{font-size:18px;font-weight:900;margin-bottom:8px}
+.db-p{font-size:13px;color:var(--tx3);line-height:1.8;margin-bottom:6px}
+.db-n{font-size:15px;font-weight:800;color:var(--acc);margin-bottom:8px;padding:8px 16px;background:var(--accGlow);border-radius:10px;display:inline-block}
+.db-logo{margin-bottom:24px}
+.db-logo img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:2px solid var(--bd)}
+.db-a{display:flex;gap:10px;justify-content:center}
+
+/* === فارغ === */
+.emp{text-align:center;padding:60px 20px;color:var(--tx3)}
+.emp i{font-size:52px;margin-bottom:16px;opacity:.2;display:block}
+.emp p{font-size:14px;font-weight:600}
+
+/* === التوست === */
+.tc{position:fixed;top:84px;left:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+[dir="ltr"] .tc{left:auto;right:24px}
+.tt{padding:14px 20px;border-radius:14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;animation:tI .35s ease;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.35);backdrop-filter:blur(10px)}
+.tt.ok{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.tt.er{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.tt.inf{background:rgba(56,189,248,.12);color:var(--sky);border:1px solid rgba(56,189,248,.2)}
+.tt.wn{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.tt.out{animation:tO .3s ease forwards}
+@keyframes tI{from{opacity:0;transform:translateX(-30px)}}@keyframes tO{to{opacity:0;transform:translateX(-30px)}}
+
+/* === حركات === */
+.fu{opacity:0;transform:translateY(16px);animation:fU .5s ease forwards}
+@keyframes fU{to{opacity:1;transform:translateY(0)}}
+.d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}.d5{animation-delay:.2s}.d6{animation-delay:.24s}
+
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--tx3)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="tc" id="toastC"></div>
+<input type="file" id="fileInp" accept="image/*" style="display:none" onchange="handleFile(event)">
+
+<!-- مودال إضافة/تعديل -->
+<div class="mov" id="formM">
+<div class="mbox">
+<div class="mh">
+  <h3><i class="fas fa-building-columns"></i> <span id="fTitle">إضافة بنك</span></h3>
+  <button class="mx" onclick="closeM('formM')"><i class="fas fa-times"></i></button>
+</div>
+<div class="mb">
+  <input type="hidden" id="eId">
+  <div class="fg">
+    <label class="fl" id="lLogo">شعار البنك</label>
+    <div class="logo-upload">
+      <div class="logo-prev" id="logoPrev" onclick="document.getElementById('fileInp').click()">
+        <i class="fas fa-cloud-arrow-up ph-ico" id="phIco"></i>
+        <img id="prevImg" style="display:none">
+      </div>
+      <div class="logo-upload-info">
+        <p id="logoHint">اضغط على المنطقة لرفع شعار البنك (PNG, JPG, SVG - حد أقصى 2MB)</p>
+        <div>
+          <button type="button" class="logo-upload-btn" onclick="document.getElementById('fileInp').click()"><i class="fas fa-upload"></i> <span id="upBtn">اختيار ملف</span></button>
+          <button type="button" class="logo-remove" id="rmLogoBtn" style="display:none" onclick="removeLogo()"><i class="fas fa-trash"></i> <span id="rmBtn">إزالة</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fg">
+    <label class="fl" id="lCode">كود البنك <span class="rq">*</span></label>
+    <input type="text" id="fCode" class="fi" code placeholder="مثال: NBE" maxlength="10">
+    <span class="fe" id="eCode">كود مكون من 2-10 أحرف</span>
+  </div>
+  <div class="frow">
+    <div class="fg">
+      <label class="fl" id="lAr">اسم البنك بالعربية <span class="rq">*</span></label>
+      <input type="text" id="fAr" class="fi" placeholder="مثال: البنك الأهلي المصري">
+      <span class="fe" id="eAr">هذا الحقل مطلوب</span>
+    </div>
+    <div class="fg">
+      <label class="fl" id="lEn">اسم البنك بالإنجليزية <span class="rq">*</span></label>
+      <input type="text" id="fEn" class="fi" placeholder="e.g. National Bank of Egypt">
+      <span class="fe" id="eEn">This field is required</span>
+    </div>
+  </div>
+  <div class="fg">
+    <label class="fl" id="lType">نوع البنك <span class="rq">*</span></label>
+    <select id="fType" class="fi" style="cursor:pointer;appearance:auto">
+      <option value="">-- اختر --</option>
+      <option value="Government">Government</option>
+      <option value="Private">Private</option>
+      <option value="Islamic">Islamic</option>
+      <option value="Foreign">Foreign</option>
+      <option value="Joint Venture">Joint Venture</option>
+      <option value="Central Bank">Central Bank</option>
+    </select>
+    <span class="fe" id="eType">هذا الحقل مطلوب</span>
+  </div>
+</div>
+<div class="mf">
+  <button class="bt bt-p" onclick="saveRec()"><i class="fas fa-save"></i> <span id="sBtn">حفظ</span></button>
+  <button class="bt bt-w" onclick="closeM('formM')"><span id="cBtn">إلغاء</span></button>
+</div>
+</div>
+</div>
+
+<!-- مودال تأكيد الحذف -->
+<div class="mov" id="delM">
+<div class="mbox" style="max-width:480px">
+<div class="db">
+  <div class="db-ico"><i class="fas fa-trash-can"></i></div>
+  <h3 class="db-t" id="dT">تأكيد الحذف</h3>
+  <p class="db-p" id="dP">سيتم حذف البنك التالي نهائياً:</p>
+  <div class="db-logo" id="dLogo"></div>
+  <div class="db-n" id="dN"></div>
+  <div class="db-a">
+    <button class="bt bt-d" id="dConf"><i class="fas fa-trash"></i> <span id="dBT">حذف نهائياً</span></button>
+    <button class="bt bt-w" onclick="closeM('delM')"><span id="dCB">إلغاء</span></button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- الشريط العلوي -->
+<header class="topbar">
+<div class="topbar-in">
+  <a href="#" class="back-btn" onclick="event.preventDefault();toast('Dashboard','inf')">
+    <i class="fas fa-arrow-right"></i>
+    <span id="bBtn">الرجوع للوحة التحكم</span>
+  </a>
+  <div class="t-area">
+    <div class="t-ico"><i class="fas fa-building-columns"></i></div>
+    <div class="t-txt">
+      <h1 id="pT">إدارة البنوك</h1>
+      <p id="pS">إضافة وتعديل وحذف بيانات البنوك وشعاراتها</p>
+    </div>
+  </div>
+  <div class="t-acts">
+    <button class="lang-btn" onclick="toggleLang()">
+      <i class="fas fa-globe"></i>
+      <span id="lBtn">English</span>
+    </button>
+  </div>
+</div>
+</header>
+
+<!-- المحتوى -->
+<main class="content">
+  <div class="stats" id="statsA"></div>
+  <div class="toolbar fu d3">
+    <div class="search-w">
+      <i class="fas fa-search"></i>
+      <input type="text" id="sIn" placeholder="ابحث عن بنك..." oninput="onSrc()">
+    </div>
+    <select class="filter-s" id="filterType" onchange="onSrc()">
+      <option value="" id="filterAll">كل الأنواع</option>
+      <option value="Government">Government</option>
+      <option value="Private">Private</option>
+      <option value="Islamic">Islamic</option>
+      <option value="Foreign">Foreign</option>
+      <option value="Joint Venture">Joint Venture</option>
+      <option value="Central Bank">Central Bank</option>
+    </select>
+    <button class="add-btn" onclick="openAdd()">
+      <i class="fas fa-plus"></i>
+      <span id="aBtn">إضافة بنك</span>
+    </button>
+  </div>
+  <div class="tbl-wrap fu d4">
+    <div class="tbl-head">
+      <h3><i class="fas fa-table-list"></i> <span id="tT">قائمة البنوك</span></h3>
+      <span class="tbl-cnt" id="tC">0</span>
+    </div>
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px">#</th>
+            <th id="hLogo" style="width:80px">الشعار</th>
+            <th id="hName">اسم البنك</th>
+            <th id="hCode" style="width:110px">الكود</th>
+            <th id="hType" style="width:140px">النوع</th>
+            <th id="hAct" style="width:110px">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+    <div class="emp" id="empS" style="display:none">
+      <i class="fas fa-inbox"></i>
+      <p id="empT">لا توجد بنوك مطابقة</p>
+    </div>
+    <div class="pg-bar" id="pgBar"></div>
+  </div>
+</main>
+
+<!-- أزرار المودال -->
+<style>
+.bt{padding:10px 22px;border-radius:12px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:8px;transition:all .25s;outline:none}
+.bt:active{transform:scale(.96)}
+.bt-p{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 4px 16px rgba(6,182,212,.25)}.bt-p:hover{box-shadow:0 6px 24px rgba(6,182,212,.35);transform:translateY(-1px)}
+.bt-w{background:var(--bg2);color:var(--tx2);border:1px solid var(--bd)}.bt-w:hover{border-color:var(--bd2);color:var(--tx)}
+.bt-d{background:var(--redGlow);color:var(--red);border:1px solid rgba(239,68,68,.2)}.bt-d:hover{background:rgba(239,68,68,.2)}
+</style>
+
+<script>
+/* ===== البيانات ===== */
+var typeMap={
+  'Government':{ar:'حكومي',cls:'tp-gov',ico:'fa-landmark'},
+  'Private':{ar:'خاص',cls:'tp-priv',ico:'fa-building'},
+  'Islamic':{ar:'إسلامي',cls:'tp-isl',ico:'fa-mosque'},
+  'Foreign':{ar:'أجنبي',cls:'tp-for',ico:'fa-globe'},
+  'Joint Venture':{ar:'مشترك',cls:'tp-jv',ico:'fa-handshake'},
+  'Central Bank':{ar:'مركزي',cls:'tp-cen',ico:'fa-university'}
+};
+
+var data=[
+  {id:1,code:'CBE',name_ar:'البنك المركزي المصري',name_en:'Central Bank of Egypt',type:'Central Bank',logo:'https://picsum.photos/seed/cbe-bank/200/200'},
+  {id:2,code:'NBE',name_ar:'البنك الأهلي المصري',name_en:'National Bank of Egypt',type:'Government',logo:'https://picsum.photos/seed/nbe-bank/200/200'},
+  {id:3,code:'BM',name_ar:'بنك مصر',name_en:'Bank of Egypt',type:'Government',logo:'https://picsum.photos/seed/bm-bank/200/200'},
+  {id:4,code:'BAA',name_ar:'بنك الأهلي السعودي',name_en:'Saudi National Bank',type:'Government',logo:'https://picsum.photos/seed/baa-bank/200/200'},
+  {id:5,code:'CIB',name_ar:'البنك التجاري الدولي',name_en:'Commercial International Bank',type:'Private',logo:'https://picsum.photos/seed/cib-bank/200/200'},
+  {id:6,code:'QNB',name_ar:'بنك قطر الوطني',name_en:'Qatar National Bank',type:'Government',logo:'https://picsum.photos/seed/qnb-bank/200/200'},
+  {id:7,code:'ADCB',name_ar:'بنك أبوظبي التجاري',name_en:'Abu Dhabi Commercial Bank',type:'Government',logo:'https://picsum.photos/seed/adcb-bank/200/200'},
+  {id:8,code:'FAB',name_ar:'بنك أول أبوظبي',name_en:'First Abu Dhabi Bank',type:'Government',logo:'https://picsum.photos/seed/fab-bank/200/200'},
+  {id:9,code:'Riyad',name_ar:'بنك الرياض',name_en:'Riyad Bank',type:'Islamic',logo:'https://picsum.photos/seed/riyad-bank/200/200'},
+  {id:10,code:'AlRajhi',name_ar:'مجموعة الراجحي المالية',name_en:'Al Rajhi Banking Group',type:'Islamic',logo:'https://picsum.photos/seed/alrajhi-bank/200/200'},
+  {id:11,code:'HSBC',name_ar:'بنك HSBC',name_en:'HSBC Bank',type:'Foreign',logo:'https://picsum.photos/seed/hsbc-bank/200/200'},
+  {id:12,code:'Citi',name_ar:'بنك سيتي بنك',name_en:'Citibank',type:'Foreign',logo:'https://picsum.photos/seed/citi-bank/200/200'},
+  {id:13,code:'AAIB',name_ar:'بنك الإسكندرية الأهلي',name_en:'Alexandria Bank',type:'Joint Venture',logo:'https://picsum.photos/seed/aaib-bank/200/200'},
+  {id:14,code:'BLOM',name_ar:'بنك بلوم',name_en:'BLOM Bank',type:'Private',logo:'https://picsum.photos/seed/blom-bank/200/200'},
+  {id:15,code:'EmiratesNBD',name_ar:'بنك الإمارات دبي الوطني',name_en:'Emirates NBD',type:'Government',logo:'https://picsum.photos/seed/emiratesnbd/200/200'},
+  {id:16,code:'Mashreq',name_ar:'بنك Mashreq',name_en:'Mashreq Bank',type:'Private',logo:'https://picsum.photos/seed/mashreq-bank/200/200'}
+];
+
+var nxId=17,lang='ar',curPage=1,perPage=8,delId=null,tempLogo='';
+
+/* ===== الترجمة ===== */
+var T={
+  bBtn:{ar:'الرجوع للوحة التحكم',en:'Back to Dashboard'},
+  pT:{ar:'إدارة البنوك',en:'Banks Management'},
+  pS:{ar:'إضافة وتعديل وحذف بيانات البنوك وشعاراتها',en:'Add, edit and delete banks data and logos'},
+  lBtn:{ar:'English',en:'العربية'},
+  sPh:{ar:'ابحث عن بنك...',en:'Search bank...'},
+  filterAll:{ar:'كل الأنواع',en:'All Types'},
+  aBtn:{ar:'إضافة بنك',en:'Add Bank'},
+  tT:{ar:'قائمة البنوك',en:'Banks List'},
+  hLogo:{ar:'الشعار',en:'Logo'},
+  hName:{ar:'اسم البنك',en:'Bank Name'},
+  hCode:{ar:'الكود',en:'Code'},
+  hType:{ar:'النوع',en:'Type'},
+  hAct:{ar:'الإجراءات',en:'Actions'},
+  eTip:{ar:'تعديل',en:'Edit'},
+  dTip:{ar:'حذف',en:'Delete'},
+  addT:{ar:'إضافة بنك جديد',en:'Add New Bank'},
+  edtT:{ar:'تعديل بيانات البنك',en:'Edit Bank Data'},
+  lLogo:{ar:'شعار البنك',en:'Bank Logo'},
+  lCode:{ar:'كود البنك',en:'Bank Code'},
+  lAr:{ar:'اسم البنك بالعربية',en:'Bank Name (Arabic)'},
+  lEn:{ar:'اسم البنك بالإنجليزية',en:'Bank Name (English)'},
+  lType:{ar:'نوع البنك',en:'Bank Type'},
+  save:{ar:'حفظ',en:'Save'},
+  cancel:{ar:'إلغاء',en:'Cancel'},
+  phCode:{ar:'مثال: NBE',en:'e.g. NBE'},
+  phAr:{ar:'مثال: البنك الأهلي المصري',en:'e.g. National Bank of Egypt'},
+  phEn:{ar:'مثال: National Bank of Egypt',en:'e.g. National Bank of Egypt'},
+  chooseType:{ar:'-- اختر --',en:'-- Select --'},
+  logoHint:{ar:'اضغط على المنطقة لرفع شعار البنك (PNG, JPG, SVG - حد أقصى 2MB)',en:'Click the area to upload bank logo (PNG, JPG, SVG - max 2MB)'},
+  upBtn:{ar:'اختيار ملف',en:'Choose File'},
+  rmBtn:{ar:'إزالة',en:'Remove'},
+  dT:{ar:'تأكيد الحذف',en:'Confirm Deletion'},
+  dP:{ar:'سيتم حذف البنك التالي نهائياً:',en:'The following bank will be permanently deleted:'},
+  dBT:{ar:'حذف نهائياً',en:'Delete Permanently'},
+  empT:{ar:'لا توجد بنوك مطابقة',en:'No matching banks found'},
+  totalBanks:{ar:'إجمالي البنوك',en:'Total Banks'},
+  govBanks:{ar:'حكومي',en:'Government'},
+  privBanks:{ar:'خاص',en:'Private'},
+  islBanks:{ar:'إسلامي',en:'Islamic'},
+  forBanks:{ar:'أجنبي',en:'Foreign'},
+  jvBanks:{ar:'مشترك',en:'Joint Venture'},
+  cenBanks:{ar:'مركزي',en:'Central Bank'},
+  bankW:{ar:'بنك',en:'banks'},
+  show:{ar:'عرض',en:'Showing'},
+  of:{ar:'من',en:'of'},
+  tAdded:{ar:'تمت إضافة البنك بنجاح',en:'Bank added successfully'},
+  tUpd:{ar:'تم تعديل البنك بنجاح',en:'Bank updated successfully'},
+  tDel:{ar:'تم حذف البنك بنجاح',en:'Bank deleted successfully'},
+  tErr:{ar:'يرجى ملء الحقول المطلوبة',en:'Please fill required fields'},
+  tDup:{ar:'كود البنك موجود مسبقاً',en:'Bank code already exists'},
+  tBig:{ar:'حجم الملف يتجاوز 2MB',en:'File size exceeds 2MB'},
+  eCode:{ar:'كود مكون من 2-10 أحرف',en:'2-10 character code'},
+  eAr:{ar:'هذا الحقل مطلوب',en:'This field is required'},
+  eEn:{ar:'هذا الحقل مطلوب',en:'This field is required'},
+  eType:{ar:'هذا الحقل مطلوب',en:'This field is required'}
+};
+function lt(k){return T[k]?T[k][lang]:k}
+
+/* ===== التوست ===== */
+function toast(m,t){
+  var ic={ok:'fa-circle-check',er:'fa-circle-xmark',inf:'fa-circle-info',wn:'fa-triangle-exclamation'};
+  var c=document.getElementById('toastC');
+  var d=document.createElement('div');d.className='tt '+t;
+  d.innerHTML='<i class="fas '+(ic[t]||ic.inf)+'"></i><span>'+m+'</span>';
+  c.appendChild(d);setTimeout(function(){d.classList.add('out');setTimeout(function(){d.remove()},300)},3000);
+}
+
+/* ===== المودالات ===== */
+function openM(id){document.getElementById(id).classList.add('on')}
+function closeM(id){document.getElementById(id).classList.remove('on')}
+
+/* ===== رفع اللوجو ===== */
+function handleFile(e){
+  var file=e.target.files[0];if(!file)return;
+  if(file.size>2*1024*1024){toast(lt('tBig'),'wn');e.target.value='';return}
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    tempLogo=ev.target.result;
+    document.getElementById('prevImg').src=tempLogo;
+    document.getElementById('prevImg').style.display='block';
+    document.getElementById('phIco').style.display='none';
+    document.getElementById('logoPrev').classList.add('has-img');
+    document.getElementById('rmLogoBtn').style.display='inline-flex';
+  };
+  reader.readAsDataURL(file);e.target.value='';
+}
+function removeLogo(){
+  tempLogo='';
+  document.getElementById('prevImg').style.display='none';
+  document.getElementById('prevImg').src='';
+  document.getElementById('phIco').style.display='';
+  document.getElementById('logoPrev').classList.remove('has-img');
+  document.getElementById('rmLogoBtn').style.display='none';
+}
+function setLogoPreview(src){
+  if(src){
+    tempLogo=src;
+    document.getElementById('prevImg').src=src;
+    document.getElementById('prevImg').style.display='block';
+    document.getElementById('phIco').style.display='none';
+    document.getElementById('logoPrev').classList.add('has-img');
+    document.getElementById('rmLogoBtn').style.display='inline-flex';
+  }else{removeLogo()}
+}
+
+/* ===== الترجمة ===== */
+function toggleLang(){
+  lang=lang==='ar'?'en':'ar';
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  applyL();renderAll();
+}
+function applyL(){
+  document.getElementById('bBtn').textContent=lt('bBtn');
+  document.getElementById('pT').textContent=lt('pT');
+  document.getElementById('pS').textContent=lt('pS');
+  document.getElementById('lBtn').textContent=lt('lBtn');
+  document.getElementById('sIn').placeholder=lt('sPh');
+  document.getElementById('filterAll').textContent=lt('filterAll');
+  document.getElementById('aBtn').textContent=lt('aBtn');
+  document.getElementById('tT').textContent=lt('tT');
+  document.getElementById('hLogo').textContent=lt('hLogo');
+  document.getElementById('hName').textContent=lt('hName');
+  document.getElementById('hCode').textContent=lt('hCode');
+  document.getElementById('hType').textContent=lt('hType');
+  document.getElementById('hAct').textContent=lt('hAct');
+  document.getElementById('empT').textContent=lt('empT');
+  document.getElementById('sBtn').textContent=lt('save');
+  document.getElementById('cBtn').textContent=lt('cancel');
+  document.getElementById('dT').textContent=lt('dT');
+  document.getElementById('dP').textContent=lt('dP');
+  document.getElementById('dBT').textContent=lt('dBT');
+  document.getElementById('lLogo').textContent=lt('lLogo');
+  document.getElementById('lCode').innerHTML=lt('lCode')+' <span class="rq">*</span>';
+  document.getElementById('lAr').innerHTML=lt('lAr')+' <span class="rq">*</span>';
+  document.getElementById('lEn').innerHTML=lt('lEn')+' <span class="rq">*</span>';
+  document.getElementById('lType').innerHTML=lt('lType')+' <span class="rq">*</span>';
+  document.getElementById('fCode').placeholder=lt('phCode');
+  document.getElementById('fAr').placeholder=lt('phAr');
+  document.getElementById('fEn').placeholder=lt('phEn');
+  document.getElementById('logoHint').textContent=lt('logoHint');
+  document.getElementById('upBtn').textContent=lt('upBtn');
+  document.getElementById('rmBtn').textContent=lt('rmBtn');
+  document.querySelector('#fType option[value=""]').textContent=lt('chooseType');
+}
+
+/* ===== البحث والفلترة ===== */
+function getFiltered(){
+  var q=document.getElementById('sIn').value.trim().toLowerCase();
+  var ft=document.getElementById('filterType').value;
+  return data.filter(function(b){
+    var mq=!q||b.name_ar.toLowerCase().indexOf(q)!==-1||b.name_en.toLowerCase().indexOf(q)!==-1||b.code.toLowerCase().indexOf(q)!==-1;
+    var mt=!ft||b.type===ft;
+    return mq&&mt;
+  });
+}
+function onSrc(){curPage=1;renderTable();renderStats()}
+
+/* ===== الإحصائيات ===== */
+function renderStats(){
+  var f=getFiltered();
+  var counts={};
+  data.forEach(function(b){counts[b.type]=(counts[b.type]||0)+1});
+
+  document.getElementById('statsA').innerHTML=
+    '<div class="sc s1 fu d1"><div class="sc-top"><div class="sc-i i1"><i class="fas fa-building-columns"></i></div></div><div class="sc-val">'+f.length+'</div><div class="sc-lbl">'+lt('totalBanks')+'</div></div>'+
+    '<div class="sc s2 fu d2"><div class="sc-top"><div class="sc-i i2"><i class="fas fa-landmark"></i></div></div><div class="sc-val">'+(counts['Government']||0)+'</div><div class="sc-lbl">'+lt('govBanks')+'</div></div>'+
+    '<div class="sc s3 fu d3"><div class="sc-top"><div class="sc-i i3"><i class="fas fa-mosque"></i></div></div><div class="sc-val">'+(counts['Islamic']||0)+'</div><div class="sc-lbl">'+lt('islBanks')+'</div></div>'+
+    '<div class="sc s4 fu d4"><div class="sc-top"><div class="sc-i i4"><i class="fas fa-globe"></i></div></div><div class="sc-val">'+(counts['Foreign']||0)+'</div><div class="sc-lbl">'+lt('forBanks')+'</div></div>'+
+    '<div class="sc s5 fu d5"><div class="sc-top"><div class="sc-i i5"><i class="fas fa-handshake"></i></div></div><div class="sc-val">'+(counts['Joint Venture']||0)+'</div><div class="sc-lbl">'+lt('jvBanks')+'</div></div>'+
+    '<div class="sc s6 fu d6"><div class="sc-top"><div class="sc-i i6"><i class="fas fa-university"></i></div></div><div class="sc-val">'+(counts['Central Bank']||0)+'</div><div class="sc-lbl">'+lt('cenBanks')+'</div></div>';
+}
+
+/* ===== الجدول ===== */
+function renderTable(){
+  var f=getFiltered();
+  var tp=Math.max(1,Math.ceil(f.length/perPage));
+  if(curPage>tp)curPage=tp;
+  var s=(curPage-1)*perPage;
+  var items=f.slice(s,s+perPage);
+
+  document.getElementById('tC').textContent=f.length+' '+lt('bankW');
+  var tb=document.getElementById('tBody');
+  var emp=document.getElementById('empS');
+
+  if(!f.length){tb.innerHTML='';emp.style.display='';document.getElementById('pgBar').innerHTML='';return}
+  emp.style.display='none';
+
+  tb.innerHTML=items.map(function(b,i){
+    var tm=typeMap[b.type]||{ar:b.type,cls:'tp-gov',ico:'fa-building'};
+    var logoHTML=b.logo?'<img class="logo-img" src="'+b.logo+'" alt="" onerror="this.parentElement.innerHTML=\'<div class=logo-placeholder><i class=fas fa-building-columns></i></div>\'">':'<div class="logo-placeholder"><i class="fas fa-building-columns"></i></div>';
+    return '<tr>'+
+      '<td style="color:var(--tx3);font-weight:700">'+(s+i+1)+'</td>'+
+      '<td><div class="logo-cell">'+logoHTML+'</div></td>'+
+      '<td><div class="name-ar">'+(lang==='ar'?b.name_ar:b.name_en)+'</div><div class="name-en">'+(lang==='ar'?b.name_en:b.name_ar)+'</div></td>'+
+      '<td><span class="code-cell">'+b.code.toUpperCase()+'</span></td>'+
+      '<td><span class="type-tag '+tm.cls+'"><i class="fas '+tm.ico+'" style="font-size:10px"></i> '+(lang==='ar'?tm.ar:b.type)+'</span></td>'+
+      '<td><div class="act-btns">'+
+        '<button class="ab ae" title="'+lt('eTip')+'" onclick="openEdt('+b.id+')"><i class="fas fa-pen-to-square"></i></button>'+
+        '<button class="ab ad" title="'+lt('dTip')+'" onclick="openDel('+b.id+')"><i class="fas fa-trash-can"></i></button>'+
+      '</div></td>'+
+    '</tr>';
+  }).join('');
+
+  /* ترقيم الصفحات */
+  if(tp<=1){document.getElementById('pgBar').innerHTML='<span class="pg-info">'+lt('show')+' '+f.length+' '+lt('bankW')+'</span>';return}
+  var sr=s+1,er=Math.min(s+perPage,f.length);
+  var h='<span class="pg-info">'+lt('show')+' '+sr+' - '+er+' '+lt('of')+' '+f.length+'</span><div class="pg-btns">';
+  h+='<button class="pb" '+(curPage<=1?'disabled':'')+' onclick="goP('+(curPage-1)+')"><i class="fas fa-chevron-right"></i></button>';
+  for(var p=1;p<=tp;p++){
+    if(tp>7&&p>2&&p<tp-1&&Math.abs(p-curPage)>1){
+      if(p===3||p===tp-2)h+='<span style="color:var(--tx3);padding:0 4px">...</span>';
+      continue;
+    }
+    h+='<button class="pb'+(p===curPage?' act':'')+'" onclick="goP('+p+')">'+p+'</button>';
+  }
+  h+='<button class="pb" '+(curPage>=tp?'disabled':'')+' onclick="goP('+(curPage+1)+')"><i class="fas fa-chevron-left"></i></button></div>';
+  document.getElementById('pgBar').innerHTML=h;
+}
+function goP(p){curPage=p;renderTable();document.querySelector('.tbl-scroll').scrollTop=0}
+
+/* ===== إضافة ===== */
+function openAdd(){
+  document.getElementById('eId').value='';
+  document.getElementById('fCode').value='';
+  document.getElementById('fCode').disabled=false;
+  document.getElementById('fAr').value='';
+  document.getElementById('fEn').value='';
+  document.getElementById('fType').value='';
+  removeLogo();clrErr();
+  document.getElementById('fTitle').textContent=lt('addT');
+  openM('formM');
+  setTimeout(function(){document.getElementById('fCode').focus()},200);
+}
+
+/* ===== تعديل ===== */
+function openEdt(id){
+  var b=data.find(function(x){return x.id===id});if(!b)return;
+  document.getElementById('eId').value=id;
+  document.getElementById('fCode').value=b.code;
+  document.getElementById('fCode').disabled=true;
+  document.getElementById('fAr').value=b.name_ar;
+  document.getElementById('fEn').value=b.name_en;
+  document.getElementById('fType').value=b.type;
+  setLogoPreview(b.logo||'');clrErr();
+  document.getElementById('fTitle').textContent=lt('edtT');
+  openM('formM');
+}
+
+/* ===== حفظ ===== */
+function saveRec(){
+  clrErr();
+  var code=document.getElementById('fCode').value.trim().toUpperCase();
+  var ar=document.getElementById('fAr').value.trim();
+  var en=document.getElementById('fEn').value.trim();
+  var type=document.getElementById('fType').value;
+  var ok=true;
+
+  if(!code||code.length<2||code.length>10){document.getElementById('fCode').classList.add('er');document.getElementById('eCode').classList.add('sh');ok=false}
+  if(!ar){document.getElementById('fAr').classList.add('er');document.getElementById('eAr').classList.add('sh');ok=false}
+  if(!en){document.getElementById('fEn').classList.add('er');document.getElementById('eEn').classList.add('sh');ok=false}
+  if(!type){document.getElementById('fType').classList.add('er');document.getElementById('eType').classList.add('sh');ok=false}
+
+  /* فحص تكرار الكود */
+  var eid=document.getElementById('eId').value;
+  if(ok&&code){
+    var dup=data.find(function(b){return b.code.toUpperCase()===code&&b.id!==+eid});
+    if(dup){document.getElementById('fCode').classList.add('er');document.getElementById('eCode').textContent=lt('tDup');document.getElementById('eCode').classList.add('sh');toast(lt('tDup'),'wn');ok=false}
+  }
+  if(!ok&&!document.getElementById('eCode').classList.contains('sh')){toast(lt('tErr'),'er');return}
+  if(!ok)return;
+
+  if(eid){
+    var b=data.find(function(x){return x.id===+eid});
+    if(b){b.code=code;b.name_ar=ar;b.name_en=en;b.type=type;if(tempLogo)b.logo=tempLogo}
+    toast(lt('tUpd'),'ok');
+  }else{
+    data.unshift({id:nxId++,code:code,name_ar:ar,name_en:en,type:type,logo:tempLogo||''});
+    toast(lt('tAdded'),'ok');
+  }
+  closeM('formM');renderAll();
+}
+function clrErr(){
+  document.querySelectorAll('.fi').forEach(function(el){el.classList.remove('er')});
+  document.querySelectorAll('.fe').forEach(function(el){el.classList.remove('sh')});
+  document.getElementById('eCode').textContent=lt('eCode');
+}
+
+/* ===== حذف ===== */
+function openDel(id){
+  delId=id;
+  var b=data.find(function(x){return x.id===id});if(!b)return;
+  var logoHTML=b.logo?'<img src="'+b.logo+'" alt="">':'';
+  document.getElementById('dLogo').innerHTML=logoHTML;
+  document.getElementById('dN').textContent=(lang==='ar'?b.name_ar:b.name_en)+' ('+b.code.toUpperCase()+')';
+  openM('delM');
+}
+document.getElementById('dConf').addEventListener('click',function(){
+  if(delId!==null){
+    data=data.filter(function(b){return b.id!==delId});
+    delId=null;closeM('delM');
+    toast(lt('tDel'),'er');renderAll();
+  }
+});
+
+/* ===== رسم الكل ===== */
+function renderAll(){renderStats();renderTable()}
+
+/* ===== إغلاق المودال ===== */
+document.querySelectorAll('.mov').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('on')});
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')document.querySelectorAll('.mov.on').forEach(function(m){m.classList.remove('on')});
+});
+
+/* ===== تشغيل ===== */
+applyL();renderAll();
+</script>
+</body>
+</html>

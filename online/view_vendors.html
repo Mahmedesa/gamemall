@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم الموردين</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d13;--bg2:#111420;--card:#161a28;--card2:#1c2033;--border:#252a3a;--accent:#10b981;--accent2:#34d399;--accent-bg:rgba(16,185,129,.08);--text:#e2e8f0;--text2:#8b95aa;--danger:#ef4444;--warn:#f59e0b;--info:#3b82f6}
+*{margin:0;padding:0;box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.sidebar{width:260px;min-height:100vh;background:var(--bg2);border-left:1px solid var(--border);position:fixed;right:0;top:0;z-index:40;transition:transform .3s}
+.sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--text2);font-size:13px;cursor:pointer;transition:all .2s;border-right:3px solid transparent;position:relative;overflow:hidden}
+.sidebar-link:hover,.sidebar-link.active{color:var(--accent);background:var(--accent-bg);border-right-color:var(--accent)}
+.sidebar-link i{width:20px;text-align:center;font-size:14px}
+.main{margin-right:260px;min-height:100vh;padding:0}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:30;backdrop-filter:blur(12px)}
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;transition:all .3s;animation:fadeUp .4s ease both}
+.section-card:hover{border-color:rgba(16,185,129,.2);box-shadow:0 0 30px rgba(16,185,129,.03)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-size:17px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.section-title i{font-size:16px}
+.field{display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(37,42,58,.5)}
+.field-label{min-width:180px;font-size:12px;color:var(--text2);padding-top:2px;font-weight:600}
+.field-value{font-size:13px;color:var(--text);font-weight:500;flex:1;word-break:break-all}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(16,185,129,.12);color:#34d399}
+.badge-red{background:rgba(239,68,68,.12);color:#f87171}
+.badge-yellow{background:rgba(245,158,11,.12);color:#fbbf24}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:'Cairo'}
+.btn-accent{background:var(--accent);color:#000}.btn-accent:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Cairo';width:100%;transition:border-color .2s}
+.input:focus{outline:none;border-color:var(--accent)}
+.select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;font-family:'Cairo');width:100%}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:90%;max-width:600px;max-height:85vh;overflow-y:auto;animation:modalIn .3s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-start}
+.img-thumb{width:120px;height:90px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid var(--border);transition:all .2s}
+.img-thumb:hover{border-color:var(--accent);transform:scale(1.05)}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;display:none;align-items:center;justify-content:center;cursor:zoom-out}
+.lightbox.show{display:flex}
+.lightbox img{max-width:90%;max-height:90%;border-radius:8px;box-shadow:0 0 60px rgba(0,0,0,.5)}
+.social-icon{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:14px;transition:transform .2s;cursor:pointer}
+.social-icon:hover{transform:scale(1.15)}
+.toast{position:fixed;bottom:24px;left:24px;background:var(--card2);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;animation:toastIn .3s ease;display:none}
+.toast.show{display:block}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.table-view table{width:100%;border-collapse:collapse}
+.table-view th{background:var(--bg2);color:var(--text2);font-size:11px;font-weight:700;padding:10px 12px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+.table-view td{padding:10px 12px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text)}
+.table-view tr:hover td{background:var(--accent-bg)}
+.supplier-selector{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;font-size:13px;font-family:'Cairo';min-width:200px}
+.glow-line{height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:20px 0;opacity:.3}
+.logo-container{width:80px;height:80px;border-radius:12px;border:2px solid var(--border);overflow:hidden;flex-shrink:0}
+.logo-container img{width:100%;height:100%;object-fit:cover}
+@media(max-width:768px){.sidebar{transform:translateX(100%)}.sidebar.open{transform:translateX(0)}.main{margin-right:0}.field{flex-direction:column;gap:2px}.field-label{min-width:auto}}
+@media print{
+  body{background:#fff!important;color:#000!important;font-size:11px}
+  .sidebar,.topbar,.no-print{display:none!important}
+  .main{margin:0!important;padding:10px!important}
+  .section-card{break-inside:avoid;background:#fff!important;border:1px solid #ddd!important;box-shadow:none!important;animation:none!important}
+  .section-title{color:#000!important;border-bottom:2px solid #333!important}
+  .field-label{color:#555!important}
+  .field-value{color:#000!important}
+  .badge{border:1px solid #999!important;background:#fff!important;color:#000!important}
+  .print-header{display:block!important;text-align:center;margin-bottom:20px;padding-bottom:10px;border-bottom:3px double #000}
+}
+.print-header{display:none}
+.bg-pattern{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;background-image:radial-gradient(circle at 25% 25%,var(--accent) 1px,transparent 1px),radial-gradient(circle at 75% 75%,var(--accent) 1px,transparent 1px);background-size:60px 60px}
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+
+<!-- الشريط الجانبي -->
+<nav class="sidebar no-print" id="sidebar"></nav>
+
+<!-- المحتوى الرئيسي -->
+<div class="main" id="mainContent">
+  <div class="topbar no-print" id="topbar"></div>
+  <div style="padding:24px" id="contentArea"></div>
+</div>
+
+<!-- صندوق التعديل -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle" style="font-size:15px;font-weight:700;color:var(--accent)"></h3>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-accent" onclick="saveEdit()"><i class="fas fa-save"></i> <span data-t="save">حفظ التغييرات</span></button>
+      <button class="btn btn-outline" onclick="closeModal()"><span data-t="cancel">إلغاء</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- عارض الصور -->
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- إشعار -->
+<div class="toast" id="toast"></div>
+
+<!-- منطقة الطباعة -->
+<div id="printArea" style="display:none"></div>
+
+<script>
+// ============ بيانات الموردين ============
+const suppliers = [
+  {
+    username:"supplier_alnour",password:"Nour@2024#Sec",email:"info@alnour-trading.com",
+    securityQuestion:"ما هو اسم مدرستك الابتدائية؟",securityAnswer:"الفلاح",
+    companyName:"شركة النور للتجارة العامة",tradeName:"النور تريد",ownerName:"أحمد محمد العلي",
+    activityType:"تجارة الجملة - مواد بناء",foundingYear:2015,employeesCount:45,capital:5000000,
+    overview:"شركة النور للتجارة العامة متخصصة في استيراد وتوزيع مواد البناء والأدوات الصحية منذ عام 2015. نخدم أكثر من 500 عميل في المملكة العربية السعودية ونتميز بجودة منتجاتنا وسرعة التوصيل.",
+    logo:"https://picsum.photos/seed/alnour-logo/200/200.jpg",
+    contactPerson:"محمد أحمد العلي",contactPosition:"مدير المبيعات",
+    phone:"+966501234567",altPhone:"+966501234568",
+    contactEmail:"sales@alnour-trading.com",website:"www.alnour-trading.com",
+    social:{facebook:"facebook.com/alnour.trading",twitter:"twitter.com/alnour_trading",instagram:"instagram.com/alnour_trading",linkedin:"linkedin.com/company/alnour-trading"},
+    address:"شارع الملك فهد، حي الروضة، بناء رقم 45",area:"الروضة",governorate:"الرياض",
+    warehouseAddress:"المنطقة الصناعية الثانية، شارع 5، مخزن رقم 12",
+    returnAddress:"صندوق بريد 12345، الرياض 11432",
+    commercialReg:"1010234567",commercialRegIssue:"2015-03-15",commercialRegExpiry:"2026-03-14",
+    taxCard:"300123456789",taxRegistration:"310012345678",activityLicense:"L-2015-7890",
+    commercialChamber:"عضو غرفة الرياض التجارية - رقم عضوية 45678",
+    legalStatus:"ذات مسؤولية محدودة",
+    attachments:{
+      commercialReg:"https://picsum.photos/seed/cr-alnour/600/400.jpg",
+      taxCard:"https://picsum.photos/seed/tc-alnour/600/400.jpg",
+      vatCert:"https://picsum.photos/seed/vat-alnour/600/400.jpg",
+      activityLicense:"https://picsum.photos/seed/al-alnour/600/400.jpg",
+      idPassport:"https://picsum.photos/seed/id-alnour/600/400.jpg",
+      bankCert:"https://picsum.photos/seed/bc-alnour/600/400.jpg",
+      authorization:"https://picsum.photos/seed/auth-alnour/600/400.jpg",
+      catalog:"https://picsum.photos/seed/cat-alnour/600/400.jpg"
+    },
+    bank:{itemName:"موردو مواد البناء",accountHolder:"شركة النور للتجارة العامة",accountNumber:"SA0380000000608010167519",iban:"SA0380000000608010167519",swiftCode:"NCBKSAJE",currency:"ريال سعودي (SAR)",bankCountry:"المملكة العربية السعودية"},
+    tax:{isRegistered:true,taxNumber:"300123456789003",taxRate:15,taxType:"ضريبة القيمة المضافة",taxCountry:"المملكة العربية السعودية"},
+    shipping:{company:"شركة أرامكس للشحن",method:"شحن بري وجوي",deliveryAreas:"الرياض، جدة، الدمام، مكة المكرمة، المدينة المنورة",deliveryTime:"3-5 أيام عمل",shippingCost:"150 ريال عن كل شحنة",internationalShipping:true},
+    payment:{methods:["تحويل بنكي","محفظة إلكترونية (مدى)"],deliveryTime:"بعد تأكيد الدفع مباشرة",minInvoice:5000,commissionRate:5,currency:"ريال سعودي (SAR)"}
+  },
+  {
+    username:"supplier_alsafa",password:"Safa@2024#Pro",email:"contact@alsafa-tech.com",
+    securityQuestion:"ما هي مدينتك المفضلة؟",securityAnswer:"جدة",
+    companyName:"شركة الصفا للتقنية",tradeName:"صفا تيك",ownerName:"خالد عبدالله السعيد",
+    activityType:"تقنية المعلومات - أجهزة ومستلزمات",foundingYear:2019,employeesCount:28,capital:3000000,
+    overview:"شركة الصفا للتقنية متخصصة في استيراد وتوزيع أجهزة الحاسب الآلي والمستلزمات التقنية. نقدم حلولاً متكاملة للشركات والمؤسسات مع ضمان جودة عالية وخدمة ما بعد البيع.",
+    logo:"https://picsum.photos/seed/alsafa-logo/200/200.jpg",
+    contactPerson:"سارة خالد السعيد",contactPosition:"مديرة التسويق",
+    phone:"+966509876543",altPhone:"+966509876544",
+    contactEmail:"marketing@alsafa-tech.com",website:"www.alsafa-tech.com",
+    social:{facebook:"facebook.com/alsafa.tech",twitter:"twitter.com/alsafa_tech",instagram:"instagram.com/alsafa_tech",linkedin:"linkedin.com/company/alsafa-tech"},
+    address:"طريق الملك عبدالله، حي الحمراء، برج الصفا، الطابق 8",area:"الحمراء",governorate:"جدة",
+    warehouseAddress:"مستودعات جدة الحرة، منطقة B، مستودع 34",
+    returnAddress:"صندوق بريد 67890، جدة 21589",
+    commercialReg:"4020345678",commercialRegIssue:"2019-07-20",commercialRegExpiry:"2030-07-19",
+    taxCard:"300987654321",taxRegistration:"310098765432",activityLicense:"L-2019-4567",
+    commercialChamber:"عضو غرفة جدة التجارية - رقم عضوية 78901",
+    legalStatus:"شركة شخص واحد",
+    attachments:{
+      commercialReg:"https://picsum.photos/seed/cr-alsafa/600/400.jpg",
+      taxCard:"https://picsum.photos/seed/tc-alsafa/600/400.jpg",
+      vatCert:"https://picsum.photos/seed/vat-alsafa/600/400.jpg",
+      activityLicense:"https://picsum.photos/seed/al-alsafa/600/400.jpg",
+      idPassport:"https://picsum.photos/seed/id-alsafa/600/400.jpg",
+      bankCert:"https://picsum.photos/seed/bc-alsafa/600/400.jpg",
+      authorization:"https://picsum.photos/seed/auth-alsafa/600/400.jpg",
+      catalog:"https://picsum.photos/seed/cat-alsafa/600/400.jpg"
+    },
+    bank:{itemName:"موردو الأجهزة التقنية",accountHolder:"شركة الصفا للتقنية",accountNumber:"SA6610000000000000001234",iban:"SA6610000000000000001234",swiftCode:"RIBLSARI",currency:"ريال سعودي (SAR)",bankCountry:"المملكة العربية السعودية"},
+    tax:{isRegistered:true,taxNumber:"300987654321003",taxRate:15,taxType:"ضريبة القيمة المضافة",taxCountry:"المملكة العربية السعودية"},
+    shipping:{company:"شركة ديل للشحن",method:"شحن بري فقط",deliveryAreas:"جدة، الرياض، الدمام",deliveryTime:"5-7 أيام عمل",shippingCost:"100 ريال عن كل شحنة",internationalShipping:false},
+    payment:{methods:["تحويل بنكي","نقداً عند الاستلام"],deliveryTime:"يوم عمل واحد بعد الدفع",minInvoice:2000,commissionRate:3,currency:"ريال سعودي (SAR)"}
+  },
+  {
+    username:"supplier_albaraka",password:"Baraka@2024$X",email:"info@albaraka-food.com",
+    securityQuestion:"ما هو اسم حيوانك الأليف؟",securityAnswer:"سيلفر",
+    companyName:"شركة البركة للأغذية",tradeName:"بركة فودز",ownerName:"عبدالرحمن سالم المصري",
+    activityType:"أغذية ومواد استهلاكية",foundingYear:2012,employeesCount:120,capital:15000000,
+    overview:"شركة البركة للأغذية من الشركات الرائدة في مجال استيراد وتوزيع المواد الغذائية الاستهلاكية. نمتلك شبكة توزيع واسعة تغطي جميع مناطق المملكة ونعمل مع أكبر السلاسل التجارية والمطاعم.",
+    logo:"https://picsum.photos/seed/albaraka-logo/200/200.jpg",
+    contactPerson:"فاطمة عبدالرحمن المصري",contactPosition:"مديرة العلاقات التجارية",
+    phone:"+966505551234",altPhone:"+966505551235",
+    contactEmail:"relations@albaraka-food.com",website:"www.albaraka-food.com",
+    social:{facebook:"facebook.com/albaraka.foods",twitter:"twitter.com/albaraka_foods",instagram:"instagram.com/albaraka_foods",linkedin:"linkedin.com/company/albaraka-foods"},
+    address:"طريق الأمير سلطان، حي العليا، مجمع البركة التجاري",area:"العليا",governorate:"الرياض",
+    warehouseAddress:"مدينة الملك عبدالله الاقتصادية، المخازن المركزية، قطاع 7",
+    returnAddress:"صندوق بريد 11111، الرياض 11543",
+    commercialReg:"1010567890",commercialRegIssue:"2012-01-10",commercialRegExpiry:"2024-01-09",
+    taxCard:"300456789012",taxRegistration:"310045678901",activityLicense:"L-2012-1234",
+    commercialChamber:"عضو غرفة الرياض التجارية - رقم عضوية 23456",
+    legalStatus:"تضامن",
+    attachments:{
+      commercialReg:"https://picsum.photos/seed/cr-baraka/600/400.jpg",
+      taxCard:"https://picsum.photos/seed/tc-baraka/600/400.jpg",
+      vatCert:"https://picsum.photos/seed/vat-baraka/600/400.jpg",
+      activityLicense:"https://picsum.photos/seed/al-baraka/600/400.jpg",
+      idPassport:"https://picsum.photos/seed/id-baraka/600/400.jpg",
+      bankCert:"https://picsum.photos/seed/bc-baraka/600/400.jpg",
+      authorization:"https://picsum.photos/seed/auth-baraka/600/400.jpg",
+      catalog:"https://picsum.photos/seed/cat-baraka/600/400.jpg"
+    },
+    bank:{itemName:"موردو المواد الغذائية",accountHolder:"شركة البركة للأغذية (تضامن)",accountNumber:"SA0380000000608010167520",iban:"SA0380000000608010167520",swiftCode:"SABBSARI",currency:"ريال سعودي (SAR)",bankCountry:"المملكة العربية السعودية"},
+    tax:{isRegistered:true,taxNumber:"300456789012003",taxRate:15,taxType:"ضريبة القيمة المضافة",taxCountry:"المملكة العربية السعودية"},
+    shipping:{company:"أسطول الشركة الخاص + شركةSMSA",method:"شحن بري بالسيارات المبردة",deliveryAreas:"جميع مناطق المملكة العربية السعودية",deliveryTime:"1-3 أيام عمل",shippingCost:"مجاني للطلبات فوق 10,000 ريال، otherwise 200 ريال",internationalShipping:false},
+    payment:{methods:["تحويل بنكي","محفظة إلكترونية (STC Pay)","نقداً عند الاستلام"],deliveryTime:"نفس اليوم للرياض، يوم عمل واحد لباقي المدن",minInvoice:10000,commissionRate:7,currency:"ريال سعودي (SAR)"}
+  }
+];
+
+// ============ الترجمات ============
+const T = {
+  ar:{
+    dashboard:"العودة للوحة التحكم",loginInfo:"بيانات الدخول",basicData:"البيانات الأساسية للمورد",
+    contactInfo:"بيانات التواصل",addresses:"العناوين",legalData:"البيانات القانونية",
+    attachments:"المرفقات",bankAccount:"الحساب البنكي",taxInfo:"البيانات الضريبية",
+    shippingInfo:"بيانات الشحن",paymentMethods:"طرق الدفع",
+    username:"اسم المستخدم",password:"كلمة المرور",email:"البريد الإلكتروني",
+    securityQ:"سؤال الأمان",securityA:"إجابة الأمان",edit:"تعديل",
+    companyName:"اسم الشركة",tradeName:"الاسم التجاري",ownerName:"اسم صاحب الشركة",
+    activityType:"نوع النشاط",foundingYear:"سنة التأسيس",employeesCount:"عدد الموظفين",
+    capital:"رأس المال",overview:"نبذة عن الشركة",companyLogo:"شعار الشركة",
+    contactPerson:"اسم مسؤول التواصل",contactPosition:"وظيفة المسؤول",
+    phone:"رقم الهاتف",altPhone:"رقم الهاتف البديل",website:"الموقع الإلكتروني",
+    socialMedia:"حسابات التواصل الاجتماعي",address:"عنوان الشركة",area:"المنطقة",
+    governorate:"المحافظة",warehouseAddr:"عنوان المستودع",returnAddr:"عنوان إرجاع البضاعة",
+    commercialReg:"رقم السجل التجاري",regIssue:"تاريخ إصدار السجل",regExpiry:"تاريخ انتهاء السجل",
+    taxCard:"رقم البطاقة الضريبية",taxReg:"رقم التسجيل الضريبي",activityLicense:"رقم رخصة النشاط",
+    commercialChamber:"الغرفة التجارية",legalStatus:"الحالة القانونية",
+    crPhoto:"صورة السجل التجاري",tcPhoto:"صورة البطاقة الضريبية",
+    vatPhoto:"شهادة ضريبة القيمة المضافة",alPhoto:"صورة رخصة النشاط",
+    idPhoto:"صورة الهوية / جواز السفر",bcPhoto:"شهادة الحساب البنكي",
+    authPhoto:"التفويض الرسمي",catalogPhoto:"كتالوج المنتجات",
+    itemName:"اسم البند التابع",accountHolder:"اسم صاحب الحساب",accountNumber:"رقم الحساب",
+    iban:"IBAN",swiftCode:"SWIFT Code",currency:"العملة",bankCountry:"دولة البنك",
+    isRegistered:"مسجل ضريبياً",taxNumber:"رقم الضريبة",taxRate:"نسبة الضريبة",
+    taxType:"نوع الضريبة",taxCountry:"دولة التسجيل الضريبي",
+    shippingCompany:"شركة الشحن",shippingMethod:"طريقة الشحن",deliveryAreas:"أماكن التوصيل",
+    deliveryTime:"مدة الاستلام",shippingCost:"تكلفة الشحن",intlShipping:"الشحن الدولي",
+    paymentType:"طرق الدفع",payDeliveryTime:"مدة الاستلام",minInvoice:"الحد الأدنى للفاتورة",
+    commissionRate:"نسبة العمولة",yes:"نعم",no:"لا",save:"حفظ التغييرات",cancel:"إلغاء",
+    translate:"ترجمة",changeView:"تغيير العرض",search:"بحث عن مورد...",print:"طباعة",
+    printOne:"طباعة هذا المورد",printAll:"طباعة جميع الموردين",selectSupplier:"اختر المورد",
+    viewImage:"عرض الصورة",limited:"ذات مسؤولية محدودة",sole:"شركة شخص واحد",
+    partnership:"تضامن",sar:"ريال",employees:"موظف",year:"سنة",clickToView:"اضغط للعرض",
+    supplierPanel:"لوحة تحكم الموردين",cardView:"عرض بطاقات",tableView:"عرض جدول",
+    bankTransfer:"تحويل بنكي",eWallet:"محفظة إلكترونية",cod:"نقداً عند الاستلام",
+    noResults:"لا توجد نتائج",of:"من",suppliers:"الموردين",allSections:"جميع الأقسام"
+  },
+  en:{
+    dashboard:"Back to Dashboard",loginInfo:"Login Information",basicData:"Supplier Basic Data",
+    contactInfo:"Contact Information",addresses:"Addresses",legalData:"Legal Data",
+    attachments:"Attachments",bankAccount:"Bank Account",taxInfo:"Tax Information",
+    shippingInfo:"Shipping Information",paymentMethods:"Payment Methods",
+    username:"Username",password:"Password",email:"Email",
+    securityQ:"Security Question",securityA:"Security Answer",edit:"Edit",
+    companyName:"Company Name",tradeName:"Trade Name",ownerName:"Owner Name",
+    activityType:"Activity Type",foundingYear:"Founding Year",employeesCount:"Employees",
+    capital:"Capital",overview:"Company Overview",companyLogo:"Company Logo",
+    contactPerson:"Contact Person",contactPosition:"Position",
+    phone:"Phone",altPhone:"Alt. Phone",website:"Website",
+    socialMedia:"Social Media",address:"Company Address",area:"Area",
+    governorate:"Governorate",warehouseAddr:"Warehouse Address",returnAddr:"Return Address",
+    commercialReg:"Commercial Reg. No.",regIssue:"Issue Date",regExpiry:"Expiry Date",
+    taxCard:"Tax Card No.",taxReg:"Tax Registration No.",activityLicense:"Activity License No.",
+    commercialChamber:"Commercial Chamber",legalStatus:"Legal Status",
+    crPhoto:"Commercial Registration",tcPhoto:"Tax Card",
+    vatPhoto:"VAT Certificate",alPhoto:"Activity License",
+    idPhoto:"ID / Passport",bcPhoto:"Bank Certificate",
+    authPhoto:"Official Authorization",catalogPhoto:"Product Catalog",
+    itemName:"Category",accountHolder:"Account Holder",accountNumber:"Account Number",
+    iban:"IBAN",swiftCode:"SWIFT Code",currency:"Currency",bankCountry:"Bank Country",
+    isRegistered:"Tax Registered",taxNumber:"Tax Number",taxRate:"Tax Rate",
+    taxType:"Tax Type",taxCountry:"Tax Registration Country",
+    shippingCompany:"Shipping Company",shippingMethod:"Shipping Method",deliveryAreas:"Delivery Areas",
+    deliveryTime:"Delivery Time",shippingCost:"Shipping Cost",intlShipping:"International Shipping",
+    paymentType:"Payment Methods",payDeliveryTime:"Delivery Time",minInvoice:"Min. Invoice",
+    commissionRate:"Commission Rate",yes:"Yes",no:"No",save:"Save Changes",cancel:"Cancel",
+    translate:"Translate",changeView:"Change View",search:"Search supplier...",print:"Print",
+    printOne:"Print This Supplier",printAll:"Print All Suppliers",selectSupplier:"Select Supplier",
+    viewImage:"View Image",limited:"LLC",sole:"Sole Proprietorship",
+    partnership:"Partnership",sar:"SAR",employees:"employees",year:"year",clickToView:"Click to view",
+    supplierPanel:"Supplier Control Panel",cardView:"Card View",tableView:"Table View",
+    bankTransfer:"Bank Transfer",eWallet:"E-Wallet",cod:"Cash on Delivery",
+    noResults:"No results found",of:"of",suppliers:"Suppliers",allSections:"All Sections"
+  }
+};
+
+// ============ الحالة ============
+let state = {
+  current: 0,
+  lang: 'ar',
+  view: 'cards',
+  search: '',
+  editSection: null,
+  sidebarOpen: false
+};
+
+function t(key){ return T[state.lang][key] || key; }
+function fmtNum(n){ return Number(n).toLocaleString(state.lang==='ar'?'ar-SA':'en-US'); }
+
+// ============ عناصر القائمة الجانبية ============
+const navItems = [
+  {key:'loginInfo',icon:'fa-key'},
+  {key:'basicData',icon:'fa-building'},
+  {key:'contactInfo',icon:'fa-address-book'},
+  {key:'addresses',icon:'fa-map-marker-alt'},
+  {key:'legalData',icon:'fa-gavel'},
+  {key:'attachments',icon:'fa-paperclip'},
+  {key:'bankAccount',icon:'fa-university'},
+  {key:'taxInfo',icon:'fa-percent'},
+  {key:'shippingInfo',icon:'fa-shipping-fast'},
+  {key:'paymentMethods',icon:'fa-credit-card'}
+];
+
+// ============ بناء الواجهة ============
+function renderSidebar(){
+  const s = suppliers[state.current];
+  document.getElementById('sidebar').innerHTML = `
+    <div style="padding:20px 18px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <img src="${s.logo}" style="width:36px;height:36px;border-radius:8px;object-fit:cover" alt="">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${s.tradeName}</div>
+          <div style="font-size:10px;color:var(--text2)">${s.username}</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 0">
+      ${navItems.map((n,i)=>`
+        <div class="sidebar-link ${state.editSection===null&&i===0?'active':''}" onclick="scrollToSection('${n.key}',this)">
+          <i class="fas ${n.icon}"></i><span>${t(n.key)}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid var(--border);margin-top:auto;position:absolute;bottom:0;right:0;left:0">
+      <div style="font-size:10px;color:var(--text2);text-align:center">${suppliers.length} ${t('suppliers')}</div>
+    </div>
+  `;
+}
+
+function renderTopbar(){
+  document.getElementById('topbar').innerHTML = `
+    <button class="btn btn-outline btn-sm no-print" onclick="toggleSidebar()" style="display:none" id="menuBtn">
+      <i class="fas fa-bars"></i>
+    </button>
+    <button class="btn btn-outline btn-sm" onclick="alert(t('dashboard'))">
+      <i class="fas fa-arrow-right"></i> ${t('dashboard')}
+    </button>
+    <div style="flex:1;max-width:320px;margin:0 auto;position:relative">
+      <i class="fas fa-search" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:12px"></i>
+      <input class="input" style="padding-right:34px;font-size:12px" placeholder="${t('search')}" value="${state.search}" oninput="handleSearch(this.value)">
+    </div>
+    <select class="supplier-selector" onchange="switchSupplier(this.value)">
+      ${suppliers.map((s,i)=>`<option value="${i}" ${i===state.current?'selected':''}>${s.tradeName}</option>`).join('')}
+    </select>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="toggleLang()" title="${t('translate')}">
+        <i class="fas fa-globe"></i> ${state.lang==='ar'?'EN':'AR'}
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="toggleView()" title="${t('changeView')}">
+        <i class="fas ${state.view==='cards'?'fa-table':'fa-th-large'}"></i>
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="showPrintOptions()" title="${t('print')}">
+        <i class="fas fa-print"></i>
+      </button>
+    </div>
+  `;
+  // زر القائمة للشاشات الصغيرة
+  const mq = window.matchMedia('(max-width:768px)');
+  document.getElementById('menuBtn').style.display = mq.matches?'inline-flex':'none';
+}
+
+function renderContent(){
+  const filtered = suppliers.filter(s=>{
+    if(!state.search) return true;
+    const q = state.search.toLowerCase();
+    return s.companyName.toLowerCase().includes(q)||s.tradeName.toLowerCase().includes(q)||s.ownerName.toLowerCase().includes(q)||s.username.toLowerCase().includes(q);
+  });
+  if(state.view==='table'){
+    renderTableView(filtered);
+  } else {
+    if(filtered.length===0){
+      document.getElementById('contentArea').innerHTML = `<div style="text-align:center;padding:60px;color:var(--text2)"><i class="fas fa-search" style="font-size:40px;margin-bottom:16px;display:block;opacity:.3"></i>${t('noResults')}</div>`;
+      return;
+    }
+    if(state.search && filtered.length>0 && !filtered.find((s,i)=>i===state.current)){
+      state.current = suppliers.indexOf(filtered[0]);
+      document.querySelector('.supplier-selector').value = state.current;
+    }
+    renderCardView(suppliers[state.current]);
+  }
+}
+
+function renderCardView(s){
+  document.getElementById('contentArea').innerHTML = `
+    <div class="print-header">
+      <h1 style="font-size:22px;font-weight:900">${s.companyName}</h1>
+      <p style="font-size:13px;color:#666">${s.tradeName} - ${t('supplierPanel')}</p>
+    </div>
+    ${renderLoginSection(s)}
+    ${renderBasicSection(s)}
+    ${renderContactSection(s)}
+    ${renderAddressSection(s)}
+    ${renderLegalSection(s)}
+    ${renderAttachmentsSection(s)}
+    ${renderBankSection(s)}
+    ${renderTaxSection(s)}
+    ${renderShippingSection(s)}
+    ${renderPaymentSection(s)}
+  `;
+  // تحديث القائمة الجانبية النشطة
+  document.querySelectorAll('.sidebar-link').forEach((el,i)=>el.classList.remove('active'));
+}
+
+function renderLoginSection(s){
+  return `<div class="section-card" id="sec-loginInfo" style="animation-delay:.05s">
+    <div class="section-title"><i class="fas fa-key"></i>${t('loginInfo')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('loginInfo')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div class="field"><span class="field-label">${t('username')}</span><span class="field-value" style="font-family:monospace;direction:ltr;text-align:right">${s.username}</span></div>
+    <div class="field"><span class="field-label">${t('password')}</span><span class="field-value" style="font-family:monospace">••••••••</span></div>
+    <div class="field"><span class="field-label">${t('email')}</span><span class="field-value" style="direction:ltr;text-align:right">${s.email}</span></div>
+    <div class="field"><span class="field-label">${t('securityQ')}</span><span class="field-value">${s.securityQuestion}</span></div>
+    <div class="field" style="border:none"><span class="field-label">${t('securityA')}</span><span class="field-value">••••••</span></div>
+  </div>`;
+}
+
+function renderBasicSection(s){
+  return `<div class="section-card" id="sec-basicData" style="animation-delay:.1s">
+    <div class="section-title"><i class="fas fa-building"></i>${t('basicData')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('basicData')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px">
+      <div class="logo-container"><img src="${s.logo}" alt="${t('companyLogo')}"></div>
+      <div style="flex:1">
+        <div style="font-size:18px;font-weight:800;margin-bottom:4px">${s.companyName}</div>
+        <div style="font-size:13px;color:var(--accent);font-weight:600">${s.tradeName}</div>
+      </div>
+    </div>
+    <div class="field"><span class="field-label">${t('ownerName')}</span><span class="field-value">${s.ownerName}</span></div>
+    <div class="field"><span class="field-label">${t('activityType')}</span><span class="field-value">${s.activityType}</span></div>
+    <div class="field"><span class="field-label">${t('foundingYear')}</span><span class="field-value">${s.foundingYear} ${t('year')}</span></div>
+    <div class="field"><span class="field-label">${t('employeesCount')}</span><span class="field-value">${fmtNum(s.employeesCount)} ${t('employees')}</span></div>
+    <div class="field"><span class="field-label">${t('capital')}</span><span class="field-value">${fmtNum(s.capital)} ${t('sar')}</span></div>
+    <div class="field" style="border:none"><span class="field-label">${t('overview')}</span><span class="field-value" style="line-height:1.8">${s.overview}</span></div>
+  </div>`;
+}
+
+function renderContactSection(s){
+  return `<div class="section-card" id="sec-contactInfo" style="animation-delay:.15s">
+    <div class="section-title"><i class="fas fa-address-book"></i>${t('contactInfo')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('contactInfo')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div class="field"><span class="field-label">${t('contactPerson')}</span><span class="field-value">${s.contactPerson}</span></div>
+    <div class="field"><span class="field-label">${t('contactPosition')}</span><span class="field-value">${s.contactPosition}</span></div>
+    <div class="field"><span class="field-label">${t('phone')}</span><span class="field-value" style="direction:ltr;text-align:right">${s.phone}</span></div>
+    <div class="field"><span class="field-label">${t('altPhone')}</span><span class="field-value" style="direction:ltr;text-align:right">${s.altPhone}</span></div>
+    <div class="field"><span class="field-label">${t('email')}</span><span class="field-value" style="direction:ltr;text-align:right">${s.contactEmail}</span></div>
+    <div class="field"><span class="field-label">${t('website')}</span><span class="field-value" style="direction:ltr;text-align:right;color:var(--accent)">${s.website}</span></div>
+    <div class="field" style="border:none">
+      <span class="field-label">${t('socialMedia')}</span>
+      <span class="field-value" style="display:flex;gap:8px;flex-wrap:wrap">
+        ${s.social.facebook?`<a href="https://${s.social.facebook}" target="_blank" class="social-icon" style="background:#1877f2"><i class="fab fa-facebook-f"></i></a>`:''}
+        ${s.social.twitter?`<a href="https://${s.social.twitter}" target="_blank" class="social-icon" style="background:#1da1f2"><i class="fab fa-twitter"></i></a>`:''}
+        ${s.social.instagram?`<a href="https://${s.social.instagram}" target="_blank" class="social-icon" style="background:#e4405f"><i class="fab fa-instagram"></i></a>`:''}
+        ${s.social.linkedin?`<a href="https://${s.social.linkedin}" target="_blank" class="social-icon" style="background:#0077b5"><i class="fab fa-linkedin-in"></i></a>`:''}
+      </span>
+    </div>
+  </div>`;
+}
+
+function renderAddressSection(s){
+  return `<div class="section-card" id="sec-addresses" style="animation-delay:.2s">
+    <div class="section-title"><i class="fas fa-map-marker-alt"></i>${t('addresses')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('addresses')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div class="field"><span class="field-label">${t('address')}</span><span class="field-value">${s.address}</span></div>
+    <div class="field"><span class="field-label">${t('area')}</span><span class="field-value">${s.area}</span></div>
+    <div class="field"><span class="field-label">${t('governorate')}</span><span class="field-value">${s.governorate}</span></div>
+    <div class="field"><span class="field-label">${t('warehouseAddr')}</span><span class="field-value">${s.warehouseAddress}</span></div>
+    <div class="field" style="border:none"><span class="field-label">${t('returnAddr')}</span><span class="field-value">${s.returnAddress}</span></div>
+  </div>`;
+}
+
+function renderLegalSection(s){
+  const ls = s.legalStatus==='ذات مسؤولية محدودة'?'limited':s.legalStatus==='شركة شخص واحد'?'sole':'partnership';
+  return `<div class="section-card" id="sec-legalData" style="animation-delay:.25s">
+    <div class="section-title"><i class="fas fa-gavel"></i>${t('legalData')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('legalData')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div class="field"><span class="field-label">${t('commercialReg')}</span><span class="field-value" style="font-family:monospace;direction:ltr;text-align:right">${s.commercialReg}</span></div>
+    <div class="field"><span class="field-label">${t('regIssue')}</span><span class="field-value">${s.commercialRegIssue}</span></div>
+    <div class="field"><span class="field-label">${t('regExpiry')}</span><span class="field-value">${s.commercialRegExpiry} ${new Date(s.commercialRegExpiry)<new Date()?`<span class="badge badge-red"><i class="fas fa-exclamation-triangle"></i> منتهي</span>`:`<span class="badge badge-green"><i class="fas fa-check"></i> ساري</span>`}</span></div>
+    <div class="field"><span class="field-label">${t('taxCard')}</span><span class="field-value" style="font-family:monospace;direction:ltr;text-align:right">${s.taxCard}</span></div>
+    <div class="field"><span class="field-label">${t('taxReg')}</span><span class="field-value" style="font-family:monospace;direction:ltr;text-align:right">${s.taxRegistration}</span></div>
+    <div class="field"><span class="field-label">${t('activityLicense')}</span><span class="field-value">${s.activityLicense}</span></div>
+    <div class="field"><span class="field-label">${t('commercialChamber')}</span><span class="field-value">${s.commercialChamber}</span></div>
+    <div class="field" style="border:none"><span class="field-label">${t('legalStatus')}</span><span class="field-value"><span class="badge badge-green">${t(ls)}</span></span></div>
+  </div>`;
+}
+
+function renderAttachmentsSection(s){
+  const att = [
+    {key:'crPhoto',src:s.attachments.commercialReg},
+    {key:'tcPhoto',src:s.attachments.taxCard},
+    {key:'vatPhoto',src:s.attachments.vatCert},
+    {key:'alPhoto',src:s.attachments.activityLicense},
+    {key:'idPhoto',src:s.attachments.idPassport},
+    {key:'bcPhoto',src:s.attachments.bankCert},
+    {key:'authPhoto',src:s.attachments.authorization},
+    {key:'catalogPhoto',src:s.attachments.catalog}
+  ];
+  return `<div class="section-card" id="sec-attachments" style="animation-delay:.3s">
+    <div class="section-title"><i class="fas fa-paperclip"></i>${t('attachments')}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px">
+      ${att.map(a=>`
+        <div style="text-align:center;cursor:pointer" onclick="openLightbox('${a.src}')">
+          <img src="${a.src}" class="img-thumb" style="width:100%;height:100px" alt="${t(a.key)}">
+          <div style="font-size:10px;color:var(--text2);margin-top:6px;line-height:1.4">${t(a.key)}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function renderBankSection(s){
+  const b = s.bank;
+  return `<div class="section-card" id="sec-bankAccount" style="animation-delay:.35s">
+    <div class="section-title"><i class="fas fa-university"></i>${t('bankAccount')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('bankAccount')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div class="field"><span class="field-label">${t('itemName')}</span><span class="field-value">${b.itemName}</span></div>
+    <div class="field"><span class="field-label">${t('accountHolder')}</span><span class="field-value">${b.accountHolder}</span></div>
+    <div class="field"><span class="field-label">${t('accountNumber')}</span><span class="field-value" style="font-family:monospace;direction:ltr;text-align:right;font-size:12px">${b.accountNumber}</span></div>
+    <div class="field"><span class="field-label">${t('iban')}</span><span class="field-value" style="font-family:monospace;direction:ltr;text-align:right;font-size:12px">${b.iban}</span></div>
+    <div class="field"><span class="field-label">${t('swiftCode')}</span><span class="field-value" style="font-family:monospace;direction:ltr;text-align:right">${b.swiftCode}</span></div>
+    <div class="field"><span class="field-label">${t('currency')}</span><span class="field-value">${b.currency}</span></div>
+    <div class="field" style="border:none"><span class="field-label">${t('bankCountry')}</span><span class="field-value">${b.bankCountry}</span></div>
+  </div>`;
+}
+
+function renderTaxSection(s){
+  const tx = s.tax;
+  return `<div class="section-card" id="sec-taxInfo" style="animation-delay:.4s">
+    <div class="section-title"><i class="fas fa-percent"></i>${t('taxInfo')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('taxInfo')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div class="field"><span class="field-label">${t('isRegistered')}</span><span class="field-value">${tx.isRegistered?`<span class="badge badge-green"><i class="fas fa-check-circle"></i> ${t('yes')}</span>`:`<span class="badge badge-red"><i class="fas fa-times-circle"></i> ${t('no')}</span>`}</span></div>
+    ${tx.isRegistered?`
+    <div class="field"><span class="field-label">${t('taxNumber')}</span><span class="field-value" style="font-family:monospace;direction:ltr;text-align:right">${tx.taxNumber}</span></div>
+    <div class="field"><span class="field-label">${t('taxRate')}</span><span class="field-value"><span class="badge badge-yellow">${tx.taxRate}%</span></span></div>
+    <div class="field"><span class="field-label">${t('taxType')}</span><span class="field-value">${tx.taxType}</span></div>
+    <div class="field" style="border:none"><span class="field-label">${t('taxCountry')}</span><span class="field-value">${tx.taxCountry}</span></div>
+    `:''}
+  </div>`;
+}
+
+function renderShippingSection(s){
+  const sh = s.shipping;
+  return `<div class="section-card" id="sec-shippingInfo" style="animation-delay:.45s">
+    <div class="section-title"><i class="fas fa-shipping-fast"></i>${t('shippingInfo')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('shippingInfo')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div class="field"><span class="field-label">${t('shippingCompany')}</span><span class="field-value">${sh.company}</span></div>
+    <div class="field"><span class="field-label">${t('shippingMethod')}</span><span class="field-value">${sh.method}</span></div>
+    <div class="field"><span class="field-label">${t('deliveryAreas')}</span><span class="field-value">${sh.deliveryAreas}</span></div>
+    <div class="field"><span class="field-label">${t('deliveryTime')}</span><span class="field-value">${sh.deliveryTime}</span></div>
+    <div class="field"><span class="field-label">${t('shippingCost')}</span><span class="field-value">${sh.shippingCost}</span></div>
+    <div class="field" style="border:none"><span class="field-label">${t('intlShipping')}</span><span class="field-value">${sh.internationalShipping?`<span class="badge badge-green"><i class="fas fa-globe"></i> ${t('yes')}</span>`:`<span class="badge badge-red"><i class="fas fa-ban"></i> ${t('no')}</span>`}</span></div>
+  </div>`;
+}
+
+function renderPaymentSection(s){
+  const p = s.payment;
+  return `<div class="section-card" id="sec-paymentMethods" style="animation-delay:.5s">
+    <div class="section-title"><i class="fas fa-credit-card"></i>${t('paymentMethods')}
+      <button class="btn btn-outline btn-sm" style="margin-right:auto" onclick="openEdit('paymentMethods')"><i class="fas fa-pen"></i> ${t('edit')}</button>
+    </div>
+    <div class="field"><span class="field-label">${t('paymentType')}</span><span class="field-value" style="display:flex;gap:6px;flex-wrap:wrap">${p.methods.map(m=>`<span class="badge badge-green">${m}</span>`).join('')}</span></div>
+    <div class="field"><span class="field-label">${t('payDeliveryTime')}</span><span class="field-value">${p.deliveryTime}</span></div>
+    <div class="field"><span class="field-label">${t('minInvoice')}</span><span class="field-value">${fmtNum(p.minInvoice)} ${p.currency}</span></div>
+    <div class="field"><span class="field-label">${t('commissionRate')}</span><span class="field-value"><span class="badge badge-yellow">${p.commissionRate}%</span></span></div>
+    <div class="field" style="border:none"><span class="field-label">${t('currency')}</span><span class="field-value">${p.currency}</span></div>
+  </div>`;
+}
+
+// ============ عرض الجدول ============
+function renderTableView(filtered){
+  const list = filtered.length?filtered:suppliers;
+  document.getElementById('contentArea').innerHTML = `
+    <div class="print-header"><h1 style="font-size:20px;font-weight:900">${t('supplierPanel')} - ${t('allSections')}</h1></div>
+    <div class="section-card table-view" style="padding:0;overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>${t('companyName')}</th><th>${t('tradeName')}</th><th>${t('ownerName')}</th>
+            <th>${t('phone')}</th><th>${t('email')}</th><th>${t('governorate')}</th>
+            <th>${t('legalStatus')}</th><th>${t('isRegistered')}</th><th>${t('currency')}</th>
+            <th>${t('minInvoice')}</th><th>${t('commissionRate')}</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map((s,i)=>{
+            const idx = suppliers.indexOf(s);
+            const ls = s.legalStatus==='ذات مسؤولية محدودة'?'limited':s.legalStatus==='شركة شخص واحد'?'sole':'partnership';
+            return `<tr>
+              <td>${i+1}</td>
+              <td><div style="display:flex;align-items:center;gap:8px"><img src="${s.logo}" style="width:28px;height:28px;border-radius:6px;object-fit:cover">${s.companyName}</div></td>
+              <td>${s.tradeName}</td>
+              <td>${s.ownerName}</td>
+              <td style="direction:ltr;text-align:right;font-size:11px">${s.phone}</td>
+              <td style="direction:ltr;text-align:right;font-size:11px">${s.email}</td>
+              <td>${s.governorate}</td>
+              <td><span class="badge badge-green" style="font-size:10px">${t(ls)}</span></td>
+              <td>${s.tax.isRegistered?`<span class="badge badge-green"><i class="fas fa-check"></i></span>`:`<span class="badge badge-red"><i class="fas fa-times"></i></span>`}</td>
+              <td>${s.payment.currency.split(' ')[0]}</td>
+              <td>${fmtNum(s.payment.minInvoice)}</td>
+              <td>${s.payment.commissionRate}%</td>
+              <td><button class="btn btn-accent btn-sm" onclick="viewSupplierDetail(${idx})"><i class="fas fa-eye"></i></button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div style="text-align:center;padding:12px;color:var(--text2);font-size:12px">${list.length} ${t('of')} ${suppliers.length} ${t('suppliers')}</div>
+  `;
+}
+
+function viewSupplierDetail(idx){
+  state.current = idx;
+  state.view = 'cards';
+  renderAll();
+}
+
+// ============ التعديل ============
+function openEdit(section){
+  state.editSection = section;
+  const s = suppliers[state.current];
+  let fields = '';
+  const inputStyle = 'width:100%;margin-bottom:12px';
+
+  if(section==='loginInfo'){
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('password')}</label>
+      <input class="input" id="edit-password" type="password" value="${s.password}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('email')}</label>
+      <input class="input" id="edit-email" type="email" value="${s.email}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('securityQ')}</label>
+      <input class="input" id="edit-secQ" value="${s.securityQuestion}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('securityA')}</label>
+      <input class="input" id="edit-secA" value="${s.securityAnswer}" style="${inputStyle}">
+    `;
+  } else if(section==='basicData'){
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('companyName')}</label>
+      <input class="input" id="edit-companyName" value="${s.companyName}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('tradeName')}</label>
+      <input class="input" id="edit-tradeName" value="${s.tradeName}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('ownerName')}</label>
+      <input class="input" id="edit-ownerName" value="${s.ownerName}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('activityType')}</label>
+      <input class="input" id="edit-activityType" value="${s.activityType}" style="${inputStyle}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('foundingYear')}</label><input class="input" id="edit-foundingYear" type="number" value="${s.foundingYear}"></div>
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('employeesCount')}</label><input class="input" id="edit-employeesCount" type="number" value="${s.employeesCount}"></div>
+      </div>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('capital')}</label>
+      <input class="input" id="edit-capital" type="number" value="${s.capital}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('overview')}</label>
+      <textarea class="input" id="edit-overview" rows="3" style="${inputStyle}resize:vertical">${s.overview}</textarea>
+    `;
+  } else if(section==='contactInfo'){
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('contactPerson')}</label>
+      <input class="input" id="edit-contactPerson" value="${s.contactPerson}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('contactPosition')}</label>
+      <input class="input" id="edit-contactPosition" value="${s.contactPosition}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('phone')}</label>
+      <input class="input" id="edit-phone" value="${s.phone}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('altPhone')}</label>
+      <input class="input" id="edit-altPhone" value="${s.altPhone}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('email')}</label>
+      <input class="input" id="edit-contactEmail" value="${s.contactEmail}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('website')}</label>
+      <input class="input" id="edit-website" value="${s.website}" style="${inputStyle}">
+    `;
+  } else if(section==='addresses'){
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('address')}</label>
+      <input class="input" id="edit-address" value="${s.address}" style="${inputStyle}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('area')}</label><input class="input" id="edit-area" value="${s.area}"></div>
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('governorate')}</label><input class="input" id="edit-governorate" value="${s.governorate}"></div>
+      </div>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('warehouseAddr')}</label>
+      <input class="input" id="edit-warehouseAddr" value="${s.warehouseAddress}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('returnAddr')}</label>
+      <input class="input" id="edit-returnAddr" value="${s.returnAddress}" style="${inputStyle}">
+    `;
+  } else if(section==='legalData'){
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('commercialReg')}</label>
+      <input class="input" id="edit-commercialReg" value="${s.commercialReg}" style="${inputStyle}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('regIssue')}</label><input class="input" id="edit-regIssue" type="date" value="${s.commercialRegIssue}"></div>
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('regExpiry')}</label><input class="input" id="edit-regExpiry" type="date" value="${s.commercialRegExpiry}"></div>
+      </div>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('taxCard')}</label>
+      <input class="input" id="edit-taxCard" value="${s.taxCard}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('taxReg')}</label>
+      <input class="input" id="edit-taxReg" value="${s.taxRegistration}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('activityLicense')}</label>
+      <input class="input" id="edit-activityLicense" value="${s.activityLicense}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('commercialChamber')}</label>
+      <input class="input" id="edit-commercialChamber" value="${s.commercialChamber}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('legalStatus')}</label>
+      <select class="select" id="edit-legalStatus" style="${inputStyle}">
+        <option value="ذات مسؤولية محدودة" ${s.legalStatus==='ذات مسؤولية محدودة'?'selected':''}>${t('limited')}</option>
+        <option value="شركة شخص واحد" ${s.legalStatus==='شركة شخص واحد'?'selected':''}>${t('sole')}</option>
+        <option value="تضامن" ${s.legalStatus==='تضامن'?'selected':''}>${t('partnership')}</option>
+      </select>
+    `;
+  } else if(section==='bankAccount'){
+    const b = s.bank;
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('itemName')}</label>
+      <input class="input" id="edit-itemName" value="${b.itemName}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('accountHolder')}</label>
+      <input class="input" id="edit-accountHolder" value="${b.accountHolder}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('accountNumber')}</label>
+      <input class="input" id="edit-accountNumber" value="${b.accountNumber}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('iban')}</label>
+      <input class="input" id="edit-iban" value="${b.iban}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('swiftCode')}</label>
+      <input class="input" id="edit-swiftCode" value="${b.swiftCode}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('currency')}</label>
+      <input class="input" id="edit-currency" value="${b.currency}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('bankCountry')}</label>
+      <input class="input" id="edit-bankCountry" value="${b.bankCountry}" style="${inputStyle}">
+    `;
+  } else if(section==='taxInfo'){
+    const tx = s.tax;
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('isRegistered')}</label>
+      <select class="select" id="edit-isRegistered" style="${inputStyle}">
+        <option value="true" ${tx.isRegistered?'selected':''}>${t('yes')}</option>
+        <option value="false" ${!tx.isRegistered?'selected':''}>${t('no')}</option>
+      </select>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('taxNumber')}</label>
+      <input class="input" id="edit-taxNumber" value="${tx.taxNumber}" style="${inputStyle}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('taxRate')} (%)</label><input class="input" id="edit-taxRate" type="number" value="${tx.taxRate}"></div>
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('taxType')}</label><input class="input" id="edit-taxType" value="${tx.taxType}"></div>
+      </div>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('taxCountry')}</label>
+      <input class="input" id="edit-taxCountry" value="${tx.taxCountry}" style="${inputStyle}">
+    `;
+  } else if(section==='shippingInfo'){
+    const sh = s.shipping;
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('shippingCompany')}</label>
+      <input class="input" id="edit-shipCompany" value="${sh.company}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('shippingMethod')}</label>
+      <input class="input" id="edit-shipMethod" value="${sh.method}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('deliveryAreas')}</label>
+      <input class="input" id="edit-deliveryAreas" value="${sh.deliveryAreas}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('deliveryTime')}</label>
+      <input class="input" id="edit-deliveryTime" value="${sh.deliveryTime}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('shippingCost')}</label>
+      <input class="input" id="edit-shippingCost" value="${sh.shippingCost}" style="${inputStyle}">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('intlShipping')}</label>
+      <select class="select" id="edit-intlShipping" style="${inputStyle}">
+        <option value="true" ${sh.internationalShipping?'selected':''}>${t('yes')}</option>
+        <option value="false" ${!sh.internationalShipping?'selected':''}>${t('no')}</option>
+      </select>
+    `;
+  } else if(section==='paymentMethods'){
+    const p = s.payment;
+    const allMethods = [t('bankTransfer'), t('eWallet'), t('cod')];
+    fields = `
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('paymentType')}</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        ${allMethods.map(m=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--bg);padding:6px 12px;border-radius:6px;border:1px solid var(--border)">
+          <input type="checkbox" value="${m}" ${p.methods.includes(m)?'checked':''} class="pay-method-cb"> ${m}
+        </label>`).join('')}
+      </div>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('payDeliveryTime')}</label>
+      <input class="input" id="edit-payDelTime" value="${p.deliveryTime}" style="${inputStyle}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('minInvoice')}</label><input class="input" id="edit-minInvoice" type="number" value="${p.minInvoice}"></div>
+        <div><label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('commissionRate')} (%)</label><input class="input" id="edit-commRate" type="number" value="${p.commissionRate}"></div>
+      </div>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">${t('currency')}</label>
+      <input class="input" id="edit-payCurrency" value="${p.currency}" style="${inputStyle}">
+    `;
+  }
+
+  document.getElementById('modalTitle').textContent = t(section);
+  document.getElementById('modalBody').innerHTML = fields;
+  document.getElementById('editModal').classList.add('show');
+}
+
+function saveEdit(){
+  const s = suppliers[state.current];
+  const section = state.editSection;
+  const v = id => { const el = document.getElementById(id); return el?el.value:''; };
+
+  if(section==='loginInfo'){
+    s.password = v('edit-password');
+    s.email = v('edit-email');
+    s.securityQuestion = v('edit-secQ');
+    s.securityAnswer = v('edit-secA');
+  } else if(section==='basicData'){
+    s.companyName = v('edit-companyName');
+    s.tradeName = v('edit-tradeName');
+    s.ownerName = v('edit-ownerName');
+    s.activityType = v('edit-activityType');
+    s.foundingYear = parseInt(v('edit-foundingYear'))||s.foundingYear;
+    s.employeesCount = parseInt(v('edit-employeesCount'))||s.employeesCount;
+    s.capital = parseInt(v('edit-capital'))||s.capital;
+    s.overview = v('edit-overview');
+  } else if(section==='contactInfo'){
+    s.contactPerson = v('edit-contactPerson');
+    s.contactPosition = v('edit-contactPosition');
+    s.phone = v('edit-phone');
+    s.altPhone = v('edit-altPhone');
+    s.contactEmail = v('edit-contactEmail');
+    s.website = v('edit-website');
+  } else if(section==='addresses'){
+    s.address = v('edit-address');
+    s.area = v('edit-area');
+    s.governorate = v('edit-governorate');
+    s.warehouseAddress = v('edit-warehouseAddr');
+    s.returnAddress = v('edit-returnAddr');
+  } else if(section==='legalData'){
+    s.commercialReg = v('edit-commercialReg');
+    s.commercialRegIssue = v('edit-regIssue');
+    s.commercialRegExpiry = v('edit-regExpiry');
+    s.taxCard = v('edit-taxCard');
+    s.taxRegistration = v('edit-taxReg');
+    s.activityLicense = v('edit-activityLicense');
+    s.commercialChamber = v('edit-commercialChamber');
+    s.legalStatus = v('edit-legalStatus');
+  } else if(section==='bankAccount'){
+    s.bank.itemName = v('edit-itemName');
+    s.bank.accountHolder = v('edit-accountHolder');
+    s.bank.accountNumber = v('edit-accountNumber');
+    s.bank.iban = v('edit-iban');
+    s.bank.swiftCode = v('edit-swiftCode');
+    s.bank.currency = v('edit-currency');
+    s.bank.bankCountry = v('edit-bankCountry');
+  } else if(section==='taxInfo'){
+    s.tax.isRegistered = v('edit-isRegistered')==='true';
+    s.tax.taxNumber = v('edit-taxNumber');
+    s.tax.taxRate = parseFloat(v('edit-taxRate'))||s.tax.taxRate;
+    s.tax.taxType = v('edit-taxType');
+    s.tax.taxCountry = v('edit-taxCountry');
+  } else if(section==='shippingInfo'){
+    s.shipping.company = v('edit-shipCompany');
+    s.shipping.method = v('edit-shipMethod');
+    s.shipping.deliveryAreas = v('edit-deliveryAreas');
+    s.shipping.deliveryTime = v('edit-deliveryTime');
+    s.shipping.shippingCost = v('edit-shippingCost');
+    s.shipping.internationalShipping = v('edit-intlShipping')==='true';
+  } else if(section==='paymentMethods'){
+    const checked = [...document.querySelectorAll('.pay-method-cb:checked')].map(c=>c.value);
+    s.payment.methods = checked.length?checked:s.payment.methods;
+    s.payment.deliveryTime = v('edit-payDelTime');
+    s.payment.minInvoice = parseInt(v('edit-minInvoice'))||s.payment.minInvoice;
+    s.payment.commissionRate = parseFloat(v('edit-commRate'))||s.payment.commissionRate;
+    s.payment.currency = v('edit-payCurrency');
+  }
+
+  closeModal();
+  renderAll();
+  showToast(state.lang==='ar'?'تم حفظ التغييرات بنجاح':'Changes saved successfully');
+}
+
+function closeModal(){
+  document.getElementById('editModal').classList.remove('show');
+  state.editSection = null;
+}
+
+// ============ عارض الصور ============
+function openLightbox(src){
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+
+// ============ الإشعارات ============
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.innerHTML = `<i class="fas fa-check-circle" style="margin-left:8px"></i>${msg}`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ============ التنقل ============
+function scrollToSection(key, el){
+  const target = document.getElementById('sec-'+key);
+  if(target){
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+    document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+    if(el) el.classList.add('active');
+  }
+}
+
+function switchSupplier(val){
+  state.current = parseInt(val);
+  renderAll();
+}
+
+function toggleLang(){
+  state.lang = state.lang==='ar'?'en':'ar';
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = state.lang==='ar'?'rtl':'ltr';
+  if(state.lang==='en'){
+    document.querySelector('.sidebar').style.cssText += 'right:auto;left:0;border-left:none;border-right:1px solid var(--border)';
+    document.querySelector('.main').style.marginRight = '0';
+    document.querySelector('.main').style.marginLeft = '260px';
+    document.querySelectorAll('.sidebar-link').forEach(l=>{l.style.borderRight='none';l.style.borderLeft='3px solid transparent'});
+    document.querySelectorAll('.sidebar-link:hover,.sidebar-link.active').forEach(l=>{l.style.borderLeftColor='var(--accent)'});
+  } else {
+    document.querySelector('.sidebar').style.cssText = '';
+    document.querySelector('.main').style.marginRight = '260px';
+    document.querySelector('.main').style.marginLeft = '0';
+  }
+  renderAll();
+}
+
+function toggleView(){
+  state.view = state.view==='cards'?'table':'cards';
+  renderAll();
+}
+
+function handleSearch(q){
+  state.search = q;
+  renderContent();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ============ الطباعة ============
+function showPrintOptions(){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay show';
+  overlay.style.zIndex = '150';
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:400px">
+      <div class="modal-header">
+        <h3 style="font-size:15px;font-weight:700;color:var(--accent)">${t('print')}</h3>
+        <button onclick="this.closest('.modal-overlay').remove()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-accent" style="width:100%;justify-content:center;padding:14px" onclick="printSupplier(${state.current});this.closest('.modal-overlay').remove()">
+          <i class="fas fa-file-alt"></i> ${t('printOne')}
+        </button>
+        <button class="btn btn-outline" style="width:100%;justify-content:center;padding:14px" onclick="printAllSuppliers();this.closest('.modal-overlay').remove()">
+          <i class="fas fa-print"></i> ${t('printAll')}
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function printSupplier(idx){
+  const s = suppliers[idx];
+  const ls = s.legalStatus==='ذات مسؤولية محدودة'?t('limited'):s.legalStatus==='شركة شخص واحد'?t('sole'):t('partnership');
+  const pa = document.getElementById('printArea');
+  pa.style.display = 'block';
+  pa.innerHTML = `
+    <div class="print-header" style="display:block!important;text-align:center;margin-bottom:20px;padding-bottom:10px;border-bottom:3px double #000">
+      <h1 style="font-size:20px;font-weight:900;margin:0">${s.companyName}</h1>
+      <p style="font-size:13px;color:#666;margin:4px 0 0">${s.tradeName} - ${t('supplierPanel')}</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:11px">
+      <div>
+        <h3 style="font-weight:700;margin-bottom:8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('loginInfo')}</h3>
+        <p><strong>${t('username')}:</strong> ${s.username}</p>
+        <p><strong>${t('email')}:</strong> ${s.email}</p>
+        <h3 style="font-weight:700;margin:12px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('contactInfo')}</h3>
+        <p><strong>${t('contactPerson')}:</strong> ${s.contactPerson} - ${s.contactPosition}</p>
+        <p><strong>${t('phone')}:</strong> ${s.phone}</p>
+        <p><strong>${t('altPhone')}:</strong> ${s.altPhone}</p>
+        <p><strong>${t('email')}:</strong> ${s.contactEmail}</p>
+        <p><strong>${t('website')}:</strong> ${s.website}</p>
+        <h3 style="font-weight:700;margin:12px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('addresses')}</h3>
+        <p><strong>${t('address')}:</strong> ${s.address}</p>
+        <p><strong>${t('area')}:</strong> ${s.area} - ${t('governorate')}: ${s.governorate}</p>
+        <p><strong>${t('warehouseAddr')}:</strong> ${s.warehouseAddress}</p>
+        <p><strong>${t('returnAddr')}:</strong> ${s.returnAddress}</p>
+      </div>
+      <div>
+        <h3 style="font-weight:700;margin-bottom:8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('basicData')}</h3>
+        <p><strong>${t('ownerName')}:</strong> ${s.ownerName}</p>
+        <p><strong>${t('activityType')}:</strong> ${s.activityType}</p>
+        <p><strong>${t('foundingYear')}:</strong> ${s.foundingYear}</p>
+        <p><strong>${t('employeesCount')}:</strong> ${s.employeesCount}</p>
+        <p><strong>${t('capital')}:</strong> ${fmtNum(s.capital)} ${t('sar')}</p>
+        <h3 style="font-weight:700;margin:12px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('legalData')}</h3>
+        <p><strong>${t('commercialReg')}:</strong> ${s.commercialReg}</p>
+        <p><strong>${t('regIssue')}:</strong> ${s.commercialRegIssue} | ${t('regExpiry')}: ${s.commercialRegExpiry}</p>
+        <p><strong>${t('taxCard')}:</strong> ${s.taxCard}</p>
+        <p><strong>${t('taxReg')}:</strong> ${s.taxRegistration}</p>
+        <p><strong>${t('activityLicense')}:</strong> ${s.activityLicense}</p>
+        <p><strong>${t('legalStatus')}:</strong> ${ls}</p>
+        <h3 style="font-weight:700;margin:12px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('bankAccount')}</h3>
+        <p><strong>${t('accountHolder')}:</strong> ${s.bank.accountHolder}</p>
+        <p><strong>${t('iban')}:</strong> ${s.bank.iban}</p>
+        <p><strong>${t('swiftCode')}:</strong> ${s.bank.swiftCode}</p>
+        <p><strong>${t('currency')}:</strong> ${s.bank.currency}</p>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-size:11px">
+      <h3 style="font-weight:700;margin-bottom:8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('taxInfo')}</h3>
+      <p><strong>${t('isRegistered')}:</strong> ${s.tax.isRegistered?t('yes'):t('no')} | <strong>${t('taxNumber')}:</strong> ${s.tax.taxNumber} | <strong>${t('taxRate')}:</strong> ${s.tax.taxRate}% | <strong>${t('taxType')}:</strong> ${s.tax.taxType}</p>
+      <h3 style="font-weight:700;margin:12px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('shippingInfo')}</h3>
+      <p><strong>${t('shippingCompany')}:</strong> ${s.shipping.company} | <strong>${t('shippingMethod')}:</strong> ${s.shipping.method} | <strong>${t('deliveryTime')}:</strong> ${s.shipping.deliveryTime} | <strong>${t('shippingCost')}:</strong> ${s.shipping.shippingCost} | <strong>${t('intlShipping')}:</strong> ${s.shipping.internationalShipping?t('yes'):t('no')}</p>
+      <h3 style="font-weight:700;margin:12px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px">${t('paymentMethods')}</h3>
+      <p><strong>${t('paymentType')}:</strong> ${s.payment.methods.join(', ')} | <strong>${t('minInvoice')}:</strong> ${fmtNum(s.payment.minInvoice)} | <strong>${t('commissionRate')}:</strong> ${s.payment.commissionRate}%</p>
+    </div>
+  `;
+  window.print();
+  setTimeout(()=>{pa.style.display='none'},500);
+}
+
+function printAllSuppliers(){
+  const pa = document.getElementById('printArea');
+  pa.style.display = 'block';
+  pa.innerHTML = `
+    <div class="print-header" style="display:block!important;text-align:center;margin-bottom:20px;padding-bottom:10px;border-bottom:3px double #000">
+      <h1 style="font-size:20px;font-weight:900;margin:0">${t('supplierPanel')} - ${t('allSections')}</h1>
+      <p style="font-size:12px;color:#666;margin:4px 0 0">${suppliers.length} ${t('suppliers')}</p>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:10px">
+      <thead>
+        <tr style="background:#f0f0f0">
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">#</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('companyName')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('ownerName')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('phone')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('governorate')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('commercialReg')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('legalStatus')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('isRegistered')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('iban')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('minInvoice')}</th>
+          <th style="border:1px solid #ccc;padding:6px;text-align:right">${t('commissionRate')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${suppliers.map((s,i)=>{
+          const ls = s.legalStatus==='ذات مسؤولية محدودة'?t('limited'):s.legalStatus==='شركة شخص واحد'?t('sole'):t('partnership');
+          return `<tr>
+            <td style="border:1px solid #ccc;padding:5px">${i+1}</td>
+            <td style="border:1px solid #ccc;padding:5px;font-weight:600">${s.companyName}</td>
+            <td style="border:1px solid #ccc;padding:5px">${s.ownerName}</td>
+            <td style="border:1px solid #ccc;padding:5px;direction:ltr">${s.phone}</td>
+            <td style="border:1px solid #ccc;padding:5px">${s.governorate}</td>
+            <td style="border:1px solid #ccc;padding:5px;direction:ltr">${s.commercialReg}</td>
+            <td style="border:1px solid #ccc;padding:5px">${ls}</td>
+            <td style="border:1px solid #ccc;padding:5px">${s.tax.isRegistered?t('yes'):t('no')}</td>
+            <td style="border:1px solid #ccc;padding:5px;direction:ltr;font-size:9px">${s.bank.iban}</td>
+            <td style="border:1px solid #ccc;padding:5px">${fmtNum(s.payment.minInvoice)}</td>
+            <td style="border:1px solid #ccc;padding:5px">${s.payment.commissionRate}%</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    ${suppliers.map((s,i)=>`
+      <div style="page-break-before:always;margin-top:20px">
+        <h2 style="font-size:16px;font-weight:800;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:12px">${i+1}. ${s.companyName}</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:10px">
+          <div>
+            <p><strong>${t('ownerName')}:</strong> ${s.ownerName}</p>
+            <p><strong>${t('activityType')}:</strong> ${s.activityType}</p>
+            <p><strong>${t('foundingYear')}:</strong> ${s.foundingYear} | <strong>${t('employeesCount')}:</strong> ${s.employeesCount}</p>
+            <p><strong>${t('capital')}:</strong> ${fmtNum(s.capital)} ${t('sar')}</p>
+            <p><strong>${t('contactPerson')}:</strong> ${s.contactPerson} - ${s.contactPosition}</p>
+            <p><strong>${t('phone')}:</strong> ${s.phone} | ${s.altPhone}</p>
+            <p><strong>${t('email')}:</strong> ${s.contactEmail}</p>
+            <p><strong>${t('address')}:</strong> ${s.address}, ${s.area}, ${s.governorate}</p>
+            <p><strong>${t('warehouseAddr')}:</strong> ${s.warehouseAddress}</p>
+          </div>
+          <div>
+            <p><strong>${t('commercialReg')}:</strong> ${s.commercialReg} (${s.commercialRegIssue} - ${s.commercialRegExpiry})</p>
+            <p><strong>${t('taxCard')}:</strong> ${s.taxCard}</p>
+            <p><strong>${t('taxReg')}:</strong> ${s.taxRegistration}</p>
+            <p><strong>${t('legalStatus')}:</strong> ${s.legalStatus==='ذات مسؤولية محدودة'?t('limited'):s.legalStatus==='شركة شخص واحد'?t('sole'):t('partnership')}</p>
+            <p><strong>${t('bankAccount')}:</strong> ${s.bank.accountHolder}</p>
+            <p><strong>${t('iban')}:</strong> ${s.bank.iban}</p>
+            <p><strong>${t('swiftCode')}:</strong> ${s.bank.swiftCode} | <strong>${t('currency')}:</strong> ${s.bank.currency}</p>
+            <p><strong>${t('taxInfo')}:</strong> ${s.tax.isRegistered?s.tax.taxNumber+' - '+s.tax.taxRate+'%':'غير مسجل'}</p>
+            <p><strong>${t('shippingInfo')}:</strong> ${s.shipping.company} - ${s.shipping.deliveryTime}</p>
+            <p><strong>${t('paymentMethods')}:</strong> ${s.payment.methods.join(', ')} | ${t('minInvoice')}: ${fmtNum(s.payment.minInvoice)} | ${t('commissionRate')}: ${s.payment.commissionRate}%</p>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+  window.print();
+  setTimeout(()=>{pa.style.display='none'},500);
+}
+
+// ============ التهيئة ============
+function renderAll(){
+  renderSidebar();
+  renderTopbar();
+  renderContent();
+}
+
+// التمرير التلقائي لتحديث القائمة الجانبية
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const id = entry.target.id.replace('sec-','');
+      document.querySelectorAll('.sidebar-link').forEach(l=>{
+        l.classList.toggle('active', l.getAttribute('onclick')?.includes(id));
+      });
+    }
+  });
+},{threshold:0.3,rootMargin:'-80px 0px -50% 0px'});
+
+function observeSections(){
+  document.querySelectorAll('[id^="sec-"]').forEach(el=>observer.observe(el));
+}
+
+// الاستجابة لحجم الشاشة
+window.matchMedia('(max-width:768px)').addEventListener('change',e=>{
+  const btn = document.getElementById('menuBtn');
+  if(btn) btn.style.display = e.matches?'inline-flex':'none';
+});
+
+// إغلاق القائمة الجانبية عند النقر خارجها على الموبايل
+document.addEventListener('click',e=>{
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('menuBtn');
+  if(window.innerWidth<=768 && sidebar.classList.contains('open') && !sidebar.contains(e.target) && !btn.contains(e.target)){
+    sidebar.classList.remove('open');
+  }
+});
+
+// البدء
+renderAll();
+setTimeout(observeSections,100);
+</script>
+</body>
+</html>

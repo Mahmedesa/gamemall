@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الشراء — سوق.نت</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F0F0F0;
+            --card: #FFFFFF;
+            --fg: #333333;
+            --muted: #888888;
+            --primary: #F3A610;
+            --primary-dark: #E08E00;
+            --primary-light: #FFF8E7;
+            --border: #E0E0E0;
+            --danger: #E74C3C;
+            --success: #27AE60;
+        }
+        * { font-family: 'Tajawal', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--fg); min-height: 100vh; }
+
+        /* الهيدر */
+        .site-header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 50;
+        }
+
+        /* شريط الخطوات */
+        .steps-bar {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+        }
+        .step-item { position: relative; }
+        .step-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700;
+            border: 2px solid var(--border); color: var(--muted);
+            transition: all 0.3s; flex-shrink: 0;
+        }
+        .step-item.active .step-num {
+            background: var(--primary); border-color: var(--primary); color: #fff;
+        }
+        .step-item.done .step-num {
+            background: var(--success); border-color: var(--success); color: #fff;
+        }
+        .step-label {
+            font-size: 12px; color: var(--muted); font-weight: 500;
+            transition: color 0.3s; white-space: nowrap;
+        }
+        .step-item.active .step-label { color: var(--fg); font-weight: 700; }
+        .step-item.done .step-label { color: var(--success); }
+        .step-connector {
+            height: 2px; flex: 1; background: var(--border);
+            margin: 0 8px; min-width: 20px; position: relative; top: -10px;
+        }
+        .step-connector.filled { background: var(--success); }
+
+        /* بطاقات الاختيار */
+        .choice-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .choice-card:hover { border-color: #ccc; }
+        .choice-card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+        .choice-card .check-badge {
+            position: absolute; top: 12px; left: 12px;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: var(--primary); color: #fff;
+            display: none; align-items: center; justify-content: center;
+            font-size: 11px;
+        }
+        .choice-card.selected .check-badge { display: flex; }
+
+        /* حقول الإدخال */
+        .form-control {
+            width: 100%; padding: 10px 12px;
+            border: 1px solid var(--border); border-radius: 6px;
+            font-size: 14px; font-family: 'Tajawal', sans-serif;
+            background: #fff; color: var(--fg);
+            transition: border-color 0.2s;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(243,166,16,0.15); }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--fg); margin-bottom: 6px; }
+        .form-label .required { color: var(--danger); margin-right: 2px; }
+
+        /* الأزرار */
+        .btn {
+            padding: 10px 28px; border-radius: 6px; font-size: 14px;
+            font-weight: 700; font-family: 'Tajawal', sans-serif;
+            cursor: pointer; border: none; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+        .btn-primary:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+        .btn-outline {
+            background: transparent; color: var(--fg);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover { background: #f5f5f5; border-color: #ccc; }
+        .btn-link {
+            background: none; border: none; color: var(--primary);
+            font-weight: 700; padding: 8px 0; cursor: pointer;
+            font-family: 'Tajawal', sans-serif; font-size: 14px;
+        }
+        .btn-link:hover { text-decoration: underline; }
+        .btn-sm { padding: 8px 18px; font-size: 13px; }
+
+        /* لوحات الخطوات */
+        .step-panel { display: none; }
+        .step-panel.visible { display: block; animation: fadeSlide 0.3s ease; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ملخص الطلب */
+        .summary-box {
+            background: var(--card); border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        /* بطاقة الائتمان */
+        .cc-preview {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 10px; padding: 20px 24px;
+            color: #fff; max-width: 340px; aspect-ratio: 1.586/1;
+            position: relative; overflow: hidden;
+        }
+        .cc-preview::before {
+            content: ''; position: absolute; top: -50%; right: -30%;
+            width: 250px; height: 250px; border-radius: 50%;
+            background: rgba(243,166,16,0.08);
+        }
+
+        /* نموذج العنوان المنزلق */
+        .addr-form-slide {
+            max-height: 0; overflow: hidden; opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+        }
+        .addr-form-slide.open { max-height: 600px; opacity: 1; }
+
+        /* إشعار */
+        .toast-msg {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #333; color: #fff;
+            padding: 12px 24px; border-radius: 6px;
+            font-size: 14px; font-weight: 600; z-index: 200;
+            transition: transform 0.35s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .toast-msg.show { transform: translateX(-50%) translateY(0); }
+
+        /* نافذة النجاح */
+        .success-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none; align-items: center; justify-content: center;
+            z-index: 100;
+        }
+        .success-overlay.show { display: flex; }
+        .success-box {
+            background: #fff; border-radius: 12px; padding: 48px 40px;
+            text-align: center; max-width: 440px; width: 90%;
+            animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .confetti {
+            position: fixed; pointer-events: none; z-index: 101;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* تعليق المراجعة */
+        .review-section {
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 16px; background: #fff;
+        }
+        .review-section + .review-section { margin-top: 10px; }
+
+        /* تجاوب */
+        @media (max-width: 1024px) {
+            .checkout-grid { grid-template-columns: 1fr !important; }
+            .sidebar-col { position: static !important; order: -1; }
+        }
+        @media (max-width: 640px) {
+            .step-label { font-size: 11px; }
+            .step-connector { min-width: 10px; margin: 0 4px; }
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- إشعار -->
+<div class="toast-msg" id="toast">
+    <i class="fa-solid fa-circle-check" style="color: var(--success);"></i>
+    <span id="toastText"></span>
+</div>
+
+<!-- الهيدر -->
+<header class="site-header">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-6">
+            <a href="#" class="flex items-center gap-2 text-decoration-none">
+                <div class="w-8 h-8 rounded flex items-center justify-center" style="background: var(--primary);">
+                    <i class="fa-solid fa-store text-white text-xs"></i>
+                </div>
+                <span class="text-lg font-900" style="color: var(--fg);">سوق<span style="color: var(--primary);">.نت</span></span>
+            </a>
+            <nav class="hidden md:flex items-center gap-5 text-sm" style="color: var(--muted);">
+                <a href="#" class="hover:text-gray-700">الرئيسية</a>
+                <a href="#" class="hover:text-gray-700">التصنيفات</a>
+                <a href="#" class="hover:text-gray-700">العروض</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="hidden sm:flex items-center gap-1 text-xs" style="color: var(--muted);">
+                <i class="fa-solid fa-lock text-[10px]"></i>
+                دفع آمن ومشفر
+            </div>
+            <div class="relative">
+                <i class="fa-solid fa-cart-shopping" style="color: var(--fg);"></i>
+                <span class="absolute -top-2 -left-2 w-4 h-4 rounded-full text-[10px] font-700 text-white flex items-center justify-center" style="background: var(--primary);">3</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- شريط الخطوات -->
+<div class="steps-bar">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-4">
+        <div class="flex items-center" id="stepsBar">
+            <div class="step-item active flex items-center gap-2" data-s="1">
+                <div class="step-num">1</div>
+                <span class="step-label">عنوان الشحن</span>
+            </div>
+            <div class="step-connector" data-c="1"></div>
+            <div class="step-item flex items-center gap-2" data-s="2">
+                <div class="step-num">2</div>
+                <span class="step-label">طريقة الشحن</span>
+            </div>
+            <div class="step-connector" data-c="2"></div>
+            <div class="step-item flex items-center gap-2" data-s="3">
+                <div class="step-num">3</div>
+                <span class="step-label">طريقة الدفع</span>
+            </div>
+            <div class="step-connector" data-c="3"></div>
+            <div class="step-item flex items-center gap-2" data-s="4">
+                <div class="step-num">4</div>
+                <span class="step-label">مراجعة الطلب</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- المحتوى -->
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+    <div class="checkout-grid grid gap-6" style="grid-template-columns: 1fr 360px;">
+
+        <!-- العمود الرئيسي -->
+        <div>
+
+            <!-- ========== الخطوة 1: العنوان ========== -->
+            <div class="step-panel visible" id="step-1">
+                <div class="flex items-center justify-between mb-4">
+                    <h1 class="text-xl font-800">عنوان الشحن</h1>
+                    <button class="btn-link" onclick="toggleAddrForm()">
+                        <i class="fa-solid fa-plus text-xs ml-1"></i> إضافة عنوان جديد
+                    </button>
+                </div>
+
+                <!-- نموذج إضافة عنوان -->
+                <div class="addr-form-slide" id="addrFormWrap">
+                    <div class="bg-white border border-solid rounded-lg p-5 mb-4" style="border-color: var(--border);">
+                        <h3 class="font-700 text-sm mb-4 pb-3" style="border-bottom: 1px solid var(--border);">
+                            <i class="fa-solid fa-map-pin ml-1" style="color: var(--primary);"></i>
+                            عنوان جديد
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label">تسمية العنوان <span class="required">*</span></label>
+                                <input class="form-control" placeholder="مثال: المنزل، المكتب" id="fLabel">
+                            </div>
+                            <div>
+                                <label class="form-label">رقم الجوال <span class="required">*</span></label>
+                                <input class="form-control" placeholder="05XXXXXXXX" id="fPhone">
+                            </div>
+                            <div>
+                                <label class="form-label">المنطقة <span class="required">*</span></label>
+                                <select class="form-control" id="fRegion" onchange="onRegionChange()">
+                                    <option value="">اختر المنطقة</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">المحافظة <span class="required">*</span></label>
+                                <select class="form-control" id="fGov" disabled>
+                                    <option value="">اختر المحافظة</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="form-label">الشارع والحي <span class="required">*</span></label>
+                                <input class="form-control" placeholder="اسم الشارع، الحي، أقرب معلم" id="fStreet">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="form-label">تفاصيل إضافية</label>
+                                <input class="form-control" placeholder="رقم المبنى، الطابق، رقم الشقة..." id="fDetails">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 mt-4 pt-3" style="border-top: 1px solid var(--border);">
+                            <button class="btn btn-primary btn-sm" onclick="saveNewAddr()">
+                                <i class="fa-solid fa-check text-xs"></i> حفظ العنوان
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="toggleAddrForm()">إلغاء</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قائمة العناوين -->
+                <div class="space-y-3" id="addrList"></div>
+
+                <div class="mt-6 flex justify-start">
+                    <button class="btn btn-primary" id="btn1" disabled onclick="goStep(2)">
+                        متابعة
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== الخطوة 2: الشحن ========== -->
+            <div class="step-panel" id="step-2">
+                <h1 class="text-xl font-800 mb-4">طريقة الشحن</h1>
+                <div class="space-y-3" id="shipList"></div>
+                <div class="mt-6 flex items-center justify-between">
+                    <button class="btn btn-outline" onclick="goStep(1)">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                        رجوع
+                    </button>
+                    <button class="btn btn-primary" id="btn2" disabled onclick="goStep(3)">
+                        متابعة
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== الخطوة 3: الدفع ========== -->
+            <div class="step-panel" id="step-3">
+                <h1 class="text-xl font-800 mb-4">طريقة الدفع</h1>
+                <div class="space-y-3" id="payList"></div>
+
+                <!-- نموذج البطاقة -->
+                <div class="hidden mt-4" id="ccForm">
+                    <div class="cc-preview mb-4" id="ccVisual">
+                        <div class="relative z-10 flex flex-col justify-between h-full">
+                            <div class="flex justify-between items-center">
+                                <i class="fa-solid fa-wifi text-lg opacity-50" style="transform:rotate(90deg)"></i>
+                                <i class="fa-brands fa-cc-visa text-2xl opacity-70" id="ccBrand"></i>
+                            </div>
+                            <div>
+                                <div class="text-base tracking-widest mb-3" dir="ltr" id="ccNum">•••• •••• •••• ••••</div>
+                                <div class="flex justify-between text-xs">
+                                    <div>
+                                        <div class="opacity-40 text-[10px] mb-0.5">حامل البطاقة</div>
+                                        <div class="font-600" id="ccName">الاسم</div>
+                                    </div>
+                                    <div>
+                                        <div class="opacity-40 text-[10px] mb-0.5">الانتهاء</div>
+                                        <div class="font-600" dir="ltr" id="ccExp">MM/YY</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg border p-4 space-y-3" style="border-color: var(--border);">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="sm:col-span-2">
+                                <label class="form-label">رقم البطاقة</label>
+                                <input class="form-control" dir="ltr" placeholder="0000 0000 0000 0000" maxlength="19" id="inCardNum" oninput="fmtCard(this)">
+                            </div>
+                            <div>
+                                <label class="form-label">الاسم على البطاقة</label>
+                                <input class="form-control" placeholder="الاسم كما يظهر على البطاقة" id="inCardName" oninput="updCC()">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="form-label">الانتهاء</label>
+                                    <input class="form-control" dir="ltr" placeholder="MM/YY" maxlength="5" id="inCardExp" oninput="fmtExp(this)">
+                                </div>
+                                <div>
+                                    <label class="form-label">CVV</label>
+                                    <input class="form-control" dir="ltr" placeholder="•••" maxlength="3" id="inCardCVV">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex items-center justify-between">
+                    <button class="btn btn-outline" onclick="goStep(2)">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                        رجوع
+                    </button>
+                    <button class="btn btn-primary" id="btn3" disabled onclick="goStep(4)">
+                        متابعة
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== الخطوة 4: المراجعة ========== -->
+            <div class="step-panel" id="step-4">
+                <h1 class="text-xl font-800 mb-4">مراجعة الطلب</h1>
+                <div id="reviewBody"></div>
+                <div class="mt-6 flex items-center justify-between">
+                    <button class="btn btn-outline" onclick="goStep(3)">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                        تعديل
+                    </button>
+                    <button class="btn btn-primary" style="padding:12px 36px; font-size:15px;" onclick="confirmOrder()" id="confirmBtn">
+                        <i class="fa-solid fa-lock text-xs"></i>
+                        تأكيد الطلب — <span id="confirmTotal">0</span> جنيه
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== الشريط الجانبي: ملخص ========== -->
+        <div class="sidebar-col" style="position: sticky; top: 80px; align-self: start;">
+            <div class="summary-box">
+                <div class="p-4 pb-3" style="border-bottom: 1px solid var(--border);">
+                    <h3 class="font-800 text-base">ملخص الطلب</h3>
+                </div>
+                <div class="p-4">
+                    <div class="space-y-3" id="sumItems"></div>
+                </div>
+                <div class="px-4 pb-4 space-y-2 text-sm" style="border-top: 1px solid var(--border); padding-top: 12px;">
+                    <div class="flex justify-between">
+                        <span style="color:var(--muted)">المجموع الفرعي</span>
+                        <span class="font-600" id="dSubtotal">0 جنيه</span>
+                    </div>
+                    <div class="flex justify-between" id="dShipRow">
+                        <span style="color:var(--muted)">الشحن</span>
+                        <span class="font-600" id="dShip">—</span>
+                    </div>
+                    <div class="flex justify-between hidden" id="dDiscRow">
+                        <span style="color:var(--danger)">الخصم</span>
+                        <span class="font-600" style="color:var(--danger)" id="dDisc">0 جنيه</span>
+                    </div>
+                    <div class="flex justify-between pt-3 mt-2 text-base" style="border-top: 2px solid var(--fg);">
+                        <span class="font-800">المجموع الكلي</span>
+                        <span class="font-900" style="color: var(--primary-dark);" id="dTotal">0 جنيه</span>
+                    </div>
+                </div>
+                <!-- كود الخصم -->
+                <div class="px-4 pb-4" style="border-top: 1px solid var(--border); padding-top: 12px;">
+                    <div class="flex gap-2">
+                        <input class="form-control flex-1 text-sm" placeholder="كود الخصم" id="couponIn">
+                        <button class="btn btn-primary btn-sm" onclick="applyCoupon()" id="couponBtn">تطبيق</button>
+                    </div>
+                    <div class="text-xs mt-1.5 hidden" id="couponMsg"></div>
+                </div>
+                <!-- أيقونات الثقة -->
+                <div class="px-4 pb-4 flex justify-center gap-6 pt-3" style="border-top: 1px solid var(--border);">
+                    <div class="flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-shield-halved text-sm" style="color:var(--success)"></i>
+                        <span class="text-[10px]" style="color:var(--muted)">دفع آمن</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-rotate-left text-sm" style="color:var(--success)"></i>
+                        <span class="text-[10px]" style="color:var(--muted)">إرجاع مجاني</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-truck-fast text-sm" style="color:var(--success)"></i>
+                        <span class="text-[10px]" style="color:var(--muted)">شحن سريع</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- نافذة النجاح -->
+<div class="success-overlay" id="successOvl">
+    <div class="success-box">
+        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: #E8F8EE;">
+            <i class="fa-solid fa-check text-3xl" style="color: var(--success);"></i>
+        </div>
+        <h2 class="text-xl font-900 mb-2">تم تأكيد طلبك بنجاح</h2>
+        <p class="text-sm mb-1" style="color:var(--muted)">رقم الطلب: <strong style="color:var(--fg)" id="ordNum"></strong></p>
+        <p class="text-sm mb-6" style="color:var(--muted)">ستصلك رسالة تأكيد على جوالك وبريدك الإلكتروني.</p>
+        <div class="flex gap-3 justify-center">
+            <button class="btn btn-primary" onclick="location.reload()">
+                <i class="fa-solid fa-bag-shopping text-xs"></i> متابعة التسوق
+            </button>
+            <button class="btn btn-outline" onclick="document.getElementById('successOvl').classList.remove('show')">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== البيانات ====================
+
+const items = [
+    { id:1, name:"ساعة يد كلاسيكية", variant:"ذهبي — 42mm", price:459, qty:1, img:"https://picsum.photos/seed/watchx/80/80.jpg" },
+    { id:2, name:"حقيبة جلدية فاخرة", variant:"بني غامق — جلد طبيعي", price:320, qty:1, img:"https://picsum.photos/seed/bagx1/80/80.jpg" },
+    { id:3, name:"نظارة شمسية أنيقة", variant:"أسود — عدسات مستقطبة", price:189, qty:2, img:"https://picsum.photos/seed/glassx2/80/80.jpg" },
+];
+
+let addrs = [
+    { id:1, label:"المنزل", region:"منطقة الرياض", gov:"محافظة الرياض", street:"شارع الملك فهد، حي العليا", details:"عمارة 15، شقة 3", phone:"0501234567", def:true },
+    { id:2, label:"المكتب", region:"منطقة الرياض", gov:"محافظة الرياض", street:"طريق الأمير محمد بن عبدالعزيز", details:"برج المملكة، الطابق 12", phone:"0559876543", def:false },
+    { id:3, label:"عنوان جدة", region:"منطقة مكة المكرمة", gov:"محافظة جدة", street:"شارع التحلية، حي الروضة", details:"فيلا 8", phone:"0541112233", def:false },
+];
+
+const shippers = [
+    { id:1, name:"أرامكس", icon:"fa-solid fa-truck-fast", price:25, days:"2-3 أيام عمل", est:"الأربعاء 15 يناير" },
+    { id:2, name:"سمسا", icon:"fa-solid fa-shipping-fast", price:15, days:"3-5 أيام عمل", est:"الخميس 16 يناير" },
+    { id:3, name:"DHL Express", icon:"fa-solid fa-plane", price:45, days:"1-2 يوم عمل", est:"الثلاثاء 14 يناير" },
+];
+
+const pays = [
+    { id:1, name:"بطاقة ائتمان / مدى", icon:"fa-solid fa-credit-card", desc:"فيزا، ماستركارد، مدى", brands:["fa-brands fa-cc-visa","fa-brands fa-cc-mastercard"] },
+    { id:2, name:"الدفع عند الاستلام", icon:"fa-solid fa-money-bill-wave", desc:"ادفع نقداً عند الاستلام", brands:[] },
+    { id:3, name:"تحويل بنكي", icon:"fa-solid fa-building-columns", desc:"تحويل من حسابك البنكي عبر مدى", brands:[] },
+];
+
+// بيانات المناطق والمحافظات
+const regionsData = {
+    "منطقة الرياض": ["محافظة الرياض","محافظة الخرج","محافظة الدوادمي","محافظة المجمعة","محافظة وادي الدواسر","محافظة الأفلاج","محافظة حوطة بني تميم","محافظة ثادق","محافظة المرات","محافظة القويعية","محافظة الرين","محافظة ضرما"],
+    "منطقة مكة المكرمة": ["محافظة جدة","محافظة مكة المكرمة","محافظة الطائف","محافظة القنفذة","محافظة الليث","محافظة رابغ","محافظة خليص","محافظة الكامل","محافظة أضم"],
+    "منطقة المدينة المنورة": ["محافظة المدينة المنورة","محافظة ينبع","محافظة العلا","محافظة الحناكية","محافظة بدر","محافظة خيبر","محافظة وادي الفرع"],
+    "المنطقة الشرقية": ["محافظة الدمام","محافظة الخبر","محافظة الظهران","محافظة الجبيل","محافظة القطيف","محافظة الأحساء","محافظة حفر الباطن","محافظة النعيرية","محافظة القيصومة"],
+    "منطقة عسير": ["محافظة أبها","محافظة خميس مشيط","محافظة النماص","محافظة بيشة","محافظة محايل عسير","محافظة رجال ألمع","محافظة سراة عبيدة","محافظة أحد رفيدة"],
+    "منطقة تبوك": ["محافظة تبوك","محافظة الوجه","محافظة ضبا","محافظة تيماء","محافظة أملج","محافظة حقل"],
+    "منطقة حائل": ["محافظة حائل","محافظة بقعاء","محافظة الحائط","محافظة الشنان","محافظة الغزالة","محافظة سميراء"],
+    "منطقة القصيم": ["محافظة بريدة","محافظة عنيزة","محافظة الرس","محافظة المذنب","محافظة البكيرية","محافظة الأسياح","محافظة الشماسية","محافظة نفق"],
+    "منطقة جازان": ["محافظة جازان","محافظة صبيا","محافظة أبو عريش","محافظة الدرب","محافظة فرسان","محافظة صامطة","محافظة الحرث","محافظة أحد المسارحة"],
+    "منطقة نجران": ["محافظة نجران","محافظة شرورة","محافظة حبونا","محافظة يدمه","محافظة الخرخير","محافظة ثار"],
+    "منطقة الباحة": ["محافظة الباحة","محافظة بلجرشي","محافظة المندق","محافظة الحجرة","محافظة قلوة","محافظة العقيق"],
+    "منطقة الجوف": ["محافظة سكاكا","محافظة دومة الجندل","محافظة طبرجل","محافظة القريات"],
+    "منطقة الحدود الشمالية": ["محافظة عرعر","محافظة رفحاء","محافظة طريف","محافظة الحقو"],
+};
+
+// ==================== الحالة ====================
+let curStep = 1;
+let selAddr = null;
+let selShip = null;
+let selPay = null;
+let hasCoupon = false;
+let discAmt = 0;
+let nextId = 4;
+
+// ==================== التهيئة ====================
+function init() {
+    fillRegionSelect();
+    renderAddrs();
+    renderShippers();
+    renderPays();
+    renderSumItems();
+    calcTotals();
+}
+
+// ==================== قائمة المناطق ====================
+function fillRegionSelect() {
+    const sel = document.getElementById('fRegion');
+    Object.keys(regionsData).forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r; opt.textContent = r;
+        sel.appendChild(opt);
+    });
+}
+
+function onRegionChange() {
+    const region = document.getElementById('fRegion').value;
+    const govSel = document.getElementById('fGov');
+    govSel.innerHTML = '<option value="">اختر المحافظة</option>';
+    if (region && regionsData[region]) {
+        govSel.disabled = false;
+        regionsData[region].forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g; opt.textContent = g;
+            govSel.appendChild(opt);
+        });
+    } else {
+        govSel.disabled = true;
+    }
+}
+
+// ==================== العناوين ====================
+function renderAddrs() {
+    const c = document.getElementById('addrList');
+    c.innerHTML = addrs.map(a => `
+        <div class="choice-card ${selAddr===a.id?'selected':''}" onclick="pickAddr(${a.id})">
+            <div class="check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                     style="background:${selAddr===a.id?'var(--primary)':'#f5f5f5'}; color:${selAddr===a.id?'#fff':'var(--muted)'}; transition:all 0.2s;">
+                    <i class="fa-solid ${a.label.includes('منزل')?'fa-house':a.label.includes('مكتب')?'fa-building':'fa-location-dot'} text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-700 text-sm">${a.label}</span>
+                        ${a.def?'<span class="text-[10px] font-600 px-1.5 py-0.5 rounded" style="background:var(--primary-light); color:var(--primary-dark);">افتراضي</span>':''}
+                    </div>
+                    <div class="text-xs mt-1.5 leading-relaxed" style="color:var(--muted);">
+                        <span class="inline-flex items-center gap-1 ml-3"><i class="fa-solid fa-map-location-dot text-[10px] opacity-60"></i>${a.gov}، ${a.region}</span>
+                        <span class="inline-flex items-center gap-1 ml-3"><i class="fa-solid fa-road text-[10px] opacity-60"></i>${a.street}</span>
+                        ${a.details?`<span class="inline-flex items-center gap-1 ml-3"><i class="fa-solid fa-circle-info text-[10px] opacity-60"></i>${a.details}</span>`:''}
+                        <span class="inline-flex items-center gap-1"><i class="fa-solid fa-phone text-[10px] opacity-60"></i>${a.phone}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function pickAddr(id) {
+    selAddr = id;
+    renderAddrs();
+    document.getElementById('btn1').disabled = false;
+}
+
+function toggleAddrForm() {
+    document.getElementById('addrFormWrap').classList.toggle('open');
+}
+
+function saveNewAddr() {
+    const label = document.getElementById('fLabel').value.trim();
+    const phone = document.getElementById('fPhone').value.trim();
+    const region = document.getElementById('fRegion').value;
+    const gov = document.getElementById('fGov').value;
+    const street = document.getElementById('fStreet').value.trim();
+    const details = document.getElementById('fDetails').value.trim();
+
+    if (!label || !phone || !region || !gov || !street) {
+        toast('يرجى ملء جميع الحقول المطلوبة');
+        return;
+    }
+
+    addrs.push({ id: nextId++, label, region, gov, street, details: details||'', phone, def: false });
+
+    ['fLabel','fPhone','fStreet','fDetails'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fRegion').value = '';
+    document.getElementById('fGov').innerHTML = '<option value="">اختر المحافظة</option>';
+    document.getElementById('fGov').disabled = true;
+
+    toggleAddrForm();
+    renderAddrs();
+    toast('تم إضافة العنوان بنجاح');
+}
+
+// ==================== الشحن ====================
+function renderShippers() {
+    const c = document.getElementById('shipList');
+    c.innerHTML = shippers.map(s => `
+        <div class="choice-card ${selShip===s.id?'selected':''}" onclick="pickShip(${s.id})">
+            <div class="check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                         style="background:${selShip===s.id?'var(--primary)':'#f5f5f5'}; color:${selShip===s.id?'#fff':'var(--muted)'}; transition:all 0.2s;">
+                        <i class="${s.icon} text-base"></i>
+                    </div>
+                    <div>
+                        <div class="font-700 text-sm">${s.name}</div>
+                        <div class="text-xs" style="color:var(--muted)">${s.days} — التوصيل المتوقع: ${s.est}</div>
+                    </div>
+                </div>
+                <div class="font-800 text-base">${s.price} <span class="text-xs font-500" style="color:var(--muted)">جنيه</span></div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function pickShip(id) {
+    selShip = id;
+    renderShippers();
+    document.getElementById('btn2').disabled = false;
+    calcTotals();
+}
+
+// ==================== الدفع ====================
+function renderPays() {
+    const c = document.getElementById('payList');
+    c.innerHTML = pays.map(p => `
+        <div class="choice-card ${selPay===p.id?'selected':''}" onclick="pickPay(${p.id})">
+            <div class="check-badge"><i class="fa-solid fa-check"></i></div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                         style="background:${selPay===p.id?'var(--primary)':'#f5f5f5'}; color:${selPay===p.id?'#fff':'var(--muted)'}; transition:all 0.2s;">
+                        <i class="${p.icon} text-base"></i>
+                    </div>
+                    <div>
+                        <div class="font-700 text-sm">${p.name}</div>
+                        <div class="text-xs" style="color:var(--muted)">${p.desc}</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${p.brands.map(b=>`<i class="${b} text-2xl" style="color:var(--muted);opacity:0.4"></i>`).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function pickPay(id) {
+    selPay = id;
+    renderPays();
+    document.getElementById('btn3').disabled = false;
+    document.getElementById('ccForm').classList.toggle('hidden', id !== 1);
+}
+
+// ==================== بطاقة ائتمان ====================
+function fmtCard(el) {
+    let v = el.value.replace(/\D/g,'').slice(0,16);
+    el.value = v.replace(/(.{4})/g,'$1 ').trim();
+    updCC();
+}
+function fmtExp(el) {
+    let v = el.value.replace(/\D/g,'').slice(0,4);
+    if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2);
+    el.value = v;
+    updCC();
+}
+function updCC() {
+    const n = document.getElementById('inCardNum').value || '•••• •••• •••• ••••';
+    const nm = document.getElementById('inCardName').value || 'الاسم';
+    const ex = document.getElementById('inCardExp').value || 'MM/YY';
+    document.getElementById('ccNum').textContent = n;
+    document.getElementById('ccName').textContent = nm;
+    document.getElementById('ccExp').textContent = ex;
+    const d = document.getElementById('inCardNum').value.replace(/\D/g,'').charAt(0);
+    const brand = document.getElementById('ccBrand');
+    if (d === '5') brand.className = 'fa-brands fa-cc-mastercard text-2xl opacity-70';
+    else brand.className = 'fa-brands fa-cc-visa text-2xl opacity-70';
+}
+
+// ==================== ملخص العناصر ====================
+function renderSumItems() {
+    document.getElementById('sumItems').innerHTML = items.map(i => `
+        <div class="flex items-center gap-3">
+            <img src="${i.img}" alt="${i.name}" class="w-12 h-12 rounded object-cover" style="border:1px solid var(--border);">
+            <div class="flex-1 min-w-0">
+                <div class="text-xs font-600 truncate">${i.name}</div>
+                <div class="text-[11px] truncate" style="color:var(--muted)">${i.variant}${i.qty>1?' ×'+i.qty:''}</div>
+            </div>
+            <div class="text-sm font-700 flex-shrink-0">${i.price*i.qty} جنيه</div>
+        </div>
+    `).join('');
+}
+
+// ==================== الحسابات ====================
+function calcTotals() {
+    const sub = items.reduce((s,i)=>s+i.price*i.qty, 0);
+    const ship = selShip ? shippers.find(s=>s.id===selShip).price : 0;
+    const total = sub + ship - discAmt;
+    document.getElementById('dSubtotal').textContent = sub+' جنيه';
+    document.getElementById('dShip').textContent = selShip ? ship+' جنيه' : '—';
+    document.getElementById('dTotal').textContent = total+' جنيه';
+    if (hasCoupon) {
+        document.getElementById('dDiscRow').classList.remove('hidden');
+        document.getElementById('dDisc').textContent = '-'+discAmt+' جنيه';
+    }
+}
+
+// ==================== كود الخصم ====================
+function applyCoupon() {
+    const code = document.getElementById('couponIn').value.trim();
+    const msg = document.getElementById('couponMsg');
+    const sub = items.reduce((s,i)=>s+i.price*i.qty, 0);
+    if (!code) return;
+    if (code === 'WELCOME10') {
+        hasCoupon = true;
+        discAmt = Math.round(sub * 0.1);
+        msg.textContent = 'تم تطبيق الخصم بنجاح! (خصم 10%)';
+        msg.style.color = 'var(--success)';
+        msg.classList.remove('hidden');
+        document.getElementById('couponBtn').textContent = 'تم';
+        document.getElementById('couponBtn').disabled = true;
+        document.getElementById('couponIn').disabled = true;
+    } else {
+        msg.textContent = 'كود غير صالح. جرّب: WELCOME10';
+        msg.style.color = 'var(--danger)';
+        msg.classList.remove('hidden');
+    }
+    calcTotals();
+}
+
+// ==================== التنقل ====================
+function goStep(step) {
+    if (step > curStep) {
+        if (curStep===1 && !selAddr) return;
+        if (curStep===2 && !selShip) return;
+        if (curStep===3 && !selPay) return;
+    }
+    const old = document.getElementById('step-'+curStep);
+    old.classList.remove('visible');
+    setTimeout(() => {
+        curStep = step;
+        updStepsBar();
+        const nxt = document.getElementById('step-'+step);
+        nxt.classList.add('visible');
+        if (step === 4) buildReview();
+        window.scrollTo({top:0,behavior:'smooth'});
+    }, 150);
+}
+
+function updStepsBar() {
+    document.querySelectorAll('.step-item').forEach(el => {
+        const s = +el.dataset.s;
+        el.classList.remove('active','done');
+        if (s < curStep) { el.classList.add('done'); el.querySelector('.step-num').innerHTML='<i class="fa-solid fa-check text-[10px]"></i>'; }
+        else if (s === curStep) { el.classList.add('active'); el.querySelector('.step-num').textContent=s; }
+        else { el.querySelector('.step-num').textContent=s; }
+    });
+    document.querySelectorAll('.step-connector').forEach(el => {
+        const c = +el.dataset.c;
+        el.classList.toggle('filled', c < curStep);
+    });
+}
+
+// ==================== المراجعة ====================
+function buildReview() {
+    const a = addrs.find(x=>x.id===selAddr);
+    const s = shippers.find(x=>x.id===selShip);
+    const p = pays.find(x=>x.id===selPay);
+    const sub = items.reduce((sum,i)=>sum+i.price*i.qty,0);
+    const shipC = s?s.price:0;
+    const total = sub + shipC - discAmt;
+    document.getElementById('confirmTotal').textContent = total;
+
+    document.getElementById('reviewBody').innerHTML = `
+        <div class="review-section">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="fa-solid fa-bag-shopping text-xs" style="color:var(--primary)"></i>
+                <span class="font-700 text-sm">المنتجات (${items.reduce((s,i)=>s+i.qty,0)})</span>
+            </div>
+            <div class="space-y-3">
+                ${items.map(i=>`
+                    <div class="flex items-center gap-3">
+                        <img src="${i.img}" class="w-10 h-10 rounded object-cover" style="border:1px solid var(--border);">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-600">${i.name}</div>
+                            <div class="text-[11px]" style="color:var(--muted)">${i.variant}${i.qty>1?' ×'+i.qty:''}</div>
+                        </div>
+                        <div class="text-sm font-700">${i.price*i.qty} جنيه</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <div class="review-section">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-location-dot text-xs" style="color:var(--primary)"></i>
+                        <span class="font-700 text-sm">عنوان الشحن</span>
+                    </div>
+                    <div class="text-xs leading-relaxed" style="color:var(--muted)">
+                        <strong style="color:var(--fg)">${a.label}</strong> — ${a.gov}، ${a.region}<br>
+                        ${a.street}${a.details?' — '+a.details:''}<br>
+                        ${a.phone}
+                    </div>
+                </div>
+                <button class="btn-link text-xs" onclick="goStep(1)">تعديل</button>
+            </div>
+        </div>
+
+        <div class="review-section">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-truck text-xs" style="color:var(--primary)"></i>
+                        <span class="font-700 text-sm">طريقة الشحن</span>
+                    </div>
+                    <div class="text-xs" style="color:var(--muted)">${s.name} — ${s.days} — ${s.est}</div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-700">${s.price} جنيه</span>
+                    <button class="btn-link text-xs" onclick="goStep(2)">تعديل</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-section">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-credit-card text-xs" style="color:var(--primary)"></i>
+                        <span class="font-700 text-sm">طريقة الدفع</span>
+                    </div>
+                    <div class="text-xs" style="color:var(--muted)">${p.name} — ${p.desc}</div>
+                </div>
+                <button class="btn-link text-xs" onclick="goStep(3)">تعديل</button>
+            </div>
+        </div>
+
+        <div class="review-section" style="background:var(--primary-light); border-color:rgba(243,166,16,0.3);">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between"><span style="color:var(--muted)">المجموع الفرعي</span><span class="font-600">${sub} جنيه</span></div>
+                <div class="flex justify-between"><span style="color:var(--muted)">الشحن (${s.name})</span><span class="font-600">${shipC} جنيه</span></div>
+                ${hasCoupon?`<div class="flex justify-between"><span style="color:var(--danger)">الخصم</span><span class="font-600" style="color:var(--danger)">-${discAmt} جنيه</span></div>`:''}
+                <div class="flex justify-between pt-3 text-base" style="border-top:2px solid var(--primary-dark);">
+                    <span class="font-800">الإجمالي</span>
+                    <span class="font-900" style="color:var(--primary-dark)">${total} جنيه</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ==================== تأكيد الطلب ====================
+function confirmOrder() {
+    const btn = document.getElementById('confirmBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جارٍ المعالجة...';
+
+    setTimeout(() => {
+        const num = 'ORD-' + Date.now().toString().slice(-8) + Math.floor(Math.random()*100);
+        document.getElementById('ordNum').textContent = num;
+        document.getElementById('successOvl').classList.add('show');
+        document.body.style.overflow = 'hidden';
+        fireConfetti();
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-lock text-xs"></i> تأكيد الطلب — <span id="confirmTotal">'+document.getElementById('confirmTotal').textContent+'</span> جنيه';
+    }, 1600);
+}
+
+// ==================== قصاصات ====================
+function fireConfetti() {
+    const colors = ['#F3A610','#E08E00','#27AE60','#333','#FF6B35','#FFD700','#E74C3C'];
+    for (let i=0; i<50; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti';
+        const sz = 5 + Math.random()*7;
+        p.style.cssText = `left:${Math.random()*100}vw;top:-15px;width:${sz}px;height:${sz*(Math.random()>0.5?0.6:1)}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};animation-duration:${2.5+Math.random()*2}s;animation-delay:${Math.random()*0.7}s;`;
+        document.body.appendChild(p);
+        setTimeout(()=>p.remove(),5000);
+    }
+}
+
+// ==================== إشعار ====================
+function toast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastText').textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ==================== بدء التطبيق ====================
+init();
+</script>
+</body>
+</html>

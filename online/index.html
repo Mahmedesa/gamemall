@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سوق نون | تسوّق كل شيء</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { cairo: ['Cairo','sans-serif'], inter: ['Inter','sans-serif'] },
+                    colors: {
+                        brand: { 50:'#FFF4ED',100:'#FFE6D5',200:'#FECCAA',300:'#FDAA74',400:'#FB7C38',500:'#F96316',600:'#E84B07',700:'#C23807',800:'#9C2E0D',900:'#7F290F' },
+                        surface: { 50:'#FAFAF8',100:'#F5F3F0',200:'#EDEAE5',300:'#DDD8D0',400:'#C4BDB2' },
+                        ink: { 900:'#1A1A2E',700:'#374151',500:'#6B7280',300:'#9CA3AF' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root{--brand:#F96316;--brand-dark:#E84B07;--surface:#FAFAF8;--border:#EDEAE5;--ink:#1A1A2E;--ink-muted:#6B7280;--star:#F59E0B;--success:#10B981;--danger:#EF4444}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--surface);color:var(--ink)}
+        body.ltr{font-family:'Inter',sans-serif}
+        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#C4BDB2;border-radius:10px}
+
+        @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        .product-card{animation:fadeUp .5s ease both}
+        @keyframes cartPulse{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+        .cart-pulse{animation:cartPulse .4s ease}
+
+        .header-scrolled{box-shadow:0 2px 20px rgba(0,0,0,.08);backdrop-filter:blur(12px);background:rgba(255,255,255,.95)!important}
+        .search-focused{box-shadow:0 0 0 3px rgba(249,99,22,.2);border-color:var(--brand)!important}
+        .product-card{transition:all .3s cubic-bezier(.4,0,.2,1);border:1px solid var(--border)}
+        .product-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,.08);border-color:transparent}
+        .product-card:hover .product-img{transform:scale(1.08)}
+        .product-card:hover .quick-actions{opacity:1;transform:translateY(0)}
+        .product-img{transition:transform .5s cubic-bezier(.4,0,.2,1)}
+        .quick-actions{opacity:0;transform:translateY(10px);transition:all .3s ease}
+        .badge-discount{background:var(--danger);clip-path:polygon(0 0,100% 0,85% 100%,0 100%)}
+        .ltr .badge-discount{clip-path:polygon(15% 0,100% 0,100% 100%,0 100%)}
+        .star-filled{color:var(--star)}.star-empty{color:#E5E7EB}
+
+        input[type="range"]{-webkit-appearance:none;width:100%;height:4px;border-radius:4px;background:#EDEAE5;outline:none}
+        input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--brand);cursor:pointer;box-shadow:0 2px 6px rgba(249,99,22,.3);transition:transform .2s}
+        input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+
+        @keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes toastOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(20px) scale(.95)}}
+        .toast-enter{animation:toastIn .35s ease}.toast-exit{animation:toastOut .35s ease forwards}
+
+        .banner-gradient{background:linear-gradient(135deg,#1A1A2E 0%,#2D1B4E 40%,#4A1942 70%,#E84B07 100%)}
+        .banner-gradient-2{background:linear-gradient(135deg,#0F2027 0%,#203A43 40%,#2C5364 100%)}
+        .banner-gradient-3{background:linear-gradient(135deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%)}
+        .bg-pattern{background-image:radial-gradient(circle at 20% 50%,rgba(249,99,22,.03) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(249,99,22,.02) 0%,transparent 50%),radial-gradient(circle at 50% 80%,rgba(16,185,129,.02) 0%,transparent 50%)}
+        .categories-scroll{scrollbar-width:none;-ms-overflow-style:none}.categories-scroll::-webkit-scrollbar{display:none}
+        .filter-overlay{transition:opacity .3s ease}.filter-panel{transition:transform .3s cubic-bezier(.4,0,.2,1)}
+        .cart-count{font-size:10px;min-width:18px;height:18px;line-height:18px}
+
+        .lang-toggle{display:flex;align-items:center;background:rgba(255,255,255,.12);border-radius:999px;padding:2px;cursor:pointer;border:1px solid rgba(255,255,255,.15);transition:all .3s}
+        .lang-toggle:hover{background:rgba(255,255,255,.18)}
+        .lang-option{padding:3px 12px;border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.55);transition:all .3s;user-select:none;white-space:nowrap}
+        .lang-option.active{background:var(--brand);color:white;box-shadow:0 2px 8px rgba(249,99,22,.3)}
+        .lang-toggle-mobile{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);color:white;cursor:pointer;transition:all .3s}
+        .lang-toggle-mobile:hover{background:rgba(255,255,255,.2)}
+
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    </style>
+</head>
+<body class="bg-pattern min-h-screen">
+
+<div id="toastContainer" class="fixed bottom-6 left-6 z-[9999] flex flex-col gap-3"></div>
+
+<!-- ===== الهيدر ===== -->
+<header id="mainHeader" class="sticky top-0 z-50 bg-white transition-all duration-300">
+    <div class="bg-ink-900 text-white text-xs py-1.5">
+        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <span data-i18n="topbar_shipping">شحن مجاني للطلبات فوق 200 جنيه</span>
+                <span class="hidden sm:inline text-surface-400">|</span>
+                <span class="hidden sm:inline" data-i18n="topbar_return">إرجاع مجاني خلال 14 يوم</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="lang-toggle" id="langToggle" onclick="toggleLanguage()">
+                    <span class="lang-option active" id="langAr">عربي</span>
+                    <span class="lang-option" id="langEn">EN</span>
+                </div>
+                <span class="hidden sm:inline text-surface-400">|</span>
+                <a href="#" class="hover:text-brand-400 transition-colors hidden sm:inline" data-i18n="topbar_track">تتبع طلبك</a>
+                <a href="#" class="hover:text-brand-400 transition-colors hidden sm:inline" data-i18n="topbar_help">مساعدة</a>
+            </div>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 py-3">
+        <div class="flex items-center gap-4 lg:gap-6">
+            <a href="#" class="flex-shrink-0 flex items-center gap-2">
+                <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center"><i class="fas fa-store text-white text-lg"></i></div>
+                <div class="hidden sm:block"><span class="text-2xl font-extrabold text-ink-900 leading-none" data-i18n="logo_1">سوق</span><span class="text-2xl font-extrabold text-brand-500 leading-none">.نت</span></div>
+            </a>
+            <div class="flex-1 max-w-2xl">
+                <div id="searchBox" class="relative flex items-center border-2 border-surface-300 rounded-xl overflow-hidden transition-all duration-300">
+                    <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="ابحث عن منتجات، ماركات، وأكثر..." class="w-full py-2.5 px-4 text-sm bg-transparent outline-none placeholder:text-ink-300" oninput="handleSearch(this.value)" onfocus="document.getElementById('searchBox').classList.add('search-focused')" onblur="document.getElementById('searchBox').classList.remove('search-focused')">
+                    <button class="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 transition-colors" onclick="handleSearch(document.getElementById('searchInput').value)"><i class="fas fa-search"></i></button>
+                    <div id="searchSuggestions" class="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-surface-200 hidden z-50 max-h-80 overflow-y-auto"></div>
+                </div>
+            </div>
+            <div class="flex items-center gap-1 sm:gap-3">
+                <button class="sm:hidden lang-toggle-mobile" onclick="toggleLanguage()"><i class="fas fa-globe text-xs"></i><span id="mobileLangLabel">EN</span></button>
+                <button class="relative p-2.5 rounded-xl hover:bg-surface-100 transition-colors group"><i class="far fa-heart text-ink-700 group-hover:text-brand-500 transition-colors text-lg"></i><span id="wishlistCount" class="cart-count absolute -top-0.5 -left-0.5 bg-brand-500 text-white rounded-full text-center font-bold hidden">0</span></button>
+                <button onclick="toggleCart()" class="relative p-2.5 rounded-xl hover:bg-surface-100 transition-colors group"><i class="fas fa-shopping-cart text-ink-700 group-hover:text-brand-500 transition-colors text-lg"></i><span id="cartCount" class="cart-count absolute -top-0.5 -left-0.5 bg-brand-500 text-white rounded-full text-center font-bold hidden">0</span></button>
+                <div class="hidden md:block relative group">
+                    <button class="flex items-center gap-2 p-2 rounded-xl hover:bg-surface-100 transition-colors">
+                        <div class="w-8 h-8 bg-surface-200 rounded-full flex items-center justify-center"><i class="fas fa-user text-ink-500 text-sm"></i></div>
+                        <div class="text-right"><div class="text-xs font-semibold text-ink-900" data-i18n="header_welcome">مرحباً بك</div><div class="text-[10px] text-ink-500" data-i18n="header_account">حسابي | الطلبات</div></div>
+                        <i class="fas fa-chevron-down text-[10px] text-ink-300 mr-1"></i>
+                    </button>
+                    <div class="absolute top-full left-0 mt-1 w-52 bg-white rounded-xl shadow-xl border border-surface-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <a href="#" class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-50 transition-colors text-sm"><i class="fas fa-user-circle text-ink-400 w-5"></i><span data-i18n="menu_account">حسابي</span></a>
+                        <a href="#" class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-50 transition-colors text-sm"><i class="fas fa-box text-ink-400 w-5"></i><span data-i18n="menu_orders">طلباتي</span></a>
+                        <a href="#" class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-50 transition-colors text-sm"><i class="fas fa-heart text-ink-400 w-5"></i><span data-i18n="menu_wishlist">المفضلة</span></a>
+                        <hr class="my-1 border-surface-200">
+                        <a href="#" class="flex items-center gap-3 px-4 py-2.5 hover:bg-surface-50 transition-colors text-sm"><i class="fas fa-sign-in-alt text-ink-400 w-5"></i><span data-i18n="menu_login">تسجيل الدخول</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="border-t border-surface-200">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="categories-scroll flex items-center gap-1 overflow-x-auto py-2" id="categoriesBar"></div>
+        </div>
+    </div>
+</header>
+
+<!-- ===== البانر ===== -->
+<section class="max-w-7xl mx-auto px-4 mt-5">
+    <div class="relative rounded-2xl overflow-hidden h-[220px] sm:h-[280px] lg:h-[320px]" id="bannerContainer">
+        <div class="banner-slide absolute inset-0 banner-gradient flex items-center" data-slide="0">
+            <div class="max-w-7xl mx-auto px-8 sm:px-12 w-full flex items-center justify-between">
+                <div class="text-white max-w-lg">
+                    <span class="inline-block bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium mb-3" data-i18n="b1_badge">عرض محدود</span>
+                    <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-3" data-i18n="b1_h">تخفيضات تصل إلى<br><span class="text-brand-400">70%</span> على الإلكترونيات</h2>
+                    <p class="text-white/70 text-sm sm:text-base mb-5" data-i18n="b1_p">أفضل العروض على أحدث الأجهزة من أشهر الماركات العالمية</p>
+                    <button class="bg-brand-500 hover:bg-brand-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors" data-i18n="b1_btn">تسوق الآن <i class="fas fa-arrow-left mr-2 text-xs"></i></button>
+                </div>
+                <div class="hidden lg:block"><div class="w-64 h-64 relative"><div class="absolute inset-0 bg-white/5 rounded-full blur-2xl"></div><div class="relative text-center"><i class="fas fa-laptop text-[120px] text-white/20"></i><div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-1 rounded-full text-sm font-bold">-70%</div></div></div></div>
+            </div>
+        </div>
+        <div class="banner-slide absolute inset-0 banner-gradient-2 flex items-center opacity-0" data-slide="1">
+            <div class="max-w-7xl mx-auto px-8 sm:px-12 w-full flex items-center justify-between">
+                <div class="text-white max-w-lg">
+                    <span class="inline-block bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium mb-3" data-i18n="b2_badge">موسم الأزياء</span>
+                    <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-3" data-i18n="b2_h">تشكيلة أزياء<br><span class="text-emerald-400">ربيع 2025</span> الجديدة</h2>
+                    <p class="text-white/70 text-sm sm:text-base mb-5" data-i18n="b2_p">اكتشفي أحدث صيحات الموضة من أكبر الماركات العالمية</p>
+                    <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors" data-i18n="b2_btn">اكتشفي الآن <i class="fas fa-arrow-left mr-2 text-xs"></i></button>
+                </div>
+                <div class="hidden lg:block"><div class="w-64 h-64 relative"><div class="absolute inset-0 bg-white/5 rounded-full blur-2xl"></div><i class="fas fa-tshirt text-[120px] text-white/20 relative"></i></div></div>
+            </div>
+        </div>
+        <div class="banner-slide absolute inset-0 banner-gradient-3 flex items-center opacity-0" data-slide="2">
+            <div class="max-w-7xl mx-auto px-8 sm:px-12 w-full flex items-center justify-between">
+                <div class="text-white max-w-lg">
+                    <span class="inline-block bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium mb-3" data-i18n="b3_badge">جديد</span>
+                    <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-3" data-i18n="b3_h">مستلزمات المنزل<br>بأسعار <span class="text-sky-400">استثنائية</span></h2>
+                    <p class="text-white/70 text-sm sm:text-base mb-5" data-i18n="b3_p">حوّل منزلك إلى مساحة أنيقة ومريحة مع تشكيلتنا المتنوعة</p>
+                    <button class="bg-sky-500 hover:bg-sky-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors" data-i18n="b3_btn">تصفح المنتجات <i class="fas fa-arrow-left mr-2 text-xs"></i></button>
+                </div>
+                <div class="hidden lg:block"><div class="w-64 h-64 relative"><div class="absolute inset-0 bg-white/5 rounded-full blur-2xl"></div><i class="fas fa-couch text-[120px] text-white/20 relative"></i></div></div>
+            </div>
+        </div>
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            <button onclick="goToSlide(0)" class="banner-dot w-8 h-1.5 rounded-full bg-white/40 transition-all" data-dot="0"></button>
+            <button onclick="goToSlide(1)" class="banner-dot w-8 h-1.5 rounded-full bg-white/40 transition-all" data-dot="1"></button>
+            <button onclick="goToSlide(2)" class="banner-dot w-8 h-1.5 rounded-full bg-white/40 transition-all" data-dot="2"></button>
+        </div>
+        <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors z-10"><i class="fas fa-chevron-left text-sm"></i></button>
+        <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors z-10"><i class="fas fa-chevron-right text-sm"></i></button>
+    </div>
+</section>
+
+<!-- ===== مميزات ===== -->
+<section class="max-w-7xl mx-auto px-4 mt-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="flex items-center gap-3 bg-white rounded-xl p-3 border border-surface-200">
+            <div class="w-10 h-10 bg-brand-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-truck text-brand-500"></i></div>
+            <div><div class="text-xs font-bold text-ink-900" data-i18n="f1">شحن سريع</div><div class="text-[10px] text-ink-500" data-i18n="f1d">توصيل خلال 24 ساعة</div></div>
+        </div>
+        <div class="flex items-center gap-3 bg-white rounded-xl p-3 border border-surface-200">
+            <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-shield-alt text-emerald-500"></i></div>
+            <div><div class="text-xs font-bold text-ink-900" data-i18n="f2">ضمان أصلي</div><div class="text-[10px] text-ink-500" data-i18n="f2d">منتجات أصلية 100%</div></div>
+        </div>
+        <div class="flex items-center gap-3 bg-white rounded-xl p-3 border border-surface-200">
+            <div class="w-10 h-10 bg-sky-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-undo-alt text-sky-500"></i></div>
+            <div><div class="text-xs font-bold text-ink-900" data-i18n="f3">إرجاع مجاني</div><div class="text-[10px] text-ink-500" data-i18n="f3d">خلال 14 يوم</div></div>
+        </div>
+        <div class="flex items-center gap-3 bg-white rounded-xl p-3 border border-surface-200">
+            <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-lock text-amber-500"></i></div>
+            <div><div class="text-xs font-bold text-ink-900" data-i18n="f4">دفع آمن</div><div class="text-[10px] text-ink-500" data-i18n="f4d">حماية كاملة لبياناتك</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== المحتوى الرئيسي ===== -->
+<main class="max-w-7xl mx-auto px-4 mt-8 mb-16">
+    <div class="flex gap-6">
+        <!-- فلتر جانبي -->
+        <aside id="desktopFilter" class="hidden lg:block w-72 flex-shrink-0">
+            <div class="bg-white rounded-2xl border border-surface-200 p-5 sticky top-[180px]">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-bold text-ink-900 text-lg" data-i18n="fl_title">تصفية النتائج</h3>
+                    <button onclick="resetFilters()" class="text-xs text-brand-500 hover:text-brand-600 font-medium" data-i18n="fl_clear">مسح الكل</button>
+                </div>
+                <div class="mb-6">
+                    <h4 class="font-semibold text-ink-900 text-sm mb-3 flex items-center gap-2"><i class="fas fa-tags text-ink-400 text-xs"></i><span data-i18n="fl_type">نوع المنتج</span></h4>
+                    <div class="space-y-2" id="categoryFilters"></div>
+                </div>
+                <hr class="border-surface-200 mb-6">
+                <div class="mb-6">
+                    <h4 class="font-semibold text-ink-900 text-sm mb-3 flex items-center gap-2"><i class="fas fa-coins text-ink-400 text-xs"></i><span data-i18n="fl_price">نطاق السعر</span></h4>
+                    <div class="px-1 mb-3"><input type="range" id="priceRange" min="0" max="5000" value="5000" oninput="updatePriceLabel(this.value);applyFilters()"></div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-ink-500">0 <span data-i18n="cur">جنيه</span></span>
+                        <span id="priceLabel" class="font-bold text-brand-500">5,000 <span data-i18n="cur2">جنيه</span></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                        <input type="number" id="priceMin" value="0" min="0" onchange="syncPriceRange()" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm text-center outline-none focus:border-brand-500">
+                        <input type="number" id="priceMax" value="5000" max="5000" onchange="syncPriceRange()" class="w-full px-3 py-2 border border-surface-300 rounded-lg text-sm text-center outline-none focus:border-brand-500">
+                    </div>
+                </div>
+                <hr class="border-surface-200 mb-6">
+                <div class="mb-6">
+                    <h4 class="font-semibold text-ink-900 text-sm mb-3 flex items-center gap-2"><i class="fas fa-star text-ink-400 text-xs"></i><span data-i18n="fl_rate">التقييم</span></h4>
+                    <div class="space-y-2" id="ratingFilters"></div>
+                </div>
+                <hr class="border-surface-200 mb-6">
+                <div>
+                    <h4 class="font-semibold text-ink-900 text-sm mb-3 flex items-center gap-2"><i class="fas fa-building text-ink-400 text-xs"></i><span data-i18n="fl_brand">العلامة التجارية</span></h4>
+                    <div class="space-y-2 max-h-48 overflow-y-auto" id="brandFilters"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- منطقة المنتجات -->
+        <div class="flex-1 min-w-0">
+            <div class="bg-white rounded-2xl border border-surface-200 p-4 mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <button onclick="openMobileFilter()" class="lg:hidden flex items-center gap-2 px-4 py-2 bg-surface-100 hover:bg-surface-200 rounded-xl text-sm font-medium transition-colors"><i class="fas fa-sliders-h text-brand-500"></i><span data-i18n="tb_filter">فلتر</span></button>
+                    <span id="resultsCount" class="text-sm text-ink-500"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex items-center bg-surface-100 rounded-lg p-0.5">
+                        <button onclick="setView('grid')" id="gridViewBtn" class="p-2 rounded-md bg-white shadow-sm text-brand-500"><i class="fas fa-th text-sm"></i></button>
+                        <button onclick="setView('list')" id="listViewBtn" class="p-2 rounded-md text-ink-400 hover:text-ink-700 transition-colors"><i class="fas fa-list text-sm"></i></button>
+                    </div>
+                    <select id="sortSelect" onchange="applyFilters()" class="px-3 py-2 border border-surface-300 rounded-xl text-sm bg-white outline-none focus:border-brand-500 cursor-pointer"></select>
+                </div>
+            </div>
+            <div id="activeFilters" class="flex flex-wrap gap-2 mb-4 hidden"></div>
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+            <div id="noResults" class="hidden text-center py-20">
+                <div class="w-24 h-24 bg-surface-200 rounded-full flex items-center justify-center mx-auto mb-5"><i class="fas fa-search text-3xl text-ink-300"></i></div>
+                <h3 class="text-xl font-bold text-ink-900 mb-2" data-i18n="no_res">لا توجد نتائج</h3>
+                <p class="text-ink-500 text-sm mb-5" data-i18n="no_res_d">جرب تعديل معايير البحث أو الفلتر</p>
+                <button onclick="resetFilters()" class="bg-brand-500 hover:bg-brand-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors" data-i18n="no_res_b">مسح جميع الفلاتر</button>
+            </div>
+            <div id="loadMoreContainer" class="text-center mt-8">
+                <button onclick="loadMore()" class="px-8 py-3 border-2 border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white rounded-xl font-semibold text-sm transition-all duration-300" data-i18n="load_more">تحميل المزيد من المنتجات</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ===== الفوتر ===== -->
+<footer class="bg-ink-900 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+            <div>
+                <div class="flex items-center gap-2 mb-5"><div class="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center"><i class="fas fa-store text-white"></i></div><span class="text-xl font-extrabold">سوق<span class="text-brand-400">.نت</span></span></div>
+                <p class="text-white/50 text-sm leading-relaxed" data-i18n="ft_desc">وجهتك الأولى للتسوق الإلكتروني في المنطقة العربية. آلاف المنتجات بأفضل الأسعار مع ضمان الجودة.</p>
+                <div class="flex items-center gap-3 mt-5">
+                    <a href="#" class="w-9 h-9 bg-white/10 hover:bg-brand-500 rounded-lg flex items-center justify-center transition-colors"><i class="fab fa-twitter text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 bg-white/10 hover:bg-brand-500 rounded-lg flex items-center justify-center transition-colors"><i class="fab fa-instagram text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 bg-white/10 hover:bg-brand-500 rounded-lg flex items-center justify-center transition-colors"><i class="fab fa-youtube text-sm"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm mb-4" data-i18n="ft_shop">تسوق</h4>
+                <ul class="space-y-2.5 text-sm text-white/50">
+                    <li><a href="#" class="hover:text-brand-400 transition-colors" data-i18n="ft_s1">العروض والخصومات</a></li>
+                    <li><a href="#" class="hover:text-brand-400 transition-colors" data-i18n="ft_s2">جديد اليوم</a></li>
+                    <li><a href="#" class="hover:text-brand-400 transition-colors" data-i18n="ft_s3">الأكثر مبيعاً</a></li>
+                    <li><a href="#" class="hover:text-brand-400 transition-colors" data-i18n="ft_s4">الفئات</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm mb-4" data-i18n="ft_help">خدمة العملاء</h4>
+                <ul class="space-y-2.5 text-sm text-white/50">
+                    <li><a href="#" class="hover:text-brand-400 transition-colors" data-i18n="ft_h1">مركز المساعدة</a></li>
+                    <li><a href="#" class="hover:text-brand-400 transition-colors" data-i18n="ft_h2">تتبع الطلب</a></li>
+                    <li><a href="#" class="hover:text-brand-400 transition-colors" data-i18n="ft_h3">سياسة الإرجاع</a></li>
+                    <li><a href="#" class="hover:text-brand-400 transition-colors" data-i18n="ft_h4">الشحن والتوصيل</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm mb-4" data-i18n="ft_news">النشرة البريدية</h4>
+                <p class="text-white/50 text-sm mb-4" data-i18n="ft_news_d">اشترك ليصلك أحدث العروض والتخفيضات</p>
+                <div class="flex gap-2">
+                    <input type="email" placeholder="بريدك الإلكتروني" class="flex-1 px-3 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm outline-none focus:border-brand-500 placeholder:text-white/30">
+                    <button class="bg-brand-500 hover:bg-brand-600 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+        <hr class="border-white/10 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 text-xs text-white/40">
+            <span data-i18n="ft_copy">&copy; 2025 سوق.نت - جميع الحقوق محفوظة</span>
+            <div class="flex items-center gap-4">
+                <a href="#" class="hover:text-white/70 transition-colors" data-i18n="ft_t1">الشروط والأحكام</a>
+                <a href="#" class="hover:text-white/70 transition-colors" data-i18n="ft_t2">سياسة الخصوصية</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ===== فلتر موبايل ===== -->
+<div id="mobileFilterOverlay" class="fixed inset-0 bg-black/50 z-[60] hidden filter-overlay" onclick="closeMobileFilter()"></div>
+<div id="mobileFilterPanel" class="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white z-[70] filter-panel translate-x-full overflow-y-auto">
+    <div class="p-5">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-ink-900 text-lg" data-i18n="fl_title">تصفية النتائج</h3>
+            <button onclick="closeMobileFilter()" class="w-9 h-9 bg-surface-100 rounded-full flex items-center justify-center hover:bg-surface-200"><i class="fas fa-times text-ink-500"></i></button>
+        </div>
+        <div id="mobileFilterContent"></div>
+        <div class="flex gap-3 mt-6 sticky bottom-0 bg-white pt-4 pb-2">
+            <button onclick="resetFilters();closeMobileFilter()" class="flex-1 py-3 border border-surface-300 rounded-xl text-sm font-semibold text-ink-700 hover:bg-surface-50" data-i18n="fl_clear">مسح الكل</button>
+            <button onclick="closeMobileFilter()" class="flex-1 py-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-sm font-semibold" data-i18n="fl_apply">تطبيق</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== سلة المشتريات ===== -->
+<div id="cartOverlay" class="fixed inset-0 bg-black/50 z-[80] hidden filter-overlay" onclick="toggleCart()"></div>
+<div id="cartPanel" class="fixed top-0 left-0 h-full w-96 max-w-[90vw] bg-white z-[90] filter-panel -translate-x-full overflow-y-auto shadow-2xl">
+    <div class="p-5">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-ink-900 text-lg"><i class="fas fa-shopping-cart ml-2 text-brand-500"></i><span data-i18n="cart_title">سلة المشتريات</span></h3>
+            <button onclick="toggleCart()" class="w-9 h-9 bg-surface-100 rounded-full flex items-center justify-center hover:bg-surface-200"><i class="fas fa-times text-ink-500"></i></button>
+        </div>
+        <div id="cartItems"></div>
+        <div id="cartFooter" class="hidden sticky bottom-0 bg-white pt-4 pb-2 border-t border-surface-200 mt-4">
+            <div class="flex items-center justify-between mb-3"><span class="text-sm text-ink-500" data-i18n="cart_sub">المجموع الفرعي</span><span id="cartTotal" class="font-bold text-lg text-ink-900"></span></div>
+            <div class="flex items-center justify-between mb-4"><span class="text-sm text-ink-500" data-i18n="cart_ship">الشحن</span><span id="cartShipping" class="text-sm font-medium text-emerald-500"></span></div>
+            <button class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold text-sm transition-colors" data-i18n="cart_checkout">إتمام الشراء <i class="fas fa-arrow-left mr-2"></i></button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== قاموس الترجمة ==========
+let currentLang = 'ar';
+const T = {
+    ar: {
+        topbar_shipping:'شحن مجاني للطلبات فوق 200 جنيه', topbar_return:'إرجاع مجاني خلال 14 يوم',
+        topbar_track:'تتبع طلبك', topbar_help:'مساعدة',
+        logo_1:'سوق', search_placeholder:'ابحث عن منتجات، ماركات، وأكثر...',
+        header_welcome:'مرحباً بك', header_account:'حسابي | الطلبات',
+        menu_account:'حسابي', menu_orders:'طلباتي', menu_wishlist:'المفضلة', menu_login:'تسجيل الدخول',
+        cat_all:'الكل', cat_electronics:'إلكترونيات', cat_fashion:'أزياء وملابس', cat_home:'المنزل والمطبخ',
+        cat_sports:'رياضة', cat_beauty:'جمال وعناية', cat_books:'كتب', cat_toys:'ألعاب', cat_auto:'سيارات',
+        b1_badge:'عرض محدود', b1_h:'تخفيضات تصل إلى<br><span class="text-brand-400">70%</span> على الإلكترونيات', b1_p:'أفضل العروض على أحدث الأجهزة من أشهر الماركات العالمية', b1_btn:'تسوق الآن <i class="fas fa-arrow-left mr-2 text-xs"></i>',
+        b2_badge:'موسم الأزياء', b2_h:'تشكيلة أزياء<br><span class="text-emerald-400">ربيع 2025</span> الجديدة', b2_p:'اكتشفي أحدث صيحات الموضة من أكبر الماركات العالمية', b2_btn:'اكتشفي الآن <i class="fas fa-arrow-left mr-2 text-xs"></i>',
+        b3_badge:'جديد', b3_h:'مستلزمات المنزل<br>بأسعار <span class="text-sky-400">استثنائية</span>', b3_p:'حوّل منزلك إلى مساحة أنيقة ومريحة مع تشكيلتنا المتنوعة', b3_btn:'تصفح المنتجات <i class="fas fa-arrow-left mr-2 text-xs"></i>',
+        f1:'شحن سريع', f1d:'توصيل خلال 24 ساعة', f2:'ضمان أصلي', f2d:'منتجات أصلية 100%',
+        f3:'إرجاع مجاني', f3d:'خلال 14 يوم', f4:'دفع آمن', f4d:'حماية كاملة لبياناتك',
+        fl_title:'تصفية النتائج', fl_clear:'مسح الكل', fl_type:'نوع المنتج', fl_price:'نطاق السعر',
+        fl_rate:'التقييم', fl_brand:'العلامة التجارية', fl_apply:'تطبيق',
+        rating_all:'الكل', rating_up:'وأعلى', cur:'جنيه', cur2:'جنيه',
+        sort_default:'ترتيب حسب: الافتراضي', sort_price_asc:'السعر: من الأقل للأعلى',
+        sort_price_desc:'السعر: من الأعلى للأقل', sort_rating:'الأعلى تقييماً', sort_reviews:'الأكثر مراجعة', sort_discount:'أكبر تخفيض',
+        tb_filter:'فلتر', results_showing:'عرض', results_of:'من', results_prod:'منتج',
+        no_res:'لا توجد نتائج', no_res_d:'جرب تعديل معايير البحث أو الفلتر', no_res_b:'مسح جميع الفلاتر',
+        load_more:'تحميل المزيد من المنتجات',
+        add_cart:'أضف للسلة', in_cart:'في السلة', filter_search:'بحث:', filter_until:'حتى',
+        filter_stars:'نجوم', filter_clear_all:'مسح الكل',
+        cart_title:'سلة المشتريات', cart_empty:'سلة المشتريات فارغة', cart_empty_d:'ابدأ بإضافة منتجات رائعة!',
+        cart_sub:'المجموع الفرعي', cart_ship:'الشحن', cart_free:'مجاني',
+        cart_checkout:'إتمام الشراء <i class="fas fa-arrow-left mr-2"></i>',
+        toast_added:'تمت إضافة "', toast_to_cart:'" إلى السلة', toast_removed:'تمت إزالة "', toast_from_wish:'" من المفضلة',
+        toast_wish_added:'تمت إضافة "', toast_to_wish:'" إلى المفضلة',
+        reviews_label:'تقييم', currency_label:'جنيه',
+        ft_desc:'وجهتك الأولى للتسوق الإلكتروني في المنطقة العربية. آلاف المنتجات بأفضل الأسعار مع ضمان الجودة.',
+        ft_shop:'تسوق', ft_s1:'العروض والخصومات', ft_s2:'جديد اليوم', ft_s3:'الأكثر مبيعاً', ft_s4:'الفئات',
+        ft_help:'خدمة العملاء', ft_h1:'مركز المساعدة', ft_h2:'تتبع الطلب', ft_h3:'سياسة الإرجاع', ft_h4:'الشحن والتوصيل',
+        ft_news:'النشرة البريدية', ft_news_d:'اشترك ليصلك أحدث العروض والتخفيضات',
+        ft_copy:'\u00A9 2025 سوق.نت - جميع الحقوق محفوظة', ft_t1:'الشروط والأحكام', ft_t2:'سياسة الخصوصية',
+        best_seller:'الأكثر مبيعاً', new_badge:'جديد',
+    },
+    en: {
+        topbar_shipping:'Free shipping on orders over 200 EGP', topbar_return:'Free returns within 14 days',
+        topbar_track:'Track Order', topbar_help:'Help',
+        logo_1:'Souq', search_placeholder:'Search products, brands, and more...',
+        header_welcome:'Welcome', header_account:'Account | Orders',
+        menu_account:'My Account', menu_orders:'My Orders', menu_wishlist:'Wishlist', menu_login:'Sign In',
+        cat_all:'All', cat_electronics:'Electronics', cat_fashion:'Fashion & Clothing', cat_home:'Home & Kitchen',
+        cat_sports:'Sports', cat_beauty:'Beauty & Care', cat_books:'Books', cat_toys:'Toys', cat_auto:'Automotive',
+        b1_badge:'Limited Offer', b1_h:'Up to <span class="text-brand-400">70%</span> Off Electronics', b1_p:'Best deals on the latest devices from top global brands', b1_btn:'Shop Now <i class="fas fa-arrow-right ml-2 text-xs"></i>',
+        b2_badge:'Fashion Season', b2_h:'New <span class="text-emerald-400">Spring 2025</span> Collection', b2_p:'Discover the latest fashion trends from the biggest global brands', b2_btn:'Discover Now <i class="fas fa-arrow-right ml-2 text-xs"></i>',
+        b3_badge:'New', b3_h:'Home Essentials at <span class="text-sky-400">Amazing Prices</span>', b3_p:'Transform your home into an elegant and comfortable space', b3_btn:'Browse Products <i class="fas fa-arrow-right ml-2 text-xs"></i>',
+        f1:'Fast Shipping', f1d:'Delivery within 24 hours', f2:'Authentic Guarantee', f2d:'100% original products',
+        f3:'Free Returns', f3d:'Within 14 days', f4:'Secure Payment', f4d:'Full data protection',
+        fl_title:'Filter Results', fl_clear:'Clear All', fl_type:'Product Type', fl_price:'Price Range',
+        fl_rate:'Rating', fl_brand:'Brand', fl_apply:'Apply',
+        rating_all:'All', rating_up:'& up', cur:'EGP', cur2:'EGP',
+        sort_default:'Sort by: Default', sort_price_asc:'Price: Low to High',
+        sort_price_desc:'Price: High to Low', sort_rating:'Highest Rated', sort_reviews:'Most Reviewed', sort_discount:'Biggest Discount',
+        tb_filter:'Filter', results_showing:'Showing', results_of:'of', results_prod:'products',
+        no_res:'No Results Found', no_res_d:'Try adjusting your search or filter criteria', no_res_b:'Clear All Filters',
+        load_more:'Load More Products',
+        add_cart:'Add to Cart', in_cart:'In Cart', filter_search:'Search:', filter_until:'Up to',
+        filter_stars:'stars', filter_clear_all:'Clear All',
+        cart_title:'Shopping Cart', cart_empty:'Your cart is empty', cart_empty_d:'Start adding great products!',
+        cart_sub:'Subtotal', cart_ship:'Shipping', cart_free:'Free',
+        cart_checkout:'Checkout <i class="fas fa-arrow-right ml-2"></i>',
+        toast_added:'Added "', toast_to_cart:'" to cart', toast_removed:'Removed "', toast_from_wish:'" from wishlist',
+        toast_wish_added:'Added "', toast_to_wish:'" to wishlist',
+        reviews_label:'reviews', currency_label:'EGP',
+        ft_desc:'Your first destination for e-commerce in the Arab region. Thousands of products at the best prices with quality guarantee.',
+        ft_shop:'Shop', ft_s1:'Deals & Discounts', ft_s2:"What's New", ft_s3:'Best Sellers', ft_s4:'Categories',
+        ft_help:'Customer Service', ft_h1:'Help Center', ft_h2:'Track Order', ft_h3:'Return Policy', ft_h4:'Shipping & Delivery',
+        ft_news:'Newsletter', ft_news_d:'Subscribe to get the latest deals and discounts',
+        ft_copy:'\u00A9 2025 Souq.net - All rights reserved', ft_t1:'Terms & Conditions', ft_t2:'Privacy Policy',
+        best_seller:'Best Seller', new_badge:'New',
+    }
+};
+
+// ========== بيانات المنتجات ==========
+const products = [
+    { id:1, name:'سماعات لاسلكية AirPods Pro 2', nameEn:'AirPods Pro 2 Wireless Earbuds', category:'electronics', brand:'Apple', price:899, oldPrice:1099, rating:4.8, reviews:2340, image:'https://picsum.photos/seed/airpods2/400/400', badge:'best' },
+    { id:2, name:'هاتف Galaxy S24 Ultra', nameEn:'Galaxy S24 Ultra', category:'electronics', brand:'Samsung', price:4499, oldPrice:5199, rating:4.9, reviews:5670, image:'https://picsum.photos/seed/galaxys24u/400/400', badge:'new' },
+    { id:3, name:'لابتوب MacBook Air M3', nameEn:'MacBook Air M3 Laptop', category:'electronics', brand:'Apple', price:5299, oldPrice:5999, rating:4.9, reviews:1890, image:'https://picsum.photos/seed/macbookm3a/400/400', badge:'' },
+    { id:4, name:'ساعة ذكية Watch Ultra 2', nameEn:'Watch Ultra 2 Smartwatch', category:'electronics', brand:'Apple', price:3199, oldPrice:3699, rating:4.7, reviews:980, image:'https://picsum.photos/seed/watchultra2/400/400', badge:'' },
+    { id:5, name:'تلفزيون OLED 65 بوصة', nameEn:'65" OLED TV', category:'electronics', brand:'Sony', price:6799, oldPrice:8999, rating:4.8, reviews:456, image:'https://picsum.photos/seed/sonytv65/400/400', badge:'' },
+    { id:6, name:'كاميرا ميروجنيه A7 IV', nameEn:'A7 IV Mirrorless Camera', category:'electronics', brand:'Sony', price:7899, oldPrice:8499, rating:4.9, reviews:234, image:'https://picsum.photos/seed/sonya7iv/400/400', badge:'' },
+    { id:7, name:'سماعات ضوضاء WH-1000XM5', nameEn:'WH-1000XM5 Noise Cancelling', category:'electronics', brand:'Sony', price:1199, oldPrice:1599, rating:4.7, reviews:3210, image:'https://picsum.photos/seed/sonyxm5/400/400', badge:'' },
+    { id:8, name:'مكبر صوت بلوتوث JBL', nameEn:'JBL Bluetooth Speaker', category:'electronics', brand:'JBL', price:399, oldPrice:549, rating:4.6, reviews:4560, image:'https://picsum.photos/seed/jblspk/400/400', badge:'' },
+    { id:9, name:'كاميرا مراقبة ذكية', nameEn:'Smart Security Camera', category:'electronics', brand:'Xiaomi', price:199, oldPrice:299, rating:4.4, reviews:3450, image:'https://picsum.photos/seed/xiaocam/400/400', badge:'' },
+    { id:10, name:'جاكيت جلد طبيعي كلاسيك', nameEn:'Classic Genuine Leather Jacket', category:'fashion', brand:'Zara', price:799, oldPrice:1299, rating:4.5, reviews:567, image:'https://picsum.photos/seed/leathjkt/400/400', badge:'' },
+    { id:11, name:'حذاء رياضي Air Max 90', nameEn:'Air Max 90 Sneakers', category:'fashion', brand:'Nike', price:549, oldPrice:699, rating:4.6, reviews:8900, image:'https://picsum.photos/seed/airmax90x/400/400', badge:'best' },
+    { id:12, name:'حقيبة يد أنيقة', nameEn:'Elegant Handbag', category:'fashion', brand:'H&M', price:249, oldPrice:399, rating:4.2, reviews:1234, image:'https://picsum.photos/seed/handbagx/400/400', badge:'' },
+    { id:13, name:'نظارة شمسية أفياتور', nameEn:'Aviator Sunglasses', category:'fashion', brand:'Ray-Ban', price:689, oldPrice:899, rating:4.7, reviews:2100, image:'https://picsum.photos/seed/raybanx/400/400', badge:'' },
+    { id:14, name:'فستان صيفي أنيق', nameEn:'Elegant Summer Dress', category:'fashion', brand:'Zara', price:349, oldPrice:499, rating:4.3, reviews:678, image:'https://picsum.photos/seed/dressx/400/400', badge:'' },
+    { id:15, name:'حذاء جري Ultraboost 24', nameEn:'Ultraboost 24 Running Shoes', category:'fashion', brand:'Adidas', price:699, oldPrice:899, rating:4.8, reviews:4560, image:'https://picsum.photos/seed/ultrabst/400/400', badge:'new' },
+    { id:16, name:'طقم أريكة عصرية 3 قطع', nameEn:'Modern 3-Piece Sofa Set', category:'home', brand:'IKEA', price:3899, oldPrice:4999, rating:4.4, reviews:345, image:'https://picsum.photos/seed/sofasetx/400/400', badge:'' },
+    { id:17, name:'طقم أواني طبخ 12 قطعة', nameEn:'12-Piece Cookware Set', category:'home', brand:'Tefal', price:599, oldPrice:899, rating:4.6, reviews:2340, image:'https://picsum.photos/seed/cookwarex/400/400', badge:'best' },
+    { id:18, name:'مكنسة كهربائية روبوت', nameEn:'Robot Vacuum Cleaner', category:'home', brand:'Xiaomi', price:1299, oldPrice:1799, rating:4.5, reviews:1890, image:'https://picsum.photos/seed/robotvcx/400/400', badge:'' },
+    { id:19, name:'مكيف سبليت 18000 وحدة', nameEn:'18000 BTU Split AC', category:'home', brand:'LG', price:2499, oldPrice:3199, rating:4.3, reviews:567, image:'https://picsum.photos/seed/airconx/400/400', badge:'' },
+    { id:20, name:'طاولة طعام خشب طبيعي', nameEn:'Natural Wood Dining Table', category:'home', brand:'IKEA', price:1899, oldPrice:2499, rating:4.5, reviews:234, image:'https://picsum.photos/seed/dtblx/400/400', badge:'' },
+    { id:21, name:'جهاز跑步 كهربائي', nameEn:'Electric Treadmill', category:'sports', brand:'NordicTrack', price:3299, oldPrice:4499, rating:4.6, reviews:456, image:'https://picsum.photos/seed/treadmlx/400/400', badge:'' },
+    { id:22, name:'دراجة هوائية جبلية', nameEn:'Mountain Bike', category:'sports', brand:'Trek', price:2799, oldPrice:3499, rating:4.7, reviews:789, image:'https://picsum.photos/seed/mtbikex/400/400', badge:'' },
+    { id:23, name:'حذاء كرة قدم Mercurial', nameEn:'Mercurial Football Boots', category:'sports', brand:'Nike', price:499, oldPrice:649, rating:4.8, reviews:6780, image:'https://picsum.photos/seed/mercurx/400/400', badge:'best' },
+    { id:24, name:'مجموعة أوزان حديدية 50 كجم', nameEn:'50kg Iron Weight Set', category:'sports', brand:'Adidas', price:899, oldPrice:1199, rating:4.4, reviews:1234, image:'https://picsum.photos/seed/weightsx/400/400', badge:'' },
+    { id:25, name:'سجادة يوغا بريميوم', nameEn:'Premium Yoga Mat', category:'sports', brand:'Lululemon', price:349, oldPrice:449, rating:4.6, reviews:3450, image:'https://picsum.photos/seed/yogamatx/400/400', badge:'' },
+    { id:26, name:'مجموعة العناية بالبشرة', nameEn:'Skincare Set', category:'beauty', brand:'La Roche-Posay', price:289, oldPrice:399, rating:4.7, reviews:5670, image:'https://picsum.photos/seed/skincx/400/400', badge:'best' },
+    { id:27, name:'عطر رجالي Sauvage', nameEn:'Sauvage Men\'s Perfume', category:'beauty', brand:'Dior', price:549, oldPrice:699, rating:4.9, reviews:8900, image:'https://picsum.photos/seed/sauvagx/400/400', badge:'' },
+    { id:28, name:'مجفف شعر احترافي', nameEn:'Professional Hair Dryer', category:'beauty', brand:'Dyson', price:1699, oldPrice:2199, rating:4.8, reviews:2340, image:'https://picsum.photos/seed/dysonhrx/400/400', badge:'' },
+    { id:29, name:'طقم مكياج كامل', nameEn:'Complete Makeup Set', category:'beauty', brand:'MAC', price:399, oldPrice:549, rating:4.5, reviews:4560, image:'https://picsum.photos/seed/makeupx/400/400', badge:'' },
+    { id:30, name:'كريم واقي شمس SPF 50+', nameEn:'SPF 50+ Sunscreen', category:'beauty', brand:'Neutrogena', price:89, oldPrice:119, rating:4.4, reviews:6780, image:'https://picsum.photos/seed/sunscrx/400/400', badge:'' },
+    { id:31, name:'رواية "ألف ليلة وليلة"', nameEn:'"One Thousand and One Nights" Novel', category:'books', brand:'Dar Al-Shorouk', price:129, oldPrice:179, rating:4.8, reviews:3450, image:'https://picsum.photos/seed/book1x/400/400', badge:'' },
+    { id:32, name:'كتاب "فن الحرب"', nameEn:'"The Art of War" Book', category:'books', brand:'Dar Al-Fikr', price:59, oldPrice:89, rating:4.7, reviews:5670, image:'https://picsum.photos/seed/book2x/400/400', badge:'' },
+    { id:33, name:'موسوعة العلوم المصورة', nameEn:'Illustrated Science Encyclopedia', category:'books', brand:'Dar Al-Maarefa', price:199, oldPrice:299, rating:4.6, reviews:1234, image:'https://picsum.photos/seed/book3x/400/400', badge:'' },
+    { id:34, name:'مجموعة LEGO المدينة الكبيرة', nameEn:'LEGO City Large Set', category:'toys', brand:'LEGO', price:349, oldPrice:449, rating:4.8, reviews:2340, image:'https://picsum.photos/seed/legocty/400/400', badge:'best' },
+    { id:35, name:'دراجة أطفال كهربائية', nameEn:'Electric Kids Bike', category:'toys', brand:'Fisher-Price', price:599, oldPrice:799, rating:4.3, reviews:567, image:'https://picsum.photos/seed/kidbkx/400/400', badge:'' },
+    { id:36, name:'بلايستيشن PS5 + لعبتين', nameEn:'PS5 Console + 2 Games', category:'toys', brand:'Sony', price:2199, oldPrice:2599, rating:4.9, reviews:8900, image:'https://picsum.photos/seed/ps5bun/400/400', badge:'new' },
+    { id:37, name:'بلايستيشن PS5 Slim', nameEn:'PS5 Slim Console', category:'toys', brand:'Sony', price:1899, oldPrice:2199, rating:4.8, reviews:6780, image:'https://picsum.photos/seed/ps5slmx/400/400', badge:'' },
+    { id:38, name:'غطاء مقعد سيارة جلد', nameEn:'Leather Car Seat Cover', category:'auto', brand:'3M', price:449, oldPrice:599, rating:4.3, reviews:890, image:'https://picsum.photos/seed/carseatx/400/400', badge:'' },
+    { id:39, name:'شاحن سيارة سريع 65W', nameEn:'65W Fast Car Charger', category:'auto', brand:'Anker', price:149, oldPrice:199, rating:4.7, reviews:2340, image:'https://picsum.photos/seed/carchrgx/400/400', badge:'' },
+    { id:40, name:'مكنسة سيارة لاسلكية', nameEn:'Cordless Car Vacuum', category:'auto', brand:'Black+Decker', price:249, oldPrice:349, rating:4.5, reviews:1234, image:'https://picsum.photos/seed/carvcx/400/400', badge:'' },
+];
+
+// ========== المتغيرات ==========
+let cart = [], wishlist = [], currentView = 'grid', displayCount = 12, currentSlide = 0, slideInterval;
+
+const catKeys = ['electronics','fashion','home','sports','beauty','books','toys','auto'];
+const catIcons = { electronics:'fa-laptop', fashion:'fa-tshirt', home:'fa-couch', sports:'fa-football-ball', beauty:'fa-spa', books:'fa-book', toys:'fa-gamepad', auto:'fa-car' };
+
+// ========== التهيئة ==========
+document.addEventListener('DOMContentLoaded', () => {
+    buildCategoriesBar();
+    buildCategoryFilters();
+    buildRatingFilters();
+    buildBrandFilters();
+    buildSortSelect();
+    applyFilters();
+    startBanner();
+    initHeaderScroll();
+    updateBanner();
+});
+
+// ========== تبديل اللغة ==========
+function toggleLanguage() {
+    currentLang = currentLang === 'ar' ? 'en' : 'ar';
+    const isEn = currentLang === 'en';
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = isEn ? 'ltr' : 'rtl';
+    document.body.classList.toggle('ltr', isEn);
+
+    // تحديث زر الترجمة
+    document.getElementById('langAr').classList.toggle('active', !isEn);
+    document.getElementById('langEn').classList.toggle('active', isEn);
+    document.getElementById('mobileLangLabel').textContent = isEn ? 'عربي' : 'EN';
+
+    // تطبيق الترجمة على كل العناصر
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (T[currentLang][key]) el.innerHTML = T[currentLang][key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (T[currentLang][key]) el.placeholder = T[currentLang][key];
+    });
+
+    // إعادة بناء العناصر الديناميكية
+    buildCategoriesBar();
+    buildCategoryFilters();
+    buildRatingFilters();
+    buildBrandFilters();
+    buildSortSelect();
+    applyFilters();
+}
+
+function t(key) { return T[currentLang][key] || key; }
+function pName(p) { return currentLang === 'en' && p.nameEn ? p.nameEn : p.name; }
+function catName(key) { return t('cat_' + key); }
+
+// ========== بناء شريط التصنيفات ==========
+function buildCategoriesBar() {
+    const bar = document.getElementById('categoriesBar');
+    const activeCat = document.querySelector('.cat-btn.bg-brand-500')?.dataset.cat || 'all';
+    let html = `<button onclick="filterByCategory('all')" class="cat-btn flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${activeCat==='all'?'bg-brand-500 text-white':'text-ink-700 hover:bg-surface-200'}" data-cat="all">${t('cat_all')}</button>`;
+    catKeys.forEach(k => {
+        const active = activeCat === k;
+        const icon = catIcons[k];
+        const margin = currentLang === 'ar' ? 'ml-1.5' : 'mr-1.5';
+        html += `<button onclick="filterByCategory('${k}')" class="cat-btn flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${active?'bg-brand-500 text-white':'text-ink-700 hover:bg-surface-200'}" data-cat="${k}"><i class="fas ${icon} ${margin} text-xs"></i>${catName(k)}</button>`;
+    });
+    bar.innerHTML = html;
+}
+
+// ========== بناء فلتر التصنيفات الجانبي ==========
+function buildCategoryFilters() {
+    const c = document.getElementById('categoryFilters');
+    c.innerHTML = catKeys.map(k => {
+        const count = products.filter(p => p.category === k).length;
+        return `<label class="flex items-center gap-2.5 cursor-pointer group"><input type="checkbox" value="${k}" onchange="applyFilters()" class="w-4 h-4 rounded accent-[#F96316]"><span class="text-sm text-ink-700 group-hover:text-ink-900">${catName(k)}</span><span class="text-xs text-ink-300 mr-auto">(${count})</span></label>`;
+    }).join('');
+}
+
+// ========== بناء فلتر التقييم ==========
+function buildRatingFilters() {
+    const c = document.getElementById('ratingFilters');
+    const checked = document.querySelector('input[name="rating"]:checked')?.value || '0';
+    let html = `<label class="flex items-center gap-2 cursor-pointer group"><input type="radio" name="rating" value="0" ${checked==='0'?'checked':''} onchange="applyFilters()" class="accent-[#F96316]"><span class="text-sm text-ink-700 group-hover:text-ink-900">${t('rating_all')}</span></label>`;
+    [4,3,2].forEach(r => {
+        let stars = '';
+        for(let i=1;i<=4;i++) stars += `<i class="fas fa-star star-filled text-xs"></i>`;
+        if(r<4) stars += `<i class="fas fa-star star-empty text-xs"></i>`;
+        html += `<label class="flex items-center gap-2 cursor-pointer group"><input type="radio" name="rating" value="${r}" ${checked==r?'checked':''} onchange="applyFilters()" class="accent-[#F96316]"><span class="text-sm text-ink-700 group-hover:text-ink-900">${stars} <span class="text-ink-400">${t('rating_up')}</span></span></label>`;
+    });
+    c.innerHTML = html;
+}
+
+// ========== بناء فلتر الماركات ==========
+function buildBrandFilters() {
+    const brands = [...new Set(products.map(p => p.brand))].sort();
+    const c = document.getElementById('brandFilters');
+    const checked = new Set();
+    c.querySelectorAll('input:checked').forEach(cb => checked.add(cb.value));
+    c.innerHTML = brands.map(b => `<label class="flex items-center gap-2.5 cursor-pointer group"><input type="checkbox" value="${b}" ${checked.has(b)?'checked':''} onchange="applyFilters()" class="w-4 h-4 rounded accent-[#F96316]"><span class="text-sm text-ink-700 group-hover:text-ink-900">${b}</span></label>`).join('');
+}
+
+// ========== بناء قائمة الترتيب ==========
+function buildSortSelect() {
+    const s = document.getElementById('sortSelect');
+    const val = s.value || 'default';
+    s.innerHTML = [
+        ['default', t('sort_default')],
+        ['price-asc', t('sort_price_asc')],
+        ['price-desc', t('sort_price_desc')],
+        ['rating', t('sort_rating')],
+        ['reviews', t('sort_reviews')],
+        ['discount', t('sort_discount')],
+    ].map(([v,l]) => `<option value="${v}" ${val===v?'selected':''}>${l}</option>`).join('');
+}
+
+// ========== البحث ==========
+let searchTimeout;
+function handleSearch(q) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => { applyFilters(); showSuggestions(q); }, 200);
+}
+function showSuggestions(query) {
+    const c = document.getElementById('searchSuggestions');
+    if (!query || query.length < 2) { c.classList.add('hidden'); return; }
+    const matches = products.filter(p => pName(p).includes(query) || p.brand.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
+    if (!matches.length) { c.classList.add('hidden'); return; }
+    c.innerHTML = matches.map(p => `<button onclick="document.getElementById('searchInput').value='${pName(p).replace(/'/g,"\\'")}';document.getElementById('searchSuggestions').classList.add('hidden');applyFilters()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-50 transition-colors text-right"><img src="${p.image}" alt="" class="w-10 h-10 rounded-lg object-cover"><div class="flex-1 min-w-0"><div class="text-sm font-medium text-ink-900 truncate">${pName(p)}</div><div class="text-xs text-ink-500">${p.brand} · ${p.price} ${t('cur')}</div></div></button>`).join('');
+    c.classList.remove('hidden');
+}
+document.addEventListener('click', e => { if (!e.target.closest('#searchBox')) document.getElementById('searchSuggestions').classList.add('hidden'); });
+
+// ========== تطبيق الفلاتر ==========
+function applyFilters() {
+    const query = document.getElementById('searchInput').value.trim();
+    const maxPrice = parseInt(document.getElementById('priceRange').value);
+    const ratingVal = parseFloat(document.querySelector('input[name="rating"]:checked')?.value || 0);
+    const sortVal = document.getElementById('sortSelect').value;
+    const selCats = [...document.querySelectorAll('#categoryFilters input:checked')].map(c => c.value);
+    const selBrands = [...document.querySelectorAll('#brandFilters input:checked')].map(c => c.value);
+
+    let filtered = products.filter(p => {
+        if (query && !pName(p).includes(query) && !p.brand.toLowerCase().includes(query.toLowerCase())) return false;
+        if (selCats.length && !selCats.includes(p.category)) return false;
+        if (p.price > maxPrice) return false;
+        if (ratingVal > 0 && p.rating < ratingVal) return false;
+        if (selBrands.length && !selBrands.includes(p.brand)) return false;
+        return true;
+    });
+
+    switch(sortVal) {
+        case 'price-asc': filtered.sort((a,b) => a.price - b.price); break;
+        case 'price-desc': filtered.sort((a,b) => b.price - a.price); break;
+        case 'rating': filtered.sort((a,b) => b.rating - a.rating); break;
+        case 'reviews': filtered.sort((a,b) => b.reviews - a.reviews); break;
+        case 'discount': filtered.sort((a,b) => ((b.oldPrice-b.price)/b.oldPrice) - ((a.oldPrice-a.price)/a.oldPrice)); break;
+    }
+
+    updateActiveChips(query, selCats, selBrands, maxPrice, ratingVal);
+    displayProducts(filtered);
+    document.getElementById('resultsCount').textContent = `${t('results_showing')} ${Math.min(displayCount, filtered.length)} ${t('results_of')} ${filtered.length} ${t('results_prod')}`;
+}
+
+// ========== فلاتر نشطة ==========
+function updateActiveChips(query, cats, brands, maxP, rate) {
+    const c = document.getElementById('activeFilters');
+    const chips = [];
+    if (query) chips.push({ l: `${t('filter_search')} "${query}"`, fn: () => { document.getElementById('searchInput').value=''; applyFilters(); }});
+    cats.forEach(cat => chips.push({ l: catName(cat), fn: () => { const cb = document.querySelector(`#categoryFilters input[value="${cat}"]`); if(cb) cb.checked=false; applyFilters(); }}));
+    brands.forEach(b => chips.push({ l: b, fn: () => { const cb = document.querySelector(`#brandFilters input[value="${b}"]`); if(cb) cb.checked=false; applyFilters(); }}));
+    if (maxP < 5000) chips.push({ l: `${t('filter_until')} ${maxP} ${t('cur')}`, fn: () => { document.getElementById('priceRange').value=5000; updatePriceLabel(5000); applyFilters(); }});
+    if (rate > 0) chips.push({ l: `${rate}+ ${t('filter_stars')}`, fn: () => { document.querySelector('input[name="rating"][value="0"]').checked=true; applyFilters(); }});
+
+    if (!chips.length) { c.classList.add('hidden'); return; }
+    c.classList.remove('hidden');
+    window._chipFns = chips.map(ch => ch.fn);
+    c.innerHTML = chips.map((ch,i) => `<button onclick="window._chipFns[${i}]()" class="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 rounded-full text-xs font-medium hover:bg-brand-100 transition-colors">${ch.l} <i class="fas fa-times text-[10px]"></i></button>`).join('') + `<button onclick="resetFilters()" class="px-3 py-1.5 text-ink-500 hover:text-ink-700 text-xs font-medium">${t('filter_clear_all')}</button>`;
+}
+
+// ========== عرض المنتجات ==========
+function displayProducts(filtered) {
+    const grid = document.getElementById('productsGrid');
+    const noRes = document.getElementById('noResults');
+    const loadMore = document.getElementById('loadMoreContainer');
+    const toShow = filtered.slice(0, displayCount);
+
+    if (!filtered.length) { grid.innerHTML=''; noRes.classList.remove('hidden'); loadMore.classList.add('hidden'); return; }
+    noRes.classList.add('hidden');
+    loadMore.classList.toggle('hidden', toShow.length >= filtered.length);
+
+    if (currentView === 'grid') {
+        grid.className = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4';
+        grid.innerHTML = toShow.map((p,i) => gridCard(p,i)).join('');
+    } else {
+        grid.className = 'flex flex-col gap-3';
+        grid.innerHTML = toShow.map((p,i) => listCard(p,i)).join('');
+    }
+}
+
+function gridCard(p, i) {
+    const disc = p.oldPrice ? Math.round(((p.oldPrice-p.price)/p.oldPrice)*100) : 0;
+    const inW = wishlist.includes(p.id);
+    const inC = cart.find(c => c.id === p.id);
+    let badgeHtml = '';
+    if (p.badge === 'best') badgeHtml = `<span class="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 text-white">${t('best_seller')}</span>`;
+    else if (p.badge === 'new') badgeHtml = `<span class="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500 text-white">${t('new_badge')}</span>`;
+    if (disc > 0 && !p.badge) badgeHtml += `<span class="badge-discount absolute top-3 left-3 px-3 py-1 text-white text-xs font-bold">${disc}%</span>`;
+
+    return `<div class="product-card bg-white rounded-2xl overflow-hidden" style="animation-delay:${i*0.04}s">
+        <div class="relative overflow-hidden bg-surface-100 aspect-square">
+            <img src="${p.image}" alt="${pName(p)}" class="product-img w-full h-full object-cover" loading="lazy">
+            ${badgeHtml}
+            <div class="quick-actions absolute bottom-3 left-3 right-3 flex items-center gap-2">
+                <button onclick="addToCart(${p.id})" class="flex-1 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"><i class="fas fa-cart-plus"></i>${inC ? `(${inC.qty}) ${t('in_cart')}` : t('add_cart')}</button>
+                <button onclick="toggleWishlist(${p.id})" class="w-10 h-10 ${inW?'bg-red-500 text-white':'bg-white/90 text-ink-700 hover:text-red-500'} rounded-xl flex items-center justify-center transition-all backdrop-blur-sm"><i class="${inW?'fas':'far'} fa-heart text-sm"></i></button>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="flex items-center gap-2 mb-1.5"><span class="text-[10px] font-bold text-brand-500 bg-brand-50 px-2 py-0.5 rounded-md">${p.brand}</span><span class="text-[10px] text-ink-300">${catName(p.category)}</span></div>
+            <h3 class="text-sm font-semibold text-ink-900 leading-relaxed mb-2 line-clamp-2 min-h-[2.5rem]">${pName(p)}</h3>
+            <div class="flex items-center gap-1.5 mb-3"><div class="flex items-center">${renderStars(p.rating)}</div><span class="text-xs text-ink-500">(${fmtNum(p.reviews)} ${t('reviews_label')})</span></div>
+            <div class="flex items-end gap-2"><span class="text-lg font-extrabold text-ink-900">${p.price} <span class="text-xs font-normal text-ink-500">${t('currency_label')}</span></span>${p.oldPrice ? `<span class="text-sm text-ink-300 line-through">${p.oldPrice}</span>`:''}</div>
+        </div>
+    </div>`;
+}
+
+function listCard(p, i) {
+    const disc = p.oldPrice ? Math.round(((p.oldPrice-p.price)/p.oldPrice)*100) : 0;
+    const inW = wishlist.includes(p.id);
+    let badgeTxt = '';
+    if (p.badge === 'best') badgeTxt = `<span class="text-[10px] font-bold text-amber-600">${t('best_seller')}</span>`;
+    else if (p.badge === 'new') badgeTxt = `<span class="text-[10px] font-bold text-emerald-600">${t('new_badge')}</span>`;
+
+    return `<div class="product-card bg-white rounded-2xl overflow-hidden flex" style="animation-delay:${i*0.04}s">
+        <div class="relative overflow-hidden bg-surface-100 w-36 sm:w-48 flex-shrink-0">
+            <img src="${p.image}" alt="${pName(p)}" class="product-img w-full h-full object-cover" loading="lazy">
+            ${disc > 0 ? `<span class="badge-discount absolute top-3 left-3 px-3 py-1 text-white text-xs font-bold">${disc}%</span>`:''}
+        </div>
+        <div class="p-4 flex-1 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-2 mb-1.5"><span class="text-[10px] font-bold text-brand-500 bg-brand-50 px-2 py-0.5 rounded-md">${p.brand}</span><span class="text-[10px] text-ink-300">${catName(p.category)}</span>${badgeTxt}</div>
+                <h3 class="text-sm font-semibold text-ink-900 leading-relaxed mb-2">${pName(p)}</h3>
+                <div class="flex items-center gap-1.5 mb-2"><div class="flex items-center">${renderStars(p.rating)}</div><span class="text-xs text-ink-500">(${fmtNum(p.reviews)} ${t('reviews_label')})</span></div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-end gap-2"><span class="text-xl font-extrabold text-ink-900">${p.price} <span class="text-xs font-normal text-ink-500">${t('currency_label')}</span></span>${p.oldPrice ? `<span class="text-sm text-ink-300 line-through">${p.oldPrice}</span>`:''}</div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleWishlist(${p.id})" class="w-10 h-10 ${inW?'bg-red-500 text-white':'bg-surface-100 text-ink-500 hover:text-red-500'} rounded-xl flex items-center justify-center transition-all"><i class="${inW?'fas':'far'} fa-heart text-sm"></i></button>
+                    <button onclick="addToCart(${p.id})" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold transition-colors"><i class="fas fa-cart-plus ml-1.5"></i>${t('add_cart')}</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ========== أدوات مساعدة ==========
+function renderStars(r) {
+    let s='';
+    for(let i=1;i<=5;i++){
+        if(i<=Math.floor(r)) s+='<i class="fas fa-star star-filled text-[10px]"></i>';
+        else if(i-r<1&&i-r>0) s+='<i class="fas fa-star-half-alt star-filled text-[10px]"></i>';
+        else s+='<i class="fas fa-star star-empty text-[10px]"></i>';
+    }
+    return s;
+}
+function fmtNum(n) { return n>=1000?(n/1000).toFixed(1).replace('.0','')+'K':n; }
+
+// ========== فلتر التصنيف من الشريط ==========
+function filterByCategory(cat) {
+    document.querySelectorAll('#categoryFilters input').forEach(cb => cb.checked = false);
+    if (cat !== 'all') { const cb = document.querySelector(`#categoryFilters input[value="${cat}"]`); if(cb) cb.checked = true; }
+    document.querySelectorAll('.cat-btn').forEach(b => {
+        b.classList.toggle('bg-brand-500', b.dataset.cat === cat);
+        b.classList.toggle('text-white', b.dataset.cat === cat);
+        b.classList.toggle('text-ink-700', b.dataset.cat !== cat);
+        b.classList.toggle('hover:bg-surface-200', b.dataset.cat !== cat);
+    });
+    displayCount = 12;
+    applyFilters();
+    document.getElementById('productsGrid').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ========== السعر ==========
+function updatePriceLabel(v) { document.getElementById('priceLabel').innerHTML = parseInt(v).toLocaleString() + ' ' + t('cur2'); document.getElementById('priceMax').value = v; }
+function syncPriceRange() { const m = parseInt(document.getElementById('priceMax').value)||5000; document.getElementById('priceRange').value=Math.min(m,5000); updatePriceLabel(Math.min(m,5000)); applyFilters(); }
+
+// ========== إعادة تعيين ==========
+function resetFilters() {
+    document.getElementById('searchInput').value='';
+    document.getElementById('priceRange').value=5000; updatePriceLabel(5000);
+    document.getElementById('priceMin').value=0; document.getElementById('priceMax').value=5000;
+    document.getElementById('sortSelect').value='default';
+    document.querySelectorAll('#categoryFilters input, #brandFilters input').forEach(cb => cb.checked=false);
+    document.querySelector('input[name="rating"][value="0"]').checked=true;
+    document.querySelectorAll('.cat-btn').forEach(b => { b.classList.toggle('bg-brand-500', b.dataset.cat==='all'); b.classList.toggle('text-white', b.dataset.cat==='all'); b.classList.toggle('text-ink-700', b.dataset.cat!=='all'); b.classList.toggle('hover:bg-surface-200', b.dataset.cat!=='all'); });
+    displayCount = 12; applyFilters();
+}
+
+function loadMore() { displayCount += 12; applyFilters(); }
+function setView(v) {
+    currentView = v;
+    document.getElementById('gridViewBtn').classList.toggle('bg-white', v==='grid');
+    document.getElementById('gridViewBtn').classList.toggle('shadow-sm', v==='grid');
+    document.getElementById('gridViewBtn').classList.toggle('text-brand-500', v==='grid');
+    document.getElementById('gridViewBtn').classList.toggle('text-ink-400', v!=='grid');
+    document.getElementById('listViewBtn').classList.toggle('bg-white', v==='list');
+    document.getElementById('listViewBtn').classList.toggle('shadow-sm', v==='list');
+    document.getElementById('listViewBtn').classList.toggle('text-brand-500', v==='list');
+    document.getElementById('listViewBtn').classList.toggle('text-ink-400', v!=='list');
+    applyFilters();
+}
+
+// ========== السلة ==========
+function addToCart(id) {
+    const p = products.find(x => x.id===id); if(!p) return;
+    const ex = cart.find(c => c.id===id);
+    if(ex) ex.qty++; else cart.push({...p, qty:1});
+    updateCartUI(); applyFilters();
+    showToast(`${t('toast_added')}${pName(p)}${t('toast_to_cart')}`, 'success');
+    const el = document.getElementById('cartCount'); el.classList.remove('cart-pulse'); void el.offsetWidth; el.classList.add('cart-pulse');
+}
+function removeFromCart(id) { cart = cart.filter(c=>c.id!==id); updateCartUI(); renderCartPanel(); applyFilters(); }
+function updateCartQty(id, d) { const it = cart.find(c=>c.id===id); if(!it) return; it.qty+=d; if(it.qty<=0){removeFromCart(id);return;} updateCartUI(); renderCartPanel(); }
+function updateCartUI() {
+    const el = document.getElementById('cartCount');
+    const n = cart.reduce((s,c)=>s+c.qty,0);
+    if(n>0){el.textContent=n;el.classList.remove('hidden');}else{el.classList.add('hidden');}
+}
+function toggleCart() {
+    const o = document.getElementById('cartOverlay'), p = document.getElementById('cartPanel');
+    if(!o.classList.contains('hidden')){p.classList.add('-translate-x-full');o.classList.add('hidden');}
+    else{renderCartPanel();o.classList.remove('hidden');setTimeout(()=>p.classList.remove('-translate-x-full'),10);}
+}
+function renderCartPanel() {
+    const c = document.getElementById('cartItems'), f = document.getElementById('cartFooter');
+    if(!cart.length){c.innerHTML=`<div class="text-center py-16"><div class="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-shopping-cart text-2xl text-ink-300"></i></div><h4 class="font-bold text-ink-900 mb-1">${t('cart_empty')}</h4><p class="text-sm text-ink-500">${t('cart_empty_d')}</p></div>`;f.classList.add('hidden');return;}
+    f.classList.remove('hidden');
+    const total = cart.reduce((s,c)=>s+c.price*c.qty,0);
+    const ship = total>=200?0:25;
+    document.getElementById('cartTotal').textContent = total.toLocaleString()+' '+t('currency_label');
+    document.getElementById('cartShipping').textContent = ship===0?t('cart_free'):ship+' '+t('currency_label');
+    c.innerHTML = cart.map(it=>`<div class="flex items-center gap-3 py-3 border-b border-surface-100 last:border-0"><img src="${it.image}" alt="" class="w-16 h-16 rounded-xl object-cover flex-shrink-0"><div class="flex-1 min-w-0"><h4 class="text-xs font-semibold text-ink-900 truncate">${pName(it)}</h4><span class="text-[10px] text-ink-400">${it.brand}</span><div class="text-sm font-bold text-ink-900 mt-1">${it.price} ${t('currency_label')}</div><div class="flex items-center gap-2 mt-2"><button onclick="updateCartQty(${it.id},-1)" class="w-7 h-7 bg-surface-100 hover:bg-surface-200 rounded-lg flex items-center justify-center"><i class="fas fa-minus text-[9px]"></i></button><span class="text-sm font-bold w-6 text-center">${it.qty}</span><button onclick="updateCartQty(${it.id},1)" class="w-7 h-7 bg-surface-100 hover:bg-surface-200 rounded-lg flex items-center justify-center"><i class="fas fa-plus text-[9px]"></i></button></div></div><button onclick="removeFromCart(${it.id})" class="text-ink-300 hover:text-red-500 transition-colors p-1"><i class="fas fa-trash-alt text-xs"></i></button></div>`).join('');
+}
+
+// ========== المفضلة ==========
+function toggleWishlist(id) {
+    const i = wishlist.indexOf(id); const p = products.find(x=>x.id===id);
+    if(i>-1){wishlist.splice(i,1);showToast(`${t('toast_removed')}${pName(p)}${t('toast_from_wish')}`,'info');}
+    else{wishlist.push(id);showToast(`${t('toast_wish_added')}${pName(p)}${t('toast_to_wish')}`,'success');}
+    const el = document.getElementById('wishlistCount');
+    if(wishlist.length>0){el.textContent=wishlist.length;el.classList.remove('hidden');}else{el.classList.add('hidden');}
+    applyFilters();
+}
+
+// ========== فلتر الموبايل ==========
+function openMobileFilter() {
+    document.getElementById('mobileFilterContent').innerHTML = document.querySelector('#desktopFilter .sticky').innerHTML;
+    document.getElementById('mobileFilterOverlay').classList.remove('hidden');
+    setTimeout(()=>document.getElementById('mobileFilterPanel').classList.remove('translate-x-full'),10);
+}
+function closeMobileFilter() {
+    document.getElementById('mobileFilterPanel').classList.add('translate-x-full');
+    setTimeout(()=>document.getElementById('mobileFilterOverlay').classList.add('hidden'),300);
+    // مزامنة الفلاتر من الموبايل إلى الديسكتوب
+    syncMobileFiltersToDesktop();
+    applyFilters();
+}
+function syncMobileFiltersToDesktop() {
+    const src = document.getElementById('mobileFilterContent');
+    // مزامنة تصنيفات
+    const srcCats = [...src.querySelectorAll('#categoryFilters input')].filter(c=>c.checked).map(c=>c.value);
+    document.querySelectorAll('#desktopFilter #categoryFilters input').forEach(cb => cb.checked = srcCats.includes(cb.value));
+    // مزامنة تقييم
+    const srcRate = src.querySelector('input[name="rating"]:checked')?.value || '0';
+    document.querySelectorAll('#desktopFilter input[name="rating"]').forEach(r => r.checked = r.value === srcRate);
+    // مزامنة ماركات
+    const srcBrands = [...src.querySelectorAll('#brandFilters input')].filter(c=>c.checked).map(c=>c.value);
+    document.querySelectorAll('#desktopFilter #brandFilters input').forEach(cb => cb.checked = srcBrands.includes(cb.value));
+}
+
+// ========== البانر ==========
+function startBanner() { slideInterval = setInterval(()=>nextSlide(),5000); }
+function goToSlide(i) { currentSlide=i; updateBanner(); clearInterval(slideInterval); startBanner(); }
+function nextSlide() { currentSlide=(currentSlide+1)%3; updateBanner(); }
+function prevSlide() { currentSlide=(currentSlide-1+3)%3; updateBanner(); clearInterval(slideInterval); startBanner(); }
+function updateBanner() {
+    document.querySelectorAll('.banner-slide').forEach((s,i)=>{s.style.opacity=i===currentSlide?'1':'0';s.style.transition='opacity .8s ease';});
+    document.querySelectorAll('.banner-dot').forEach((d,i)=>{d.classList.toggle('bg-white',i===currentSlide);d.classList.toggle('w-12',i===currentSlide);d.classList.toggle('bg-white/40',i!==currentSlide);d.classList.toggle('w-8',i!==currentSlide);});
+}
+
+// ========== الهيدر ==========
+function initHeaderScroll() {
+    window.addEventListener('scroll',()=>{document.getElementById('mainHeader').classList.toggle('header-scrolled',window.scrollY>30);});
+}
+
+// ========== التوست ==========
+function showToast(msg, type) {
+    const c = document.getElementById('toastContainer');
+    const d = document.createElement('div');
+    const icon = type==='success'?'fa-check-circle text-emerald-500':'fa-info-circle text-sky-500';
+    d.className = 'toast-enter flex items-center gap-3 bg-white border border-surface-200 rounded-xl px-4 py-3 shadow-lg min-w-[280px] max-w-[380px]';
+    d.innerHTML = `<i class="fas ${icon} text-lg flex-shrink-0"></i><p class="text-sm text-ink-900 flex-1">${msg}</p><button onclick="this.parentElement.remove()" class="text-ink-300 hover:text-ink-500 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>`;
+    c.appendChild(d);
+    setTimeout(()=>{d.classList.remove('toast-enter');d.classList.add('toast-exit');setTimeout(()=>d.remove(),350);},3000);
+}
+</script>
+</body>
+</html>

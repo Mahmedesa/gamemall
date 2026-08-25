@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPanel - إدارة أنواع الشحن</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']}}}}
+</script>
+<style>
+:root{
+  --bg:#0b0d14;--bg2:#10131c;--bg3:#161a28;
+  --card:#12162090;--card2:#1a1f2e;
+  --bd:#1e2536;--bd2:#2a3348;--bd3:#3d4d6e;
+  --acc:#e8a020;--acc2:#d4911a;--accDk:#b87a10;
+  --accG:rgba(232,160,32,.1);--accG2:rgba(232,160,32,.05);
+  --red:#f04444;--redG:rgba(240,68,68,.1);
+  --green:#2ecc71;--greenG:rgba(46,204,113,.1);
+  --blue:#3ea8ff;--blueG:rgba(62,168,255,.1);
+  --purple:#a78bfa;--purpleG:rgba(167,139,250,.1);
+  --teal:#2dd4bf;--tealG:rgba(45,212,191,.1);
+  --tx:#edf0f7;--tx2:#8b95ad;--tx3:#4e5a73;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 800px 500px at 15% 5%,rgba(232,160,32,.03),transparent),
+  radial-gradient(ellipse 600px 600px at 85% 85%,rgba(62,168,255,.02),transparent),
+  linear-gradient(180deg,rgba(232,160,32,.008) 0%,transparent 40%)}
+
+/* === الهيدر === */
+.cpanel-header{background:rgba(11,13,20,.96);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;backdrop-filter:blur(20px)}
+.cpanel-header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--acc),transparent);opacity:.3}
+.hdr-inner{max-width:1400px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:14px}
+.back-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);font-family:'Cairo';font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.back-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accG)}
+.page-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;flex-shrink:0;box-shadow:0 4px 20px rgba(232,160,32,.25);position:relative;overflow:hidden}
+.page-icon::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent 60%)}
+.page-icon i{position:relative;z-index:1}
+.page-info h1{font-size:16px;font-weight:900;line-height:1.2;letter-spacing:-.2px}
+.page-info p{font-size:10px;color:var(--tx3);font-weight:500;margin-top:1px}
+.hdr-right{margin-right:auto;display:flex;align-items:center;gap:8px}
+.lang-toggle{padding:8px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);font-family:'Cairo';font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.lang-toggle:hover{border-color:var(--acc);color:var(--acc);background:var(--accG)}
+.add-ship-btn{padding:9px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:'Cairo';font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(232,160,32,.2);display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.add-ship-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(232,160,32,.3)}
+.add-ship-btn:active{transform:scale(.97)}
+
+/* === المحتوى === */
+.main-wrap{max-width:1400px;margin:0 auto;padding:24px;position:relative;z-index:1}
+
+/* === الإحصائيات === */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:960px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+.stat-card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:all .3s;backdrop-filter:blur(8px)}
+.stat-card:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.3)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.t1::before{background:var(--acc)}.stat-card.t2::before{background:var(--green)}.stat-card.t3::before{background:var(--red)}.stat-card.t4::before{background:var(--blue)}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.stat-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.stat-ico.s1{background:var(--accG);color:var(--acc)}.stat-ico.s2{background:var(--greenG);color:var(--green)}
+.stat-ico.s3{background:var(--redG);color:var(--red)}.stat-ico.s4{background:var(--blueG);color:var(--blue)}
+.stat-pct{font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;background:rgba(78,90,115,.08);color:var(--tx3)}
+.stat-num{font-size:30px;font-weight:900;line-height:1;margin-bottom:3px;letter-spacing:-.5px}
+.stat-label{font-size:11px;color:var(--tx3);font-weight:600}
+
+/* === شريط الأدوات === */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.search-box{position:relative;flex:1;min-width:180px;max-width:300px}
+.search-box input{width:100%;padding:10px 14px 10px 40px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:'Cairo';font-size:12px;outline:none;transition:all .2s}
+.search-box input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accG)}
+.search-box input::placeholder{color:var(--tx3)}
+.search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:13px;pointer-events:none}
+[dir="ltr"] .search-box input{padding:10px 40px 10px 14px}
+[dir="ltr"] .search-box i{left:auto;right:12px}
+.filter-select{padding:10px 32px 10px 12px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:'Cairo';font-size:12px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Cpath fill='%234e5a73' d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 10px center;max-width:160px;transition:all .2s}
+[dir="ltr"] .filter-select{background-position:right 10px center}
+.filter-select:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accG)}
+.view-switch{display:inline-flex;border-radius:10px;border:1.5px solid var(--bd);overflow:hidden;background:var(--bg2);flex-shrink:0}
+.view-switch button{width:36px;height:36px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+.view-switch button:hover{color:var(--tx2);background:var(--bg3)}
+.view-switch button.active{color:#fff;background:var(--acc)}
+.view-switch button+button{border-right:1px solid var(--bd)}
+[dir="ltr"] .view-switch button+button{border-right:none;border-left:1px solid var(--bd)}
+
+/* === بطاقات الشحن === */
+.ship-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+@media(max-width:400px){.ship-grid{grid-template-columns:1fr}}
+.ship-card{background:var(--card);border:1.5px solid var(--bd);border-radius:16px;overflow:hidden;transition:all .3s;display:flex;flex-direction:column;backdrop-filter:blur(8px)}
+.ship-card:hover{border-color:var(--bd2);box-shadow:0 10px 32px rgba(0,0,0,.3);transform:translateY(-3px)}
+.ship-card.disabled{opacity:.4}.ship-card.disabled:hover{opacity:.6}
+.ship-card-head{padding:18px 20px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--bd);background:var(--bg3);position:relative}
+.ship-card-head::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--acc),transparent)}
+.ship-code-box{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.ship-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:transform .3s}
+.ship-card:hover .ship-icon{transform:scale(1.08)}
+.ship-icon.ci1{background:rgba(232,160,32,.12);color:var(--acc)}
+.ship-icon.ci2{background:rgba(46,204,113,.12);color:var(--green)}
+.ship-icon.ci3{background:rgba(62,168,255,.12);color:var(--blue)}
+.ship-icon.ci4{background:rgba(167,139,250,.12);color:var(--purple)}
+.ship-icon.ci5{background:rgba(45,212,191,.12);color:var(--teal)}
+.ship-icon.ci6{background:rgba(240,68,68,.12);color:var(--red)}
+.ship-code-info{min-width:0}
+.ship-code{font-family:'Courier New',monospace;font-size:13px;font-weight:900;letter-spacing:1.5px;color:var(--acc);direction:ltr;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ship-code-label{font-size:9px;color:var(--tx3);font-weight:600;margin-top:1px;display:block}
+.ship-status{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:9px;font-weight:800;flex-shrink:0}
+.ship-status.on{background:var(--greenG);color:var(--green)}
+.ship-status.off{background:var(--redG);color:var(--red)}
+.ship-status .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.ship-status.on .dot{animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ship-card-body{padding:16px 20px;flex:1;display:flex;flex-direction:column;gap:8px}
+.ship-name-row{display:flex;align-items:center;gap:8px}
+.ship-name{font-size:15px;font-weight:800;line-height:1.4;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ship-lang-badge{font-size:8px;font-weight:800;padding:2px 5px;border-radius:4px;flex-shrink:0}
+.ship-lang-badge.ar-badge{background:rgba(232,160,32,.1);color:var(--acc)}
+.ship-lang-badge.en-badge{background:rgba(62,168,255,.1);color:var(--blue)}
+.ship-sub-name{font-size:12px;color:var(--tx3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ship-meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.ship-meta-item{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--tx3)}
+.ship-meta-item i{font-size:9px;width:12px;height:12px;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;background:var(--bg3)}
+.ship-card-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-top:1px solid var(--bd);background:var(--bg3);margin-top:auto}
+.ship-actions{display:flex;gap:4px}
+
+/* أزرار صغيرة */
+.act-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
+.act-btn:hover{transform:scale(1.08)}
+.act-btn.edit:hover{border-color:var(--blue);color:var(--blue);background:var(--blueG)}
+.act-btn.delete:hover{border-color:var(--red);color:var(--red);background:var(--redG)}
+
+/* مفتاح التبديل */
+.toggle-sw{position:relative;width:44px;height:24px;flex-shrink:0;cursor:pointer}
+.toggle-sw input{display:none}
+.toggle-sw .track{position:absolute;inset:0;background:var(--bd2);border-radius:12px;transition:all .3s}
+.toggle-sw .track::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:var(--tx3);top:3px;right:3px;transition:all .3s}
+[dir="ltr"] .toggle-sw .track::before{right:auto;left:3px}
+.toggle-sw input:checked+.track{background:var(--green)}
+.toggle-sw input:checked+.track::before{transform:translateX(-18px);background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+[dir="ltr"] .toggle-sw input:checked+.track::before{transform:translateX(18px)}
+.toggle-sw:hover .track{box-shadow:0 0 0 3px var(--greenG)}
+
+/* === عرض القائمة === */
+.table-wrap{background:var(--card);border:1.5px solid var(--bd);border-radius:14px;overflow:hidden;backdrop-filter:blur(8px)}
+.table-head{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--bd)}
+.table-head h3{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.table-head h3 i{color:var(--acc)}
+.table-count{font-size:11px;color:var(--tx3);font-weight:600;padding:2px 8px;background:var(--bg2);border-radius:6px}
+.table-scroll{overflow-x:auto}
+.ship-table{width:100%;border-collapse:collapse;min-width:880px}
+.ship-table thead{background:var(--bg3)}
+.ship-table th{padding:10px 14px;text-align:right;font-size:9px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bd);white-space:nowrap}
+[dir="ltr"] .ship-table th{text-align:left}
+.ship-table td{padding:10px 14px;font-size:12px;font-weight:500;color:var(--tx2);border-bottom:1px solid var(--bd);vertical-align:middle;white-space:nowrap}
+.ship-table tr:last-child td{border-bottom:none}
+.ship-table tbody tr{transition:background .15s}
+.ship-table tbody tr:hover{background:var(--bg3)}
+.ship-table tbody tr.disabled{opacity:.35}.ship-table tbody tr.disabled:hover{opacity:.55}
+.tbl-code{font-family:'Courier New',monospace;font-size:11px;font-weight:900;letter-spacing:1.2px;color:var(--acc);direction:ltr}
+.tbl-name{color:var(--tx);font-weight:700}
+.tbl-sub{color:var(--tx3);font-size:10px;margin-top:1px}
+.tbl-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:800}
+.tbl-badge.on{background:var(--greenG);color:var(--green)}
+.tbl-badge.off{background:var(--redG);color:var(--red)}
+.tbl-badge .dot{width:4px;height:4px;border-radius:50%;background:currentColor}
+.tbl-badge.on .dot{animation:blink 1.5s infinite}
+
+/* === المودال === */
+.modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--bd);border-radius:18px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.modal-top{padding:18px 22px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.modal-top h3{font-size:15px;font-weight:800;flex:1;display:flex;align-items:center;gap:8px}
+.modal-top h3 i{color:var(--acc)}
+.close-modal{width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx3);transition:all .2s;font-size:13px;flex-shrink:0}
+.close-modal:hover{background:var(--redG);border-color:var(--red);color:var(--red)}
+.modal-content{padding:22px}
+.modal-bottom{padding:14px 22px 20px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--bd);background:var(--bg3);border-radius:0 0 18px 18px}
+.field-group{margin-bottom:16px}
+.field-group:last-child{margin-bottom:0}
+.field-label{display:block;font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:6px}
+.field-label .req{color:var(--red);font-size:13px}
+.field-input{width:100%;padding:10px 14px;background:var(--bg);border:1.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:'Cairo';font-size:13px;outline:none;transition:all .2s}
+.field-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accG)}
+.field-input::placeholder{color:var(--tx3)}
+.field-input.error{border-color:var(--red);box-shadow:0 0 0 3px var(--redG)}
+.field-error{font-size:10px;color:var(--red);font-weight:600;margin-top:4px;display:none}
+.field-error.visible{display:block}
+.code-row{display:flex;gap:8px;align-items:flex-start}
+.code-row .field-input{flex:1;font-family:'Courier New',monospace;font-weight:700;letter-spacing:2px;text-transform:uppercase;direction:ltr;text-align:right}
+.gen-code-btn{padding:10px 14px;border-radius:10px;border:1.5px solid var(--acc);background:var(--accG);color:var(--acc);font-family:'Cairo';font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
+.gen-code-btn:hover{background:rgba(232,160,32,.18);transform:scale(1.02)}
+.gen-code-btn:active{transform:scale(.97)}
+.fields-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.fields-2col{grid-template-columns:1fr}}
+
+/* تأكيد الحذف */
+.del-modal-body{padding:32px 22px;text-align:center}
+.del-icon-wrap{width:60px;height:60px;border-radius:50%;background:var(--redG);display:inline-flex;align-items:center;justify-content:center;font-size:26px;color:var(--red);margin-bottom:16px;animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.del-title{font-size:17px;font-weight:900;margin-bottom:6px}
+.del-desc{font-size:12px;color:var(--tx3);margin-bottom:16px;line-height:1.7}
+.del-info{background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:20px;text-align:right}
+.del-info-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.del-info-row:last-child{margin-bottom:0}
+.del-info-label{font-size:10px;color:var(--tx3);font-weight:600;min-width:50px}
+.del-info-val{font-size:12px;font-weight:700;color:var(--tx)}
+.del-info-val.code-val{font-family:'Courier New',monospace;color:var(--acc);letter-spacing:1px;direction:ltr}
+.del-buttons{display:flex;gap:8px;justify-content:center}
+
+/* أزرار */
+.btn{padding:9px 18px;border-radius:10px;font-family:'Cairo';font-size:12px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:7px;transition:all .2s;outline:none}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 3px 14px rgba(232,160,32,.2)}
+.btn-primary:hover{box-shadow:0 5px 20px rgba(232,160,32,.3);transform:translateY(-1px)}
+.btn-ghost{background:var(--bg3);color:var(--tx2);border:1px solid var(--bd)}
+.btn-ghost:hover{border-color:var(--bd2);color:var(--tx)}
+.btn-danger{background:var(--redG);color:var(--red);border:1px solid rgba(240,68,68,.15)}
+.btn-danger:hover{background:rgba(240,68,68,.18)}
+
+.empty-state{text-align:center;padding:50px 20px;color:var(--tx3)}
+.empty-state i{font-size:44px;margin-bottom:14px;opacity:.15;display:block}
+.empty-state p{font-size:13px;font-weight:600}
+
+.panel{transition:opacity .25s,transform .25s}
+.panel.hidden{opacity:0;transform:translateY(8px);position:absolute;inset:0;pointer-events:none}
+.panel.visible{opacity:1;transform:translateY(0);position:relative;pointer-events:auto}
+
+/* توست */
+.toast-container{position:fixed;top:78px;left:20px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+[dir="ltr"] .toast-container{left:auto;right:20px}
+.toast-msg{padding:12px 18px;border-radius:12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;animation:toastSlideIn .3s ease;min-width:260px;box-shadow:0 6px 24px rgba(0,0,0,.3);backdrop-filter:blur(8px)}
+.toast-msg.t-success{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.15)}
+.toast-msg.t-error{background:rgba(240,68,68,.1);color:var(--red);border:1px solid rgba(240,68,68,.15)}
+.toast-msg.t-info{background:rgba(62,168,255,.1);color:var(--blue);border:1px solid rgba(62,168,255,.15)}
+.toast-msg.t-warn{background:rgba(232,160,32,.1);color:var(--acc);border:1px solid rgba(232,160,32,.15)}
+.toast-msg.removing{animation:toastSlideOut .25s ease forwards}
+@keyframes toastSlideIn{from{opacity:0;transform:translateX(-20px)}}
+@keyframes toastSlideOut{to{opacity:0;transform:translateX(-20px)}}
+
+.fade-up{opacity:0;transform:translateY(12px);animation:fadeUp .4s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.d1{animation-delay:.03s}.d2{animation-delay:.06s}.d3{animation-delay:.09s}.d4{animation-delay:.12s}
+
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="toast-container" id="toastBox"></div>
+
+<!-- ===== مودال إضافة/تعديل ===== -->
+<div class="modal-bg" id="formModal">
+<div class="modal-box">
+  <div class="modal-top">
+    <h3><i class="fas fa-truck-fast"></i> <span id="formTitle">إضافة نوع شحن</span></h3>
+    <button class="close-modal" onclick="closeFormModal()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="modal-content">
+    <input type="hidden" id="editId">
+
+    <!-- كود الشحن + زر التوليد -->
+    <div class="field-group">
+      <label class="field-label">كود نوع الشحن <span class="req">*</span></label>
+      <div class="code-row">
+        <input type="text" id="fCode" class="field-input" placeholder="PSHIP001" maxlength="12" readonly>
+        <button type="button" class="gen-code-btn" onclick="generateCode()"><i class="fas fa-wand-magic-sparkles"></i> توليد</button>
+      </div>
+      <div class="field-error" id="errCode">يرجى توليد كود الشحن</div>
+    </div>
+
+    <!-- الاسم بالعربية والإنجليزية -->
+    <div class="fields-2col">
+      <div class="field-group">
+        <label class="field-label">اسم الشحن بالعربية <span class="req">*</span></label>
+        <input type="text" id="fAr" class="field-input" placeholder="مثال: شحن سريع">
+        <div class="field-error" id="errAr">هذا الحقل مطلوب</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">اسم الشحن بالإنجليزية <span class="req">*</span></label>
+        <input type="text" id="fEn" class="field-input" placeholder="e.g. Express Shipping">
+        <div class="field-error" id="errEn">This field is required</div>
+      </div>
+    </div>
+
+    <!-- الوصف -->
+    <div class="fields-2col">
+      <div class="field-group">
+        <label class="field-label">الوصف بالعربية</label>
+        <input type="text" id="fDescAr" class="field-input" placeholder="وصف مختصر بالعربية">
+      </div>
+      <div class="field-group">
+        <label class="field-label">الوصف بالإنجليزية</label>
+        <input type="text" id="fDescEn" class="field-input" placeholder="Brief description in English">
+      </div>
+    </div>
+  </div>
+  <div class="modal-bottom">
+    <button class="btn btn-ghost" onclick="closeFormModal()">إلغاء</button>
+    <button class="btn btn-primary" onclick="saveShipping()"><i class="fas fa-save"></i> <span id="saveBtnText">حفظ</span></button>
+  </div>
+</div>
+</div>
+
+<!-- ===== مودال الحذف ===== -->
+<div class="modal-bg" id="delModal">
+<div class="modal-box" style="max-width:440px">
+  <div class="del-modal-body">
+    <div class="del-icon-wrap"><i class="fas fa-trash-can"></i></div>
+    <h3 class="del-title">تأكيد الحذف</h3>
+    <p class="del-desc">سيتم حذف نوع الشحن التالي نهائياً:</p>
+    <div class="del-info">
+      <div class="del-info-row"><span class="del-info-label">الكود:</span><span class="del-info-val code-val" id="delCode"></span></div>
+      <div class="del-info-row"><span class="del-info-label">العربي:</span><span class="del-info-val" id="delAr"></span></div>
+      <div class="del-info-row"><span class="del-info-label">الإنجليزي:</span><span class="del-info-val" id="delEn"></span></div>
+    </div>
+    <div class="del-buttons">
+      <button class="btn btn-ghost" onclick="closeDelModal()">إلغاء</button>
+      <button class="btn btn-danger" onclick="confirmDelete()"><i class="fas fa-trash"></i> حذف نهائياً</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== الهيدر ===== -->
+<header class="cpanel-header">
+<div class="hdr-inner">
+  <a href="#" class="back-btn" onclick="event.preventDefault();showToast('الرجوع للوحة التحكم','info')">
+    <i class="fas fa-arrow-right" id="backArrow"></i>
+    <span id="backText">لوحة التحكم</span>
+  </a>
+  <div class="page-icon"><i class="fas fa-truck-fast"></i></div>
+  <div class="page-info">
+    <h1 id="pageTitle">إدارة أنواع الشحن</h1>
+    <p id="pageDesc">إدارة طرق وأنواع الشحن المتاحة في المتجر</p>
+  </div>
+  <div class="hdr-right">
+    <button class="lang-toggle" onclick="switchLanguage()"><i class="fas fa-globe"></i> <span id="langText">English</span></button>
+    <button class="add-ship-btn" onclick="openAddForm()"><i class="fas fa-plus"></i> <span id="addText">إضافة نوع شحن</span></button>
+  </div>
+</div>
+</header>
+
+<!-- ===== المحتوى ===== -->
+<main class="main-wrap">
+  <div class="stats-grid" id="statsArea"></div>
+
+  <div class="toolbar fade-up d3">
+    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="ابحث عن نوع شحن..." oninput="applyFilters()"></div>
+    <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+      <option value="" id="optAll">كل الحالات</option>
+      <option value="active" id="optActive">مفعّل</option>
+      <option value="inactive" id="optInactive">موقوف</option>
+    </select>
+    <div class="view-switch">
+      <button class="active" id="vGrid" onclick="changeView('grid')"><i class="fas fa-grip"></i></button>
+      <button id="vList" onclick="changeView('list')"><i class="fas fa-list"></i></button>
+    </div>
+  </div>
+
+  <div style="position:relative;min-height:150px">
+    <!-- عرض البطاقات -->
+    <div class="panel visible" id="gridPanel">
+      <div class="ship-grid" id="gridContainer"></div>
+      <div class="empty-state" id="gridEmpty" style="display:none"><i class="fas fa-inbox"></i><p id="gridEmptyText">لا توجد أنواع شحن مطابقة</p></div>
+    </div>
+    <!-- عرض القائمة -->
+    <div class="panel hidden" id="listPanel">
+      <div class="table-wrap">
+        <div class="table-head"><h3><i class="fas fa-table-list"></i> <span id="tableTitle">قائمة أنواع الشحن</span></h3><span class="table-count" id="tableCount">0</span></div>
+        <div class="table-scroll">
+          <table class="ship-table"><thead><tr>
+            <th style="width:40px">#</th><th id="thCode" style="width:110px">الكود</th><th id="thName">الاسم</th><th id="thDesc" style="width:150px">الوصف</th><th id="thStatus" style="width:90px">الحالة</th><th id="thActions" style="width:120px">الإجراءات</th>
+          </tr></thead><tbody id="tableBody"></tbody></table>
+        </div>
+      </div>
+      <div class="empty-state" id="listEmpty" style="display:none"><i class="fas fa-inbox"></i><p id="listEmptyText">لا توجد أنواع شحن مطابقة</p></div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* =============================================
+   بيانات أنواع الشحن
+   ============================================= */
+var shippingTypes = [
+  {id:1, code:'PSHIP001', ar:'شحن سريع', en:'Express Shipping', descAr:'توصيل خلال 1-3 أيام عمل', descEn:'Delivery within 1-3 business days', active:true},
+  {id:2, code:'PSHIP002', ar:'شحن اقتصادي', en:'Economy Shipping', descAr:'توصيل خلال 5-10 أيام عمل', descEn:'Delivery within 5-10 business days', active:true},
+  {id:3, code:'PSHIP003', ar:'شحن مجاني', en:'Free Shipping', descAr:'شحن مجاني للطلبات فوق 200 جنيه', descEn:'Free for orders above 200 EGP', active:true},
+  {id:4, code:'PSHIP004', ar:'استلام من الفرع', en:'Pickup from Branch', descAr:'استلام الطلب من أقرب فرع', descEn:'Pick up from nearest branch', active:true},
+  {id:5, code:'PSHIP005', ar:'شحن دولي', en:'International Shipping', descAr:'شحن للدول الخليجية والعالم', descEn:'Shipping to GCC and worldwide', active:true},
+  {id:6, code:'PSHIP006', ar:'شحن خلال ساعة', en:'Same Hour Delivery', descAr:'توصيل خلال ساعة واحدة', descEn:'Delivery within one hour', active:false},
+  {id:7, code:'PSHIP007', ar:'شحن يومي', en:'Next Day Delivery', descAr:'توصيل في اليوم التالي', descEn:'Delivery on the next day', active:true},
+  {id:8, code:'PSHIP008', ar:'شحن بارد', en:'Cold Chain Shipping', descAr:'شحن مبرّد للمنتجات الغذائية', descEn:'Refrigerated shipping for food products', active:false},
+  {id:9, code:'PSHIP009', ar:'شحن كبير الحجم', en:'Oversized Shipping', descAr:'شحن للبضائع الكبيرة والثقيلة', descEn:'Shipping for large and heavy items', active:true},
+  {id:10, code:'PSHIP010', ar:'شحن منصة إلى منصة', en:'Platform to Platform', descAr:'شحن بين المنصات التجارية', descEn:'Shipping between e-commerce platforms', active:true}
+];
+
+/* =============================================
+   متغيرات عامة
+   ============================================= */
+var nextId = 11;
+var currentView = 'grid';
+var lang = 'ar';
+var deleteTargetId = null;
+var codeCounter = 11;
+
+/* أيقونات متنوعة لكل نوع */
+var shipIcons = ['fa-bolt','fa-coins','fa-gift','fa-store','fa-earth-americas','fa-clock','fa-calendar-day','fa-snowflake','fa-box','fa-right-left'];
+var iconColors = ['ci1','ci2','ci3','ci4','ci5','ci6','ci1','ci4','ci5','ci3'];
+
+/* =============================================
+   توليد كود شحن تلقائي
+   ============================================= */
+function generateCode() {
+  var num = String(codeCounter).padStart(3, '0');
+  document.getElementById('fCode').value = 'PSHIP' + num;
+  document.getElementById('fCode').classList.remove('error');
+  document.getElementById('errCode').classList.remove('visible');
+}
+
+/* =============================================
+   التوست
+   ============================================= */
+function showToast(msg, type) {
+  var box = document.getElementById('toastBox');
+  var div = document.createElement('div');
+  div.className = 'toast-msg t-' + type;
+  var icons = {success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info',warn:'fa-triangle-exclamation'};
+  div.innerHTML = '<i class="fas ' + (icons[type]||icons.info) + '"></i><span>' + msg + '</span>';
+  box.appendChild(div);
+  setTimeout(function() {
+    div.classList.add('removing');
+    setTimeout(function() { if(div.parentNode) div.parentNode.removeChild(div); }, 250);
+  }, 3000);
+}
+
+/* =============================================
+   فتح/إغلاق المودالات
+   ============================================= */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* إغلاق بالنقر على الخلفية */
+document.getElementById('formModal').addEventListener('click', function(e) { if(e.target===this) closeFormModal(); });
+document.getElementById('delModal').addEventListener('click', function(e) { if(e.target===this) closeDelModal(); });
+
+/* =============================================
+   الفلترة
+   ============================================= */
+function getFiltered() {
+  var q = document.getElementById('searchInput').value.trim().toLowerCase();
+  var st = document.getElementById('statusFilter').value;
+  return shippingTypes.filter(function(s) {
+    var mQ = !q || s.ar.toLowerCase().indexOf(q) > -1 || s.en.toLowerCase().indexOf(q) > -1 || s.code.toLowerCase().indexOf(q) > -1;
+    var mS = !st || (st==='active' && s.active) || (st==='inactive' && !s.active);
+    return mQ && mS;
+  });
+}
+
+function applyFilters() {
+  renderStats();
+  renderView();
+}
+
+/* =============================================
+   الإحصائيات
+   ============================================= */
+function renderStats() {
+  var list = getFiltered();
+  var total = list.length;
+  var active = 0;
+  var inactive = 0;
+  for(var i=0;i<list.length;i++){if(list[i].active)active++;else inactive++;}
+  var pct = total>0 ? Math.round(active/total*100) : 0;
+
+  var labels = lang==='ar'
+    ? ['إجمالي أنواع الشحن','أنواع مفعّلة','أنواع موقوفة','نسبة التفعيل']
+    : ['Total Shipping Types','Active Types','Inactive Types','Activation Rate'];
+
+  document.getElementById('statsArea').innerHTML =
+    '<div class="stat-card t1 fade-up d1"><div class="stat-top"><div class="stat-ico s1"><i class="fas fa-truck-fast"></i></div><span class="stat-pct">' + (lang==='ar'?'الكل':'All') + '</span></div><div class="stat-num">' + total + '</div><div class="stat-label">' + labels[0] + '</div></div>' +
+    '<div class="stat-card t2 fade-up d2"><div class="stat-top"><div class="stat-ico s2"><i class="fas fa-circle-check"></i></div><span class="stat-pct">' + pct + '%</span></div><div class="stat-num">' + active + '</div><div class="stat-label">' + labels[1] + '</div></div>' +
+    '<div class="stat-card t3 fade-up d3"><div class="stat-top"><div class="stat-ico s3"><i class="fas fa-circle-pause"></i></div><span class="stat-pct">' + inactive + '</span></div><div class="stat-num">' + inactive + '</div><div class="stat-label">' + labels[2] + '</div></div>' +
+    '<div class="stat-card t4 fade-up d4"><div class="stat-top"><div class="stat-ico s4"><i class="fas fa-chart-pie"></i></div><span class="stat-pct">' + pct + '%</span></div><div class="stat-num">' + pct + '%</div><div class="stat-label">' + labels[3] + '</div></div>';
+}
+
+/* =============================================
+   عرض البطاقات
+   ============================================= */
+function renderGrid() {
+  var list = getFiltered();
+  var container = document.getElementById('gridContainer');
+  var empty = document.getElementById('gridEmpty');
+  document.getElementById('gridEmptyText').textContent = lang==='ar'?'لا توجد أنواع شحن مطابقة':'No matching shipping types';
+
+  if(!list.length){container.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var s=list[i];
+    var d=Math.min(i+1,12);
+    var icoIdx=i % shipIcons.length;
+    var name = lang==='ar'?s.ar:s.en;
+    var subName = lang==='ar'?s.en:s.ar;
+    var desc = lang==='ar'?(s.descAr||''):(s.descEn||'');
+
+    html += '<div class="ship-card fade-up d'+d+' '+(s.active?'':'disabled')+'">'
+      +'<div class="ship-card-head">'
+      +'<div class="ship-code-box">'
+      +'<div class="ship-icon '+iconColors[icoIdx]+'"><i class="fas '+shipIcons[icoIdx]+'"></i></div>'
+      +'<div class="ship-code-info"><span class="ship-code">'+s.code+'</span><span class="ship-code-label">'+(lang==='ar'?'كود الشحن':'Shipping Code')+'</span></div>'
+      +'</div>'
+      +'<span class="ship-status '+(s.active?'on':'off')+'"><span class="dot"></span> '+(s.active?(lang==='ar'?'مفعّل':'Active'):(lang==='ar'?'موقوف':'Inactive'))+'</span>'
+      +'</div>'
+      +'<div class="ship-card-body">'
+      +'<div class="ship-name-row">'
+      +'<span class="ship-name">'+name+'</span>'
+      +'<span class="ship-lang-badge ar-badge">AR</span>'
+      +'<span class="ship-lang-badge en-badge">EN</span>'
+      +'</div>'
+      +'<div class="ship-sub-name">'+subName+'</div>'
+      +(desc?'<div class="ship-meta"><span class="ship-meta-item"><i class="fas fa-align-left"></i> '+desc.substring(0,50)+(desc.length>50?'...':'')+'</span></div>':'')
+      +'</div>'
+      +'<div class="ship-card-foot"><div class="ship-actions">'
+      +'<button class="act-btn edit" title="'+(lang==='ar'?'تعديل':'Edit')+'" onclick="openEditForm('+s.id+')"><i class="fas fa-pen"></i></button>'
+      +'<button class="act-btn delete" title="'+(lang==='ar'?'حذف':'Delete')+'" onclick="openDeleteModal('+s.id+')"><i class="fas fa-trash"></i></button>'
+      +'</div>'
+      +'<label class="toggle-sw"><input type="checkbox" '+(s.active?'checked':'')+' onchange="toggleStatus('+s.id+')"><span class="track"></span></label>'
+      +'</div></div>';
+  }
+  container.innerHTML=html;
+}
+
+/* =============================================
+   عرض القائمة
+   ============================================= */
+function renderTable() {
+  var list = getFiltered();
+  var tbody = document.getElementById('tableBody');
+  var empty = document.getElementById('listEmpty');
+  document.getElementById('listEmptyText').textContent = lang==='ar'?'لا توجد أنواع شحن مطابقة':'No matching shipping types';
+  document.getElementById('tableCount').textContent = list.length;
+  document.getElementById('tableTitle').textContent = lang==='ar'?'قائمة أنواع الشحن':'Shipping Types List';
+
+  if(!list.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var s=list[i];
+    var name = lang==='ar'?s.ar:s.en;
+    var subName = lang==='ar'?s.en:s.ar;
+    var desc = lang==='ar'?(s.descAr||'—'):(s.descEn||'—');
+    if(desc.length>25) desc=desc.substring(0,25)+'...';
+
+    html += '<tr class="'+(s.active?'':'disabled')+'">'
+      +'<td style="color:var(--tx3);font-weight:700">'+(i+1)+'</td>'
+      +'<td><span class="tbl-code">'+s.code+'</span></td>'
+      +'<td><div class="tbl-name">'+name+'</div><div class="tbl-sub">'+subName+'</div></td>'
+      +'<td style="color:var(--tx3);font-size:11px">'+desc+'</td>'
+      +'<td><span class="tbl-badge '+(s.active?'on':'off')+'"><span class="dot"></span> '+(s.active?(lang==='ar'?'مفعّل':'Active'):(lang==='ar'?'موقوف':'Inactive'))+'</span></td>'
+      +'<td><div class="ship-actions">'
+      +'<button class="act-btn edit" onclick="openEditForm('+s.id+')"><i class="fas fa-pen"></i></button>'
+      +'<button class="act-btn delete" onclick="openDeleteModal('+s.id+')"><i class="fas fa-trash"></i></button>'
+      +'<label class="toggle-sw"><input type="checkbox" '+(s.active?'checked':'')+' onchange="toggleStatus('+s.id+')"><span class="track"></span></label>'
+      +'</div></td></tr>';
+  }
+  tbody.innerHTML=html;
+}
+
+function renderView() {
+  if(currentView==='grid') renderGrid(); else renderTable();
+}
+
+/* =============================================
+   تبديل العرض
+   ============================================= */
+function changeView(mode) {
+  if(mode===currentView) return;
+  currentView=mode;
+  document.getElementById('vGrid').classList.toggle('active',mode==='grid');
+  document.getElementById('vList').classList.toggle('active',mode==='list');
+  var gP=document.getElementById('gridPanel'), lP=document.getElementById('listPanel');
+  if(mode==='grid'){
+    lP.classList.remove('visible');lP.classList.add('hidden');
+    setTimeout(function(){gP.classList.remove('hidden');gP.classList.add('visible');},100);
+  }else{
+    gP.classList.remove('visible');gP.classList.add('hidden');
+    setTimeout(function(){lP.classList.remove('hidden');lP.classList.add('visible');},100);
+  }
+  renderView();
+}
+
+/* =============================================
+   تبديل اللغة
+   ============================================= */
+function switchLanguage() {
+  lang = lang==='ar'?'en':'ar';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang==='ar'?'rtl':'ltr';
+
+  document.getElementById('backArrow').className = lang==='ar'?'fas fa-arrow-right':'fas fa-arrow-left';
+  document.getElementById('backText').textContent = lang==='ar'?'لوحة التحكم':'Dashboard';
+  document.getElementById('pageTitle').textContent = lang==='ar'?'إدارة أنواع الشحن':'Shipping Types Management';
+  document.getElementById('pageDesc').textContent = lang==='ar'?'إدارة طرق وأنواع الشحن المتاحة في المتجر':'Manage available shipping methods and types';
+  document.getElementById('langText').textContent = lang==='ar'?'English':'العربية';
+  document.getElementById('addText').textContent = lang==='ar'?'إضافة نوع شحن':'Add Shipping Type';
+  document.getElementById('searchInput').placeholder = lang==='ar'?'ابحث عن نوع شحن...':'Search shipping type...';
+  document.getElementById('optAll').textContent = lang==='ar'?'كل الحالات':'All Status';
+  document.getElementById('optActive').textContent = lang==='ar'?'مفعّل':'Active';
+  document.getElementById('optInactive').textContent = lang==='ar'?'موقوف':'Inactive';
+  document.getElementById('thCode').textContent = lang==='ar'?'الكود':'Code';
+  document.getElementById('thName').textContent = lang==='ar'?'الاسم':'Name';
+  document.getElementById('thDesc').textContent = lang==='ar'?'الوصف':'Description';
+  document.getElementById('thStatus').textContent = lang==='ar'?'الحالة':'Status';
+  document.getElementById('thActions').textContent = lang==='ar'?'الإجراءات':'Actions';
+
+  renderStats();
+  renderView();
+}
+
+/* =============================================
+   مسح أخطاء النموذج
+   ============================================= */
+function clearFormErrors() {
+  var inputs = ['fCode','fAr','fEn'];
+  var errors = ['errCode','errAr','errEn'];
+  for(var i=0;i<inputs.length;i++) document.getElementById(inputs[i]).classList.remove('error');
+  for(var j=0;j<errors.length;j++) document.getElementById(errors[j]).classList.remove('visible');
+}
+
+/* =============================================
+   فتح نموذج إضافة
+   ============================================= */
+function openAddForm() {
+  document.getElementById('editId').value = '';
+  document.getElementById('fCode').value = '';
+  document.getElementById('fAr').value = '';
+  document.getElementById('fEn').value = '';
+  document.getElementById('fDescAr').value = '';
+  document.getElementById('fDescEn').value = '';
+  clearFormErrors();
+  document.getElementById('formTitle').textContent = lang==='ar'?'إضافة نوع شحن جديد':'Add New Shipping Type';
+  document.getElementById('saveBtnText').textContent = lang==='ar'?'حفظ':'Save';
+  openModal('formModal');
+  /* توليد كود تلقائي عند الفتح */
+  setTimeout(function(){ generateCode(); }, 150);
+}
+
+/* =============================================
+   فتح نموذج تعديل
+   ============================================= */
+function openEditForm(id) {
+  var item = null;
+  for(var i=0;i<shippingTypes.length;i++){
+    if(shippingTypes[i].id===id){item=shippingTypes[i];break;}
+  }
+  if(!item) return;
+
+  document.getElementById('editId').value = item.id;
+  document.getElementById('fCode').value = item.code;
+  document.getElementById('fAr').value = item.ar;
+  document.getElementById('fEn').value = item.en;
+  document.getElementById('fDescAr').value = item.descAr||'';
+  document.getElementById('fDescEn').value = item.descEn||'';
+  clearFormErrors();
+  document.getElementById('formTitle').textContent = lang==='ar'?'تعديل نوع الشحن':'Edit Shipping Type';
+  document.getElementById('saveBtnText').textContent = lang==='ar'?'تحديث':'Update';
+  openModal('formModal');
+}
+
+/* =============================================
+   إغلاق نموذج الإضافة/التعديل
+   ============================================= */
+function closeFormModal() { closeModal('formModal'); }
+
+/* =============================================
+   حفظ نوع الشحن
+   ============================================= */
+function saveShipping() {
+  clearFormErrors();
+  var editId = document.getElementById('editId').value;
+  var code = document.getElementById('fCode').value.trim().toUpperCase();
+  var ar = document.getElementById('fAr').value.trim();
+  var en = document.getElementById('fEn').value.trim();
+  var descAr = document.getElementById('fDescAr').value.trim();
+  var descEn = document.getElementById('fDescEn').value.trim();
+  var valid = true;
+
+  /* تحقق الكود */
+  if(!code || code.length < 3) {
+    document.getElementById('fCode').classList.add('error');
+    document.getElementById('errCode').classList.add('visible');
+    valid = false;
+  } else {
+    /* تحقق عدم التكرار */
+    for(var i=0;i<shippingTypes.length;i++){
+      if(shippingTypes[i].code===code && String(shippingTypes[i].id)!==String(editId)){
+        document.getElementById('fCode').classList.add('error');
+        document.getElementById('errCode').textContent = lang==='ar'?'هذا الكود مستخدم بالفعل':'Code already exists';
+        document.getElementById('errCode').classList.add('visible');
+        valid = false;
+        break;
+      }
+    }
+  }
+
+  /* تحقق الاسم العربي */
+  if(!ar){
+    document.getElementById('fAr').classList.add('error');
+    document.getElementById('errAr').classList.add('visible');
+    valid = false;
+  }
+
+  /* تحقق الاسم الإنجليزي */
+  if(!en){
+    document.getElementById('fEn').classList.add('error');
+    document.getElementById('errEn').classList.add('visible');
+    valid = false;
+  }
+
+  if(!valid){
+    showToast(lang==='ar'?'يرجى ملء جميع الحقول المطلوبة':'Please fill all required fields','error');
+    return;
+  }
+
+  if(editId) {
+    /* تعديل */
+    for(var j=0;j<shippingTypes.length;j++){
+      if(shippingTypes[j].id===parseInt(editId,10)){
+        shippingTypes[j].code = code;
+        shippingTypes[j].ar = ar;
+        shippingTypes[j].en = en;
+        shippingTypes[j].descAr = descAr;
+        shippingTypes[j].descEn = descEn;
+        break;
+      }
+    }
+    showToast(lang==='ar'?'تم تعديل نوع الشحن بنجاح':'Shipping type updated successfully','success');
+  } else {
+    /* إضافة */
+    shippingTypes.push({
+      id: nextId++,
+      code: code,
+      ar: ar,
+      en: en,
+      descAr: descAr,
+      descEn: descEn,
+      active: true
+    });
+    codeCounter++;
+    showToast(lang==='ar'?'تمت إضافة نوع الشحن بنجاح':'Shipping type added successfully','success');
+  }
+
+  closeModal('formModal');
+  renderStats();
+  renderView();
+}
+
+/* =============================================
+   تبديل حالة التفعيل
+   ============================================= */
+function toggleStatus(id) {
+  for(var i=0;i<shippingTypes.length;i++){
+    if(shippingTypes[i].id===id){
+      shippingTypes[i].active = !shippingTypes[i].active;
+      showToast(
+        shippingTypes[i].active
+          ? (lang==='ar'?'تم تفعيل نوع الشحن':'Shipping type activated')
+          : (lang==='ar'?'تم إيقاف نوع الشحن':'Shipping type deactivated'),
+        shippingTypes[i].active?'success':'warn'
+      );
+      break;
+    }
+  }
+  renderStats();
+  renderView();
+}
+
+/* =============================================
+   فتح مودال الحذف
+   ============================================= */
+function openDeleteModal(id) {
+  var item = null;
+  for(var i=0;i<shippingTypes.length;i++){
+    if(shippingTypes[i].id===id){item=shippingTypes[i];break;}
+  }
+  if(!item) return;
+  deleteTargetId = id;
+  document.getElementById('delCode').textContent = item.code;
+  document.getElementById('delAr').textContent = item.ar;
+  document.getElementById('delEn').textContent = item.en;
+  openModal('delModal');
+}
+
+/* =============================================
+   إغلاق مودال الحذف
+   ============================================= */
+function closeDelModal() {
+  closeModal('delModal');
+  deleteTargetId = null;
+}
+
+/* =============================================
+   تأكيد الحذف
+   ============================================= */
+function confirmDelete() {
+  if(deleteTargetId===null) return;
+  var newList = [];
+  for(var i=0;i<shippingTypes.length;i++){
+    if(shippingTypes[i].id!==deleteTargetId) newList.push(shippingTypes[i]);
+  }
+  shippingTypes = newList;
+  deleteTargetId = null;
+  closeModal('delModal');
+  showToast(lang==='ar'?'تم حذف نوع الشحن بنجاح':'Shipping type deleted successfully','success');
+  renderStats();
+  renderView();
+}
+
+/* =============================================
+   التهيئة
+   ============================================= */
+(function init() {
+  /* حساب الكود التالي من البيانات */
+  var maxNum = 0;
+  for(var i=0;i<shippingTypes.length;i++){
+    var match = shippingTypes[i].code.match(/PSHIP(\d+)/);
+    if(match){
+      var n = parseInt(match[1],10);
+      if(n > maxNum) maxNum = n;
+    }
+  }
+  codeCounter = maxNum + 1;
+
+  renderStats();
+  renderView();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل مورد جديد - نظام إدارة المشتريات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --pri: #0f766e;
+            --pri-dk: #0a5c56;
+            --pri-lt: #ccfbf1;
+            --pri-gl: rgba(15,118,110,.06);
+            --gold: #b45309;
+            --gold-lt: #fef3c7;
+            --red: #dc2626;
+            --red-lt: #fee2e2;
+            --blue: #1d4ed8;
+            --blue-lt: #dbeafe;
+            --txt: #1a1a2e;
+            --txt2: #475569;
+            --mt: #94a3b8;
+            --bd: #e2e8f0;
+            --bd2: #cbd5e1;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --sh: 0 1px 3px rgba(0,0,0,.04);
+            --sh2: 0 4px 20px rgba(0,0,0,.06);
+            --sh3: 0 8px 30px rgba(0,0,0,.08);
+            --radius: 14px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--txt); min-height: 100vh; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 4px; }
+
+        /* الهيدر */
+        .top-bar {
+            background: linear-gradient(135deg, #0a5c56 0%, #0f766e 50%, #14897e 100%);
+            padding: 0;
+            position: sticky; top: 0; z-index: 60;
+            box-shadow: 0 4px 20px rgba(15,118,110,.25);
+        }
+        .top-bar-inner {
+            max-width: 1440px; margin: 0 auto;
+            padding: 14px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        /* الشريط الجانبي */
+        .sidebar {
+            width: 280px; flex-shrink: 0;
+            background: var(--card);
+            border-left: 1px solid var(--bd);
+            height: calc(100vh - 60px);
+            position: sticky; top: 60px;
+            overflow-y: auto;
+            transition: transform .3s ease;
+        }
+        .sidebar-head {
+            padding: 20px 18px 14px;
+            border-bottom: 1px solid var(--bd);
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 18px;
+            cursor: pointer;
+            transition: all .2s;
+            border-right: 3px solid transparent;
+            font-size: 12.5px; font-weight: 600;
+            color: var(--txt2);
+            position: relative;
+        }
+        .nav-item:hover { background: var(--pri-gl); color: var(--pri); }
+        .nav-item.active {
+            background: var(--pri-gl);
+            color: var(--pri);
+            border-right-color: var(--pri);
+            font-weight: 700;
+        }
+        .nav-item .ni-icon {
+            width: 30px; height: 30px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; flex-shrink: 0;
+            background: #f1f5f9; color: var(--mt);
+            transition: all .2s;
+        }
+        .nav-item.active .ni-icon,
+        .nav-item:hover .ni-icon {
+            background: var(--pri-lt); color: var(--pri);
+        }
+        .nav-item .ni-check {
+            margin-right: auto; width: 18px; height: 18px;
+            border-radius: 50%; font-size: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--pri); color: #fff;
+            opacity: 0; transform: scale(0);
+            transition: all .25s cubic-bezier(.175,.885,.32,1.275);
+        }
+        .nav-item.done .ni-check { opacity: 1; transform: scale(1); }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            flex: 1; min-width: 0;
+            padding: 28px 32px 80px;
+        }
+        .sec-card {
+            background: var(--card);
+            border: 1px solid var(--bd);
+            border-radius: var(--radius);
+            padding: 0;
+            margin-bottom: 24px;
+            box-shadow: var(--sh);
+            overflow: hidden;
+            transition: box-shadow .3s;
+        }
+        .sec-card:hover { box-shadow: var(--sh2); }
+        .sec-head {
+            padding: 18px 24px;
+            display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--bd);
+            background: linear-gradient(135deg, #fafbfc, #f8fafc);
+        }
+        .sec-head-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+        }
+        .sec-body { padding: 24px; }
+
+        /* حقول الإدخال */
+        .fg { margin-bottom: 18px; }
+        .fl {
+            display: block; font-size: 12px; font-weight: 700;
+            color: var(--txt2); margin-bottom: 6px;
+        }
+        .fl .req { color: var(--red); margin-right: 2px; }
+        .fl .opt { color: var(--mt); font-weight: 400; font-size: 10px; }
+        .fi {
+            width: 100%; background: #fff;
+            border: 1.5px solid var(--bd);
+            border-radius: 10px;
+            padding: 9px 13px;
+            color: var(--txt); font-family: 'Cairo', sans-serif;
+            font-size: 13px; transition: all .2s; outline: none;
+        }
+        .fi:focus {
+            border-color: var(--pri);
+            box-shadow: 0 0 0 3px rgba(15,118,110,.1);
+        }
+        .fi::placeholder { color: var(--mt); }
+        .fi.err { border-color: var(--red); box-shadow: 0 0 0 3px rgba(220,38,38,.08); }
+        textarea.fi { resize: vertical; min-height: 80px; }
+        select.fi {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 12px center;
+            padding-left: 30px;
+        }
+        .fi-group {
+            display: grid; gap: 16px;
+        }
+        .fg2 { grid-template-columns: 1fr 1fr; }
+        .fg3 { grid-template-columns: 1fr 1fr 1fr; }
+        .fg4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+        /* رفع الملفات */
+        .file-zone {
+            border: 2px dashed var(--bd);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .25s;
+            background: #fafbfc;
+            position: relative;
+        }
+        .file-zone:hover { border-color: var(--pri); background: var(--pri-gl); }
+        .file-zone.has-file {
+            border-color: var(--pri);
+            border-style: solid;
+            background: var(--pri-gl);
+        }
+        .file-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer;
+        }
+
+        /* مفتاح التبديل */
+        .toggle-wrap {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .toggle {
+            width: 44px; height: 24px; border-radius: 12px;
+            background: var(--bd2); cursor: pointer;
+            position: relative; transition: background .25s;
+            flex-shrink: 0;
+        }
+        .toggle.on { background: var(--pri); }
+        .toggle::after {
+            content: '';
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #fff; position: absolute;
+            top: 2px; right: 2px;
+            transition: transform .25s cubic-bezier(.175,.885,.32,1.275);
+            box-shadow: 0 1px 3px rgba(0,0,0,.15);
+        }
+        .toggle.on::after { transform: translateX(-20px); }
+
+        /* الأزرار */
+        .btn-pri {
+            background: linear-gradient(135deg, var(--pri), var(--pri-dk));
+            color: #fff; border: none;
+            padding: 10px 24px; border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: all .25s;
+            display: inline-flex; align-items: center; gap: 7px;
+        }
+        .btn-pri:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(15,118,110,.3);
+        }
+        .btn-sec {
+            background: #fff; color: var(--txt);
+            border: 1.5px solid var(--bd);
+            padding: 10px 24px; border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: all .25s;
+            display: inline-flex; align-items: center; gap: 7px;
+        }
+        .btn-sec:hover {
+            border-color: var(--pri);
+            color: var(--pri);
+            background: var(--pri-gl);
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #b45309, #92400e);
+            color: #fff; border: none;
+            padding: 10px 24px; border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: all .25s;
+            display: inline-flex; align-items: center; gap: 7px;
+        }
+        .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(180,83,9,.3); }
+
+        /* التوست */
+        .toast-wrap {
+            position: fixed; top: 76px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+        }
+        .toast-msg {
+            background: #fff; border: 1px solid var(--bd);
+            border-radius: 12px; padding: 12px 20px;
+            display: flex; align-items: center; gap: 10px;
+            font-size: 13px; font-weight: 600;
+            box-shadow: var(--sh3);
+            animation: toastIn .35s cubic-bezier(.175,.885,.32,1.275);
+            min-width: 280px;
+        }
+        .toast-msg.out { animation: toastOut .25s ease forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-16px) scale(.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-12px) scale(.95); } }
+
+        /* شريط التقدم */
+        .progress-bar {
+            height: 4px; background: rgba(255,255,255,.15);
+            border-radius: 2px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: #5eead4;
+            border-radius: 2px; transition: width .5s ease;
+        }
+
+        /* رقعة الشعار */
+        .logo-preview {
+            width: 90px; height: 90px;
+            border: 2px dashed var(--bd);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all .25s;
+            background: #fafbfc; overflow: hidden;
+            position: relative;
+        }
+        .logo-preview:hover { border-color: var(--pri); background: var(--pri-gl); }
+        .logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .logo-preview input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+        /* الحالة القانونية */
+        .status-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 700;
+            cursor: pointer; transition: all .2s;
+            border: 1.5px solid var(--bd);
+            background: #fff; color: var(--txt2);
+        }
+        .status-chip:hover { border-color: var(--pri); }
+        .status-chip.on {
+            border-color: var(--pri); background: var(--pri-lt); color: var(--pri);
+        }
+
+        /* شريط الإجراءات السفلي */
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #fff;
+            border-top: 1px solid var(--bd);
+            padding: 14px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            z-index: 55;
+            box-shadow: 0 -4px 20px rgba(0,0,0,.05);
+        }
+
+        /* زر القائمة للجوال */
+        .mobile-menu-btn {
+            display: none;
+            background: var(--pri); color: #fff;
+            border: none; width: 38px; height: 38px;
+            border-radius: 10px; font-size: 16px;
+            cursor: pointer; align-items: center; justify-content: center;
+        }
+        .sidebar-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.3); z-index: 49;
+        }
+
+        /* سكرول سلس */
+        html { scroll-behavior: smooth; }
+
+        /* ريسبونسف */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed; top: 60px; right: 0; z-index: 50;
+                transform: translateX(100%);
+                box-shadow: var(--sh3);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; }
+            .mobile-menu-btn { display: flex; }
+            .main-content { padding: 20px 16px 90px; }
+            .fg2, .fg3, .fg4 { grid-template-columns: 1fr; }
+            .bottom-bar { padding: 12px 16px; }
+        }
+        @media (max-width: 640px) {
+            .top-bar-inner { padding: 10px 14px; }
+            .sec-body { padding: 16px; }
+            .bottom-bar { flex-direction: column; gap: 10px; }
+            .bottom-bar .btn-row { width: 100%; display: flex; gap: 8px; }
+            .bottom-bar .btn-row button { flex: 1; justify-content: center; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- توست -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- الهيدر -->
+<header class="top-bar">
+    <div class="top-bar-inner">
+        <div style="display:flex;align-items:center;gap:12px">
+            <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="القائمة">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center">
+                    <i class="fas fa-truck-loading text-white" style="font-size:14px"></i>
+                </div>
+                <div>
+                    <h1 style="color:#fff;font-size:14px;font-weight:900;line-height:1.3">تسجيل مورد جديد</h1>
+                    <p style="color:rgba(255,255,255,.6);font-size:10px;font-weight:600">نظام إدارة المشتريات والموردين</p>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+            <div style="text-align:left">
+                <p style="color:rgba(255,255,255,.7);font-size:10px;font-weight:600">التقدم</p>
+                <p style="color:#5eead4;font-size:13px;font-weight:900" id="progressText">0 من 12</p>
+            </div>
+            <div class="progress-bar" style="width:120px">
+                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- الغطاء للجوال -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div style="display:flex;max-width:1440px;margin:0 auto">
+    <!-- الشريط الجانبي -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-head">
+            <p style="font-size:11px;font-weight:700;color:var(--mt);margin-bottom:6px">أقسام التسجيل</p>
+            <p style="font-size:10px;color:var(--mt)">أكمل جميع الأقسام المطلوبة</p>
+        </div>
+        <nav id="sideNav"></nav>
+    </aside>
+
+    <!-- المحتوى -->
+    <main class="main-content" id="mainContent">
+
+        <!-- 1 - البيانات الأساسية -->
+        <section class="sec-card" id="sec-0">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:var(--pri-lt);color:var(--pri)"><i class="fas fa-building"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">البيانات الأساسية للمورد</h3><p style="font-size:10px;color:var(--mt)">المعلومات العامة عن الشركة</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم الشركة <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: شركة النخبة للتجارة"></div>
+                    <div class="fg"><label class="fl">الاسم التجاري <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: النخبة تريد"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم صاحب الشركة <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="الاسم رباعي"></div>
+                    <div class="fg"><label class="fl">نوع النشاط <span class="req">*</span></label>
+                        <select class="fi" data-req="1">
+                            <option value="">اختر نوع النشاط</option>
+                            <option>تجارة عامة</option><option>تجارة مقاولات</option><option>استيراد وتصدير</option>
+                            <option>صناعة وتحويل</option><option>خدمات فنية</option><option>خدمات استشارية</option>
+                            <option>توريد معدات</option><option>أخرى</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">سنة التأسيس <span class="req">*</span></label><input type="number" class="fi" data-req="1" placeholder="2020" min="1950" max="2025"></div>
+                    <div class="fg"><label class="fl">عدد الموظفين <span class="req">*</span></label>
+                        <select class="fi" data-req="1">
+                            <option value="">اختر</option>
+                            <option>أقل من 10</option><option>10 - 50</option><option>51 - 200</option>
+                            <option>201 - 500</option><option>أكثر من 500</option>
+                        </select>
+                    </div>
+                    <div class="fg"><label class="fl">رأس المال <span class="opt">(اختياري)</span></label><input type="text" class="fi" placeholder="مثال: 500,000 جنيه"></div>
+                </div>
+                <div class="fg"><label class="fl">نبذة عن الشركة <span class="req">*</span></label><textarea class="fi" data-req="1" rows="3" placeholder="اكتب نبذة مختصرة عن نشاط الشركة وخبراتها..."></textarea></div>
+                <div class="fg">
+                    <label class="fl">شعار الشركة <span class="opt">(اختياري)</span></label>
+                    <div style="display:flex;align-items:center;gap:14px">
+                        <div class="logo-preview" id="logoZone">
+                            <input type="file" accept="image/*" onchange="handleLogo(this)">
+                            <div id="logoPlaceholder" style="text-align:center">
+                                <i class="fas fa-cloud-upload-alt" style="font-size:20px;color:var(--mt)"></i>
+                                <p style="font-size:9px;color:var(--mt);margin-top:4px">PNG, JPG</p>
+                            </div>
+                        </div>
+                        <div style="font-size:11px;color:var(--mt)">اضغط لرفع الشعار<br>الحجم الأقصى 2MB</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2 - بيانات التواصل -->
+        <section class="sec-card" id="sec-1">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:var(--blue-lt);color:var(--blue)"><i class="fas fa-address-book"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات التواصل</h3><p style="font-size:10px;color:var(--mt)">معلومات الاتصال بالشركة</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم مسؤول التواصل <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="الاسم الكامل"></div>
+                    <div class="fg"><label class="fl">الوظيفة <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: مدير المبيعات"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">رقم الهاتف <span class="req">*</span></label><input type="tel" class="fi" data-req="1" placeholder="05xxxxxxxx" dir="ltr"></div>
+                    <div class="fg"><label class="fl">رقم الهاتف البديل</label><input type="tel" class="fi" placeholder="05xxxxxxxx" dir="ltr"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">البريد الإلكتروني <span class="req">*</span></label><input type="email" class="fi" data-req="1" placeholder="info@company.com" dir="ltr"></div>
+                    <div class="fg"><label class="fl">الموقع الإلكتروني</label><input type="url" class="fi" placeholder="https://www.company.com" dir="ltr"></div>
+                </div>
+                <div class="fg">
+                    <label class="fl">حسابات التواصل الاجتماعي</label>
+                    <div class="fi-group fg2" style="margin-top:6px">
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <i class="fab fa-linkedin" style="color:#0077b5;font-size:16px;width:20px;text-align:center"></i>
+                            <input type="text" class="fi" placeholder="رابط LinkedIn" dir="ltr">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <i class="fab fa-twitter" style="color:#1da1f2;font-size:16px;width:20px;text-align:center"></i>
+                            <input type="text" class="fi" placeholder="رابط Twitter/X" dir="ltr">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <i class="fab fa-facebook" style="color:#1877f2;font-size:16px;width:20px;text-align:center"></i>
+                            <input type="text" class="fi" placeholder="رابط Facebook" dir="ltr">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <i class="fab fa-instagram" style="color:#e4405f;font-size:16px;width:20px;text-align:center"></i>
+                            <input type="text" class="fi" placeholder="رابط Instagram" dir="ltr">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3 - بيانات العنوان -->
+        <section class="sec-card" id="sec-2">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:var(--gold-lt);color:var(--gold)"><i class="fas fa-map-marker-alt"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات العنوان</h3><p style="font-size:10px;color:var(--mt)">عناوين الشركة والمستودعات</p></div>
+            </div>
+            <div class="sec-body">
+                <p style="font-size:12px;font-weight:700;color:var(--pri);margin-bottom:14px"><i class="fas fa-building ml-1"></i>عنوان الشركة</p>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">الدولة <span class="req">*</span></label>
+                        <select class="fi" data-req="1"><option value="">اختر</option><option>مصر</option><option>السعودية</option><option>الإمارات</option><option>الكويت</option><option>قطر</option><option>البحرين</option><option>عمان</option><option>الأردن</option><option>أخرى</option></select>
+                    </div>
+                    <div class="fg"><label class="fl">المحافظة / الولاية <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: القاهرة"></div>
+                    <div class="fg"><label class="fl">المدينة <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: مدينة نصر"></div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">المنطقة <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: الحي العاشر"></div>
+                    <div class="fg"><label class="fl">الرمز البريدي</label><input type="text" class="fi" placeholder="مثال: 11765" dir="ltr"></div>
+                    <div class="fg"><label class="fl">العنوان بالكامل <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="اكتب العنوان التفصيلي"></div>
+                </div>
+
+                <div style="border-top:1px solid var(--bd);margin:20px 0;padding-top:18px">
+                    <p style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:14px"><i class="fas fa-warehouse ml-1"></i>عنوان المستودع</p>
+                    <div class="fg"><label class="fl">عنوان المستودع <span class="opt">(إذا كان مختلفاً)</span></label><textarea class="fi" rows="2" placeholder="اكتب عنوان المستودع التفصيلي"></textarea></div>
+                </div>
+                <div style="border-top:1px solid var(--bd);margin:20px 0;padding-top:18px">
+                    <p style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:14px"><i class="fas fa-undo-alt ml-1"></i>عنوان الإرجاع</p>
+                    <div class="fg"><label class="fl">عنوان الإرجاع</label><textarea class="fi" rows="2" placeholder="اكتب عنوان استلام المرتجعات"></textarea></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4 - البيانات القانونية -->
+        <section class="sec-card" id="sec-3">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#fce7f3;color:#be185d"><i class="fas fa-gavel"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">البيانات القانونية</h3><p style="font-size:10px;color:var(--mt)">السجلات والتراخيص الرسمية</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">رقم السجل التجاري <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: 123456" dir="ltr"></div>
+                    <div class="fg"><label class="fl">تاريخ إصدار السجل <span class="req">*</span></label><input type="date" class="fi" data-req="1"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">تاريخ انتهاء السجل <span class="req">*</span></label><input type="date" class="fi" data-req="1"></div>
+                    <div class="fg"><label class="fl">رقم البطاقة الضريبية <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: 300-123-456" dir="ltr"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">رقم التسجيل الضريبي (VAT) <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: 300123456789003" dir="ltr"></div>
+                    <div class="fg"><label class="fl">رقم رخصة النشاط <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: LIC-2024-001" dir="ltr"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">الغرفة التجارية</label><input type="text" class="fi" placeholder="مثال: غرفة القاهرة التجارية"></div>
+                    <div class="fg"><label class="fl">الحالة القانونية <span class="req">*</span></label>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="legalStatus">
+                            <span class="status-chip" onclick="pickStatus(this)"><i class="fas fa-check-circle" style="font-size:9px"></i>ذات مسئولية محدودة</span>
+                            <span class="status-chip" onclick="pickStatus(this)"><i class="fas fa-check-circle" style="font-size:9px"></i>شركة تضامن</span>
+                            <span class="status-chip" onclick="pickStatus(this)"><i class="fas fa-check-circle" style="font-size:9px"></i>شركة مساهمة</span>
+                            <span class="status-chip" onclick="pickStatus(this)"><i class="fas fa-check-circle" style="font-size:9px"></i>فرد حر</span>
+                            <span class="status-chip" onclick="pickStatus(this)"><i class="fas fa-check-circle" style="font-size:9px"></i>أخرى</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5 - المستندات المطلوبة -->
+        <section class="sec-card" id="sec-4">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-file-alt"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">المستندات المطلوبة</h3><p style="font-size:10px;color:var(--mt)">ارفع المستندات الرسمية للمورد</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fi-group fg2" id="docsGrid"></div>
+            </div>
+        </section>
+
+        <!-- 6 - بيانات الحساب البنكي -->
+        <section class="sec-card" id="sec-5">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-university"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات الحساب البنكي</h3><p style="font-size:10px;color:var(--mt)">حساب تحويل المستحقات المالية</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم البنك <span class="req">*</span></label>
+                        <select class="fi" data-req="1"><option value="">اختر البنك</option><option>البنك الأهلي المصري</option><option>بنك مصر</option><option>بنك قناة السويس</option><option>البنك التجاري الدولي</option><option>بنك HSBC</option><option>أخرى</option></select>
+                    </div>
+                    <div class="fg"><label class="fl">اسم صاحب الحساب <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="كما هو مسجل بالبنك"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">رقم الحساب <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: 1234567890" dir="ltr"></div>
+                    <div class="fg"><label class="fl">IBAN <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: EGxx0000000000000000000000" dir="ltr" style="font-family:monospace;font-size:12px"></div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">SWIFT Code</label><input type="text" class="fi" placeholder="مثال: NBEGEGCXXXX" dir="ltr" style="font-family:monospace;text-transform:uppercase"></div>
+                    <div class="fg"><label class="fl">العملة <span class="req">*</span></label>
+                        <select class="fi" data-req="1"><option value="">اختر</option><option>جنيه مصري (EGP)</option><option>ريال سعودي (SAR)</option><option>درهم إماراتي (AED)</option><option>دولار أمريكي (USD)</option><option>يورو (EUR)</option><option>أخرى</option></select>
+                    </div>
+                    <div class="fg"><label class="fl">الدولة <span class="req">*</span></label>
+                        <select class="fi" data-req="1"><option value="">اختر</option><option>مصر</option><option>السعودية</option><option>الإمارات</option><option>أخرى</option></select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7 - بيانات الضرائب -->
+        <section class="sec-card" id="sec-6">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#fee2e2;color:var(--red)"><i class="fas fa-percentage"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات الضرائب</h3><p style="font-size:10px;color:var(--mt)">معلومات التسجيل الضريبي</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg">
+                    <div class="toggle-wrap">
+                        <div class="toggle" id="taxToggle" onclick="toggleTax()"></div>
+                        <div><p style="font-size:13px;font-weight:700">هل المورد مسجل ضريبياً؟</p><p style="font-size:10px;color:var(--mt)">تفعيل هذا الخيار يظهر حقول الضريبة</p></div>
+                    </div>
+                </div>
+                <div id="taxFields" style="display:none;margin-top:16px">
+                    <div class="fg fi-group fg2">
+                        <div class="fg"><label class="fl">رقم VAT <span class="req">*</span></label><input type="text" class="fi" placeholder="مثال: 300123456789003" dir="ltr"></div>
+                        <div class="fg"><label class="fl">نسبة الضريبة <span class="req">*</span></label>
+                            <select class="fi"><option value="">اختر</option><option>0%</option><option>5%</option><option>10%</option><option>14%</option><option>15%</option><option>أخرى</option></select>
+                        </div>
+                    </div>
+                    <div class="fg fi-group fg2">
+                        <div class="fg"><label class="fl">نوع الضريبة <span class="req">*</span></label>
+                            <select class="fi"><option value="">اختر</option><option>ضريبة القيمة المضافة</option><option>ضريبة الدخل</option><option>ضريبة المبيعات</option><option>أخرى</option></select>
+                        </div>
+                        <div class="fg"><label class="fl">دولة التسجيل الضريبي <span class="req">*</span></label>
+                            <select class="fi"><option value="">اختر</option><option>مصر</option><option>السعودية</option><option>الإمارات</option><option>الكويت</option><option>أخرى</option></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8 - بيانات المنتجات -->
+        <section class="sec-card" id="sec-7">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#e0f2fe;color:#0284c7"><i class="fas fa-boxes-stacked"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات المنتجات</h3><p style="font-size:10px;color:var(--mt)">معلومات المنتجات والخدمات المقدمة</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">نوع المنتجات <span class="req">*</span></label>
+                        <select class="fi" data-req="1"><option value="">اختر</option><option>منتجات مادية</option><option>خدمات</option><option>منتجات رقمية</option><option>مواد خام</option><option>معدات وأجهزة</option><option>أخرى</option></select>
+                    </div>
+                    <div class="fg"><label class="fl">الفئات التي يبيع بها <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: إلكترونيات، أجهزة منزلية"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">العلامات التجارية</label><input type="text" class="fi" placeholder="مثال: Samsung, LG, Sony"></div>
+                    <div class="fg"><label class="fl">بلد المنشأ <span class="req">*</span></label>
+                        <select class="fi" data-req="1"><option value="">اختر</option><option>مصر</option><option>الصين</option><option>ألمانيا</option><option>اليابان</option><option>كوريا الجنوبية</option><option>تركيا</option><option>الإمارات</option><option>أخرى</option></select>
+                    </div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">متوسط عدد المنتجات</label><input type="text" class="fi" placeholder="مثال: 500 منتج"></div>
+                    <div class="fg"><label class="fl">الطاقة الإنتاجية</label><input type="text" class="fi" placeholder="مثال: 10,000 وحدة/شهر"></div>
+                    <div class="fg"><label class="fl">الحد الأدنى للطلب (MOQ)</label><input type="text" class="fi" placeholder="مثال: 100 وحدة"></div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">مدة التجهيز</label><input type="text" class="fi" placeholder="مثال: 5-7 أيام عمل"></div>
+                    <div class="fg"><label class="fl">مدة الضمان</label><input type="text" class="fi" placeholder="مثال: 12 شهر"></div>
+                    <div class="fg"><label class="fl">سياسة الاسترجاع</label><input type="text" class="fi" placeholder="مثال: استرجاع خلال 14 يوم"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9 - بيانات الشحن -->
+        <section class="sec-card" id="sec-8">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#fef3c7;color:#d97706"><i class="fas fa-shipping-fast"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات الشحن</h3><p style="font-size:10px;color:var(--mt)">طرق الشحن والتوصيل المتاحة</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg"><label class="fl">شركات الشحن المتعامل معها</label><input type="text" class="fi" placeholder="مثال: فيدكس، DHL، أرامكس"></div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">طرق الشحن <span class="req">*</span></label>
+                        <select class="fi" data-req="1" multiple style="min-height:90px"><option>بري</option><option>جوي</option><option>بحري</option><option>بريد سريع</option><option>توصيل يدوي</option><option>شحن حراري</option></select>
+                        <p style="font-size:10px;color:var(--mt);margin-top:4px">اضغط Ctrl لاختيار أكثر من طريقة</p>
+                    </div>
+                    <div class="fg"><label class="fl">أماكن التوصيل</label><input type="text" class="fi" placeholder="مثال: القاهرة، الإسكندرية، الجيزة"></div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">مدة التسليم</label><input type="text" class="fi" placeholder="مثال: 3-5 أيام عمل"></div>
+                    <div class="fg"><label class="fl">تكلفة الشحن</label><input type="text" class="fi" placeholder="مثال: 50 جنيه أو مجاني"></div>
+                    <div class="fg"><label class="fl">وزن وأبعاد الطرود</label><input type="text" class="fi" placeholder="مثال: حتى 30 كجم"></div>
+                </div>
+                <div class="fg">
+                    <div class="toggle-wrap">
+                        <div class="toggle" id="intlToggle" onclick="this.classList.toggle('on')"></div>
+                        <p style="font-size:13px;font-weight:700">إمكانية الشحن الدولي</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10 - بيانات الدفع -->
+        <section class="sec-card" id="sec-9">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#dcfce7;color:#16a34a"><i class="fas fa-credit-card"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات الدفع</h3><p style="font-size:10px;color:var(--mt)">طرق الدفع والشروط المالية</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg"><label class="fl">طرق الدفع المقبولة <span class="req">*</span></label>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="payMethods">
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-university" style="font-size:9px"></i>تحويل بنكي</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-file-invoice-dollar" style="font-size:9px"></i>أوراق قبض</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-credit-card" style="font-size:9px"></i>بطاقة ائتمان</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-mobile-alt" style="font-size:9px"></i>محافظ إلكترونية</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-hand-holding-usd" style="font-size:9px"></i>نقداً عند الاستلام</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-calendar-check" style="font-size:9px"></i>آجل (30 يوم)</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-calendar-check" style="font-size:9px"></i>آجل (60 يوم)</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-calendar-check" style="font-size:9px"></i>آجل (90 يوم)</span>
+                    </div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">مدة السداد</label><input type="text" class="fi" placeholder="مثال: 30 يوم من تاريخ الفاتورة"></div>
+                    <div class="fg"><label class="fl">الحد الأدنى للفاتورة</label><input type="text" class="fi" placeholder="مثال: 1,000 جنيه"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">نسبة العمولة</label><input type="text" class="fi" placeholder="مثال: 5% أو لا يوجد"></div>
+                    <div class="fg"><label class="fl">العملة الأساسية <span class="req">*</span></label>
+                        <select class="fi" data-req="1"><option value="">اختر</option><option>جنيه مصري (EGP)</option><option>ريال سعودي (SAR)</option><option>درهم إماراتي (AED)</option><option>دولار أمريكي (USD)</option><option>يورو (EUR)</option></select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11 - بيانات الجودة -->
+        <section class="sec-card" id="sec-10">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#f0fdf4;color:#15803d"><i class="fas fa-award"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات الجودة</h3><p style="font-size:10px;color:var(--mt)">الشهادات والمواصفات المعتمدة</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg"><label class="fl">شهادات الجودة (ISO وغيرها)</label><input type="text" class="fi" placeholder="مثال: ISO 9001, ISO 14001"></div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">شهادات المطابقة</label><input type="text" class="fi" placeholder="مثال: CE Mark, FCC"></div>
+                    <div class="fg"><label class="fl">شهادات المنشأ</label><input type="text" class="fi" placeholder="مثال: شهادة منشأ أوروبية"></div>
+                </div>
+                <div class="fg"><label class="fl">شهادات السلامة</label><input type="text" class="fi" placeholder="مثال: OHSAS 18001, شهادة سلامة المنتج"></div>
+            </div>
+        </section>
+
+        <!-- 12 - بيانات المستخدم -->
+        <section class="sec-card" id="sec-11">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#f5f3ff;color:#6d28d9"><i class="fas fa-user-shield"></i></div>
+                <div><h3 style="font-size:14px;font-weight:900">بيانات المستخدم داخل النظام</h3><p style="font-size:10px;color:var(--mt)">حساب الدخول للمنصة</p></div>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم المستخدم <span class="req">*</span></label><input type="text" class="fi" data-req="1" placeholder="مثال: vendor_alnukhba" dir="ltr"></div>
+                    <div class="fg"><label class="fl">البريد الإلكتروني <span class="req">*</span></label><input type="email" class="fi" data-req="1" placeholder="user@company.com" dir="ltr"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">كلمة المرور <span class="req">*</span></label>
+                        <div style="position:relative">
+                            <input type="password" class="fi" id="pass1" data-req="1" placeholder="8 أحرف على الأقل" dir="ltr" oninput="checkPassStrength(this.value)">
+                            <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--mt)" onclick="togglePassVis('pass1',this)"><i class="fas fa-eye" style="font-size:13px"></i></div>
+                        </div>
+                        <div style="display:flex;gap:3px;margin-top:6px" id="passStrength"><div style="flex:1;height:4px;border-radius:2px;background:var(--bd)"></div><div style="flex:1;height:4px;border-radius:2px;background:var(--bd)"></div><div style="flex:1;height:4px;border-radius:2px;background:var(--bd)"></div><div style="flex:1;height:4px;border-radius:2px;background:var(--bd)"></div></div>
+                    </div>
+                    <div class="fg"><label class="fl">تأكيد كلمة المرور <span class="req">*</span></label>
+                        <div style="position:relative">
+                            <input type="password" class="fi" id="pass2" data-req="1" placeholder="أعد كتابة كلمة المرور" dir="ltr">
+                            <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--mt)" onclick="togglePassVis('pass2',this)"><i class="fas fa-eye" style="font-size:13px"></i></div>
+                        </div>
+                        <p id="passMatch" style="font-size:10px;margin-top:4px;min-height:14px"></p>
+                    </div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">سؤال الأمان <span class="opt">(اختياري)</span></label>
+                        <select class="fi"><option value="">بدون سؤال أمان</option><option>ما هي مدينتك المفضلة؟</option><option>ما هو اسم مدرستك الابتدائية؟</option><option>ما هو اسم حيوانك الأليف؟</option><option>ما هو لونك المفضل؟</option></select>
+                    </div>
+                    <div class="fg"><label class="fl">إجابة سؤال الأمان</label><input type="text" class="fi" placeholder="اكتب الإجابة"></div>
+                </div>
+                <div class="fg">
+                    <div class="toggle-wrap">
+                        <div class="toggle" id="twoFaToggle" onclick="this.classList.toggle('on')"></div>
+                        <div><p style="font-size:13px;font-weight:700">تفعيل المصادقة الثنائية (2FA)</p><p style="font-size:10px;color:var(--mt)">حماية إضافية لحساب المورد</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- شريط الإجراءات السفلي -->
+<div class="bottom-bar">
+    <div style="font-size:11px;color:var(--mt)">
+        <i class="fas fa-info-circle ml-1"></i>
+        الحقول المشار إليها بـ <span style="color:var(--red);font-weight:700">*</span> مطلوبة
+    </div>
+    <div class="btn-row" style="display:flex;gap:10px">
+        <button class="btn-sec" onclick="saveDraft()"><i class="fas fa-save"></i>حفظ كمسودة</button>
+        <button class="btn-gold" onclick="previewForm()"><i class="fas fa-eye"></i>معاينة</button>
+        <button class="btn-pri" onclick="submitForm()"><i class="fas fa-paper-plane"></i>إرسال التسجيل</button>
+    </div>
+</div>
+
+<script>
+/* ===== تعريف أقسام الشريط الجانبي ===== */
+var sections = [
+    {icon:'fa-building', label:'البيانات الأساسية', color:'var(--pri)'},
+    {icon:'fa-address-book', label:'بيانات التواصل', color:'var(--blue)'},
+    {icon:'fa-map-marker-alt', label:'بيانات العنوان', color:'var(--gold)'},
+    {icon:'fa-gavel', label:'البيانات القانونية', color:'#be185d'},
+    {icon:'fa-file-alt', label:'المستندات المطلوبة', color:'#7c3aed'},
+    {icon:'fa-university', label:'الحساب البنكي', color:'#059669'},
+    {icon:'fa-percentage', label:'بيانات الضرائب', color:'var(--red)'},
+    {icon:'fa-boxes-stacked', label:'بيانات المنتجات', color:'#0284c7'},
+    {icon:'fa-shipping-fast', label:'بيانات الشحن', color:'#d97706'},
+    {icon:'fa-credit-card', label:'بيانات الدفع', color:'#16a34a'},
+    {icon:'fa-award', label:'بيانات الجودة', color:'#15803d'},
+    {icon:'fa-user-shield', label:'بيانات المستخدم', color:'#6d28d9'}
+];
+
+/* ===== المستندات المطلوبة ===== */
+var docs = [
+    {label:'صورة السجل التجاري', req:true},
+    {label:'البطاقة الضريبية', req:true},
+    {label:'شهادة ضريبة القيمة المضافة', req:true},
+    {label:'رخصة النشاط', req:true},
+    {label:'صورة الهوية أو جواز السفر للممثل القانوني', req:true},
+    {label:'شهادة الحساب البنكي', req:true},
+    {label:'تفويض رسمي', req:false},
+    {label:'شعار الشركة', req:false},
+    {label:'كتالوج المنتجات', req:false}
+];
+
+/* ===== بناء الشريط الجانبي ===== */
+function buildNav() {
+    var nav = document.getElementById('sideNav');
+    nav.innerHTML = sections.map(function(s, i) {
+        return '<div class="nav-item" data-idx="'+i+'" onclick="goToSection('+i+')">' +
+            '<div class="ni-icon"><i class="fas '+s.icon+'"></i></div>' +
+            '<span>'+s.label+'</span>' +
+            '<div class="ni-check"><i class="fas fa-check"></i></div>' +
+        '</div>';
+    }).join('');
+}
+
+/* ===== بناء شبكة المستندات ===== */
+function buildDocs() {
+    var grid = document.getElementById('docsGrid');
+    grid.innerHTML = docs.map(function(d, i) {
+        var id = 'doc-' + i;
+        return '<div>' +
+            '<label class="fl">' + d.label + (d.req ? ' <span class="req">*</span>' : ' <span class="opt">(اختياري)</span>') + '</label>' +
+            '<div class="file-zone" id="'+id+'" onclick="document.getElementById(\'fi-'+i+'\').click()">' +
+                '<input type="file" id="fi-'+i+'" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload('+i+')">' +
+                '<div id="fc-'+i+'">' +
+                    '<i class="fas fa-cloud-upload-alt" style="font-size:22px;color:var(--mt)"></i>' +
+                    '<p style="font-size:11px;font-weight:600;color:var(--mt);margin-top:6px">اضغط لرفع الملف</p>' +
+                    '<p style="font-size:9px;color:var(--mt);opacity:.6;margin-top:2px">PDF, JPG, PNG — حتى 10MB</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+/* ===== التنقل للأقسام ===== */
+function goToSection(idx) {
+    var el = document.getElementById('sec-' + idx);
+    if (!el) return;
+    var offset = 76;
+    var y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({top: y, behavior: 'smooth'});
+    /* إغلاق القائمة على الجوال */
+    if (window.innerWidth <= 1024) toggleSidebar();
+}
+
+/* ===== تتبع القسم النشط ===== */
+function trackActive() {
+    var offset = 120;
+    var found = -1;
+    for (var i = sections.length - 1; i >= 0; i--) {
+        var el = document.getElementById('sec-' + i);
+        if (el && el.getBoundingClientRect().top <= offset) {
+            found = i;
+            break;
+        }
+    }
+    document.querySelectorAll('.nav-item').forEach(function(n, idx) {
+        n.classList.toggle('active', idx === found);
+    });
+}
+
+/* ===== التحقق من إكمال القسم ===== */
+function checkSectionDone(idx) {
+    var sec = document.getElementById('sec-' + idx);
+    if (!sec) return false;
+    var reqs = sec.querySelectorAll('[data-req="1"]');
+    for (var i = 0; i < reqs.length; i++) {
+        var v = reqs[i].value.trim();
+        if (!v) return false;
+        /* تحقق خاص بالحالة القانونية */
+        if (reqs[i].closest('#legalStatus')) {
+            if (!document.querySelector('#legalStatus .status-chip.on')) return false;
+        }
+    }
+    /* التحقق من المستندات المطلوبة في القسم 4 */
+    if (idx === 4) {
+        for (var j = 0; j < docs.length; j++) {
+            if (docs[j].req && !uploadedFiles[j]) return false;
+        }
+    }
+    return true;
+}
+
+/* ===== تحديث التقدم ===== */
+function updateProgress() {
+    var done = 0;
+    for (var i = 0; i < sections.length; i++) {
+        var navItem = document.querySelector('.nav-item[data-idx="'+i+'"]');
+        if (checkSectionDone(i)) {
+            navItem.classList.add('done');
+            done++;
+        } else {
+            navItem.classList.remove('done');
+        }
+    }
+    document.getElementById('progressText').textContent = done + ' من 12';
+    document.getElementById('progressFill').style.width = Math.round((done / 12) * 100) + '%';
+}
+
+/* ===== القائمة الجانبية للجوال ===== */
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+/* ===== رفع الشعار ===== */
+function handleLogo(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var zone = document.getElementById('logoZone');
+            zone.classList.add('has-file');
+            zone.innerHTML = '<input type="file" accept="image/*" onchange="handleLogo(this)"><img src="'+e.target.result+'" alt="شعار">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+/* ===== رفع الملفات ===== */
+var uploadedFiles = {};
+function handleFileUpload(idx) {
+    var input = document.getElementById('fi-' + idx);
+    if (input.files && input.files[0]) {
+        uploadedFiles[idx] = input.files[0];
+        var zone = document.getElementById('doc-' + idx);
+        zone.classList.add('has-file');
+        var f = input.files[0];
+        var size = (f.size / 1024).toFixed(0);
+        if (f.size > 1024 * 1024) size = (f.size / (1024 * 1024)).toFixed(1) + ' MB';
+        else size += ' KB';
+        document.getElementById('fc-' + idx).innerHTML =
+            '<i class="fas fa-file-check" style="font-size:22px;color:var(--pri)"></i>' +
+            '<p style="font-size:11px;font-weight:700;color:var(--pri);margin-top:6px">'+f.name+'</p>' +
+            '<p style="font-size:9px;color:var(--mt);margin-top:2px">'+size+' — اضغط لتغيير</p>';
+        updateProgress();
+    }
+}
+
+/* ===== تبديل الضرائب ===== */
+function toggleTax() {
+    var t = document.getElementById('taxToggle');
+    t.classList.toggle('on');
+    document.getElementById('taxFields').style.display = t.classList.contains('on') ? 'block' : 'none';
+}
+
+/* ===== اختيار الحالة القانونية ===== */
+function pickStatus(el) {
+    document.querySelectorAll('#legalStatus .status-chip').forEach(function(c) {
+        c.classList.remove('on');
+    });
+    el.classList.add('on');
+    updateProgress();
+}
+
+/* ===== تبديل الشرائح ===== */
+function toggleChip(el) {
+    el.classList.toggle('on');
+}
+
+/* ===== قوة كلمة المرور ===== */
+function checkPassStrength(val) {
+    var bars = document.getElementById('passStrength').children;
+    var score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    var colors = ['var(--red)', '#f59e0b', '#eab308', 'var(--pri)'];
+    for (var i = 0; i < 4; i++) {
+        bars[i].style.background = i < score ? colors[score - 1] : 'var(--bd)';
+        bars[i].style.transition = 'background .3s';
+    }
+    /* تحقق من التطابق */
+    var p2 = document.getElementById('pass2').value;
+    checkPassMatch(val, p2);
+}
+
+function checkPassMatch(p1, p2) {
+    var el = document.getElementById('passMatch');
+    if (!p2) { el.textContent = ''; return; }
+    if (p1 === p2) {
+        el.textContent = 'كلمتا المرور متطابقتان';
+        el.style.color = 'var(--pri)';
+    } else {
+        el.textContent = 'كلمتا المرور غير متطابقتين';
+        el.style.color = 'var(--red)';
+    }
+}
+
+/* مراقبة حقل تأكيد المرور */
+document.addEventListener('DOMContentLoaded', function() {
+    var p2 = document.getElementById('pass2');
+    if (p2) {
+        p2.addEventListener('input', function() {
+            checkPassMatch(document.getElementById('pass1').value, this.value);
+        });
+    }
+});
+
+/* ===== إظهار/إخفاء كلمة المرور ===== */
+function togglePassVis(id, icon) {
+    var input = document.getElementById(id);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = '<i class="fas fa-eye-slash" style="font-size:13px"></i>';
+    } else {
+        input.type = 'password';
+        icon.innerHTML = '<i class="fas fa-eye" style="font-size:13px"></i>';
+    }
+}
+
+/* ===== التوست ===== */
+function showToast(msg, type) {
+    type = type || 'success';
+    var icons = {success:'fa-check-circle', error:'fa-exclamation-circle', info:'fa-info-circle'};
+    var colors = {success:'var(--pri)', error:'var(--red)', info:'var(--blue)'};
+    var t = document.createElement('div');
+    t.className = 'toast-msg';
+    t.innerHTML = '<i class="fas '+icons[type]+'" style="color:'+colors[type]+';font-size:16px"></i><span>'+msg+'</span>';
+    document.getElementById('toastWrap').appendChild(t);
+    setTimeout(function() {
+        t.classList.add('out');
+        setTimeout(function() { t.remove(); }, 250);
+    }, 3500);
+}
+
+/* ===== حفظ كمسودة ===== */
+function saveDraft() {
+    showToast('تم حفظ البيانات كمسودة بنجاح', 'success');
+}
+
+/* ===== معاينة ===== */
+function previewForm() {
+    showToast('جاري تحضير المعاينة...', 'info');
+}
+
+/* ===== إرسال التسجيل ===== */
+function submitForm() {
+    /* تحقق من جميع الحقول المطلوبة */
+    var allReq = document.querySelectorAll('[data-req="1"]');
+    var errors = [];
+    var firstErr = null;
+
+    for (var i = 0; i < allReq.length; i++) {
+        var el = allReq[i];
+        var v = el.value.trim();
+        /* تخطي حقول الحالة القانونية لأنها شرائح */
+        if (el.closest('#legalStatus')) continue;
+        if (!v) {
+            el.classList.add('err');
+            if (!firstErr) {
+                firstErr = el;
+                var sec = el.closest('.sec-card');
+                if (sec) {
+                    var y = sec.getBoundingClientRect().top + window.pageYOffset - 76;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }
+        } else {
+            el.classList.remove('err');
+        }
+    }
+
+    /* تحقق من الحالة القانونية */
+    if (!document.querySelector('#legalStatus .status-chip.on')) {
+        if (!firstErr) {
+            firstErr = document.querySelector('#legalStatus');
+            var sec = firstErr.closest('.sec-card');
+            if (sec) {
+                var y = sec.getBoundingClientRect().top + window.pageYOffset - 76;
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+        }
+    }
+
+    /* تحقق من المستندات المطلوبة */
+    for (var j = 0; j < docs.length; j++) {
+        if (docs[j].req && !uploadedFiles[j]) {
+            var zone = document.getElementById('doc-' + j);
+            if (zone) zone.style.borderColor = 'var(--red)';
+            if (!firstErr) {
+                firstErr = zone;
+                var sec = zone.closest('.sec-card');
+                if (sec) {
+                    var y = sec.getBoundingClientRect().top + window.pageYOffset - 76;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            }
+        }
+    }
+
+    /* تحقق من تطابق كلمة المرور */
+    var p1 = document.getElementById('pass1').value;
+    var p2 = document.getElementById('pass2').value;
+    if (p1 && p2 && p1 !== p2) {
+        document.getElementById('pass2').classList.add('err');
+        if (!firstErr) {
+            firstErr = document.getElementById('pass2');
+            var sec = firstErr.closest('.sec-card');
+            if (sec) {
+                var y = sec.getBoundingClientRect().top + window.pageYOffset - 76;
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+        }
+        showToast('كلمتا المرور غير متطابقتين', 'error');
+        return;
+    }
+
+    if (firstErr) {
+        showToast('يرجى إكمال جميع الحقول المطلوبة المحددة باللون الأحمر', 'error');
+        return;
+    }
+
+    showToast('تم إرسال طلب التسجيل بنجاح وسيتم مراجعته', 'success');
+}
+
+/* ===== إزالة خطأ عند الكتابة ===== */
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('err') && e.target.value.trim()) {
+        e.target.classList.remove('err');
+    }
+    updateProgress();
+});
+
+/* ===== التهيئة ===== */
+buildNav();
+buildDocs();
+
+/* مراقبة التمرير */
+var scrollTimer = null;
+window.addEventListener('scroll', function() {
+    if (scrollTimer) clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function() {
+        trackActive();
+        updateProgress();
+    }, 80);
+}, {passive: true});
+
+/* تحديث أولي */
+setTimeout(function() {
+    trackActive();
+    updateProgress();
+}, 100);
+</script>
+</body>
+</html>

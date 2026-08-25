@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سوق.نت | سلة التسوق</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script>
+        tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif'],inter:['Inter','sans-serif']},colors:{brand:{50:'#FFF4ED',100:'#FFE6D5',200:'#FECCAA',300:'#FDAA74',400:'#FB7C38',500:'#F96316',600:'#E84B07',700:'#C23807',800:'#9C2E0D',900:'#7F290F'},surface:{50:'#FAFAF8',100:'#F5F3F0',200:'#EDEAE5',300:'#DDD8D0',400:'#C4BDB2'},ink:{900:'#1A1A2E',700:'#374151',500:'#6B7280',300:'#9CA3AF'}}}}}
+    </script>
+    <style>
+        :root{--brand:#F96316;--ink:#1A1A2E;--border:#EDEAE5;--surface:#FAFAF8;--success:#10B981;--danger:#EF4444;--warning:#F59E0B}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh}
+        body.ltr{font-family:'Inter',sans-serif}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#C4BDB2;border-radius:10px}
+
+        .top-bar{background:linear-gradient(135deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%);position:relative;overflow:hidden}
+        .top-bar::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 400px 300px at 80% 20%,rgba(249,99,22,.1) 0%,transparent 70%);pointer-events:none}
+
+        /* عنصر السلة */
+        .cart-item{display:grid;grid-template-columns:100px 1fr auto auto;gap:16px;align-items:center;padding:20px 0;border-bottom:1px solid var(--border);transition:background .2s}
+        .cart-item:hover{background:#FAFAF8;margin:0 -24px;padding-left:24px;padding-right:24px}
+        @media(max-width:768px){.cart-item{grid-template-columns:80px 1fr;gap:12px}.cart-item-actions{grid-column:1/-1}}
+        .cart-item:last-child{border-bottom:none}
+
+        /* أزرار الكمية */
+        .qty-btn{width:38px;height:38px;border-radius:12px;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:13px;color:var(--ink);font-weight:700}
+        .qty-btn:hover{border-color:var(--brand);color:var(--brand);background:#FFF4ED}
+        .qty-btn:active{transform:scale(.88)}
+        .qty-btn.disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+
+        /* زر الحذف */
+        .remove-btn{width:38px;height:38px;border-radius:12px;border:2px solid #FECACA;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;color:#EF4444}
+        .remove-btn:hover{background:#FEE2E2;border-color:#EF4444;transform:scale(1.05)}
+
+        /* كوبون */
+        .coupon-wrap{border:2px dashed var(--border);border-radius:16px;padding:4px;transition:all .3s;display:flex;gap:0}
+        .coupon-wrap:focus-within{border-color:var(--brand);border-style:solid;box-shadow:0 0 0 4px rgba(249,99,22,.08)}
+        .coupon-wrap.applied{border-color:var(--success);border-style:solid;background:#F0FDF4}
+        .coupon-input{border:none;outline:none;padding:12px 16px;font-size:14px;font-family:inherit;background:transparent;width:100%;color:var(--ink)}
+        .coupon-btn{padding:12px 20px;border:none;border-radius:12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .25s;background:var(--ink);color:white;white-space:nowrap}
+        .coupon-btn:hover{background:#374151}
+
+        /* شريط الشحن */
+        .ship-bar{height:8px;background:#EDEAE5;border-radius:8px;overflow:hidden;position:relative}
+        .ship-fill{height:100%;border-radius:8px;transition:width .6s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+        .ship-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.3) 50%,transparent 100%);animation:shimmer 2s infinite}
+        @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+        /* سلة فارغة */
+        @keyframes emptyBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+        .empty-bounce{animation:emptyBounce 3s ease-in-out infinite}
+
+        /* عنصر محذوف */
+        @keyframes itemRemove{to{opacity:0;transform:translateX(40px) scale(.95);max-height:0;padding:0;margin:0;overflow:hidden}}
+        .item-removing{animation:itemRemove .4s ease forwards}
+
+        /* توست */
+        @keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(20px)}}
+        .toast-in{animation:toastIn .35s ease}.toast-out{animation:toastOut .3s ease forwards}
+
+        /* نجوم */
+        .star-fill{color:#F59E0B}.star-empty{color:#E5E7EB}
+
+        /* نافذة تأكيد */
+        .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+        .confirm-overlay.open{display:flex}
+        .confirm-box{background:white;border-radius:20px;padding:28px;width:90%;max-width:380px;text-align:center;transform:scale(.9);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1)}
+        .confirm-overlay.open .confirm-box{transform:scale(1);opacity:1}
+
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .fade-up{animation:fadeUp .5s ease both}
+
+        /* تحريك عند الإضافة */
+        @keyframes highlightRow{0%{background:#FFF4ED}100%{background:transparent}}
+        .row-highlight{animation:highlightRow 1s ease}
+
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    </style>
+</head>
+<body>
+
+<!-- الشريط العلوي -->
+<div class="top-bar text-white py-4">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+        <a href="#" class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center"><i class="fas fa-store text-white"></i></div>
+            <span class="text-xl font-extrabold" data-t="logo">سوق</span><span class="text-xl font-extrabold text-brand-400">.نت</span>
+        </a>
+        <!-- مسار التنقل -->
+        <nav class="hidden sm:flex items-center gap-2 text-xs text-white/50" id="breadcrumb">
+            <a href="#" class="hover:text-white transition-colors" data-t="nav_home">الرئيسية</a>
+            <i class="fas fa-chevron-left text-[8px]"></i>
+            <span class="text-white/80" data-t="nav_cart">سلة التسوق</span>
+        </nav>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center bg-white/10 border border-white/15 rounded-full p-0.5 cursor-pointer" onclick="toggleLang()">
+                <span class="px-3 py-1 rounded-full text-xs font-bold transition-all" id="lAr" style="background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)">عربي</span>
+                <span class="px-3 py-1 rounded-full text-xs font-bold text-white/50 transition-all" id="lEn">EN</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- المحتوى -->
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- عنوان وعدد المنتجات -->
+    <div class="flex items-center justify-between mb-6 fade-up" id="cartHeader"></div>
+
+    <!-- شريط الشحن المجاني -->
+    <div id="shipBar" class="mb-6 fade-up" style="animation-delay:.1s"></div>
+
+    <div class="flex gap-8" id="cartLayout">
+        <!-- قائمة المنتجات -->
+        <div class="flex-1 min-w-0" id="cartItemsList"></div>
+
+        <!-- ملخص الطلب -->
+        <div class="w-full lg:w-[360px] flex-shrink-0" id="cartSidebar"></div>
+    </div>
+</div>
+
+<!-- نافذة التأكيد -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="if(event.target===this)closeConfirm()">
+    <div class="confirm-box">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-trash-alt text-red-500 text-2xl"></i></div>
+        <h3 class="text-lg font-bold text-ink-900 mb-2" data-t="confirm_title">حذف المنتج</h3>
+        <p class="text-sm text-ink-500 mb-6" id="confirmDesc"></p>
+        <div class="flex gap-3">
+            <button class="flex-1 py-3 border-2 border-surface-300 rounded-xl text-sm font-bold text-ink-700 hover:bg-surface-50 transition-colors cursor-pointer font-[inherit]" onclick="closeConfirm()" data-t="cancel">إلغاء</button>
+            <button class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-colors cursor-pointer border-none font-[inherit]" onclick="confirmDelete()" data-t="delete">حذف</button>
+        </div>
+    </div>
+</div>
+
+<!-- حاوية التوست -->
+<div id="toastBox" class="fixed bottom-6 left-6 z-[500] flex flex-col gap-3"></div>
+
+<script>
+// ========== الترجمة ==========
+let lang='ar';
+const D={
+    ar:{
+        logo:'سوق',nav_home:'الرئيسية',nav_cart:'سلة التسوق',
+        cart_title:'سلة التسوق',cart_count:'منتج في السلة',cart_empty:'سلة التسوق فارغة',cart_empty_d:'لم تقم بإضافة أي منتجات بعد',
+        cart_empty_btn:'تسوّق الآن',continue_shop:'متابعة التسوق',
+        coupon_ph:'أدخل كود الخصم',coupon_btn:'تطبيق',coupon_remove:'إزالة',coupon_applied:'تم تطبيق الكود!',coupon_removed:'تم إزالة الكوبون',coupon_err:'كود غير صالح',
+        sub:'المجموع الفرعي',disc:'الخصم',ship:'الشحن',vat:'ضريبة القيمة المضافة (15%)',total:'الإجمالي',
+        free:'مجاني',currency:'جنيه',
+        checkout:'إتمام الشراء',checkout_sub:'الدفع الآمن والمعاملات المشفرة',
+        ship_progress:'أضف',ship_more:'جنيه أخرى للحصول على شحن مجاني',ship_done:'تهانينا! حصلت على شحن مجاني',
+        confirm_title:'حذف المنتج',confirm_desc:'هل أنت متأكد من حذف هذا المنتج من السلة؟',cancel:'إلغاء',delete:'حذف',
+        removed:'تم حذف المنتج',qty_max:'الحد الأقصى للمخزون المتاح',qty_min:'الكمية لا يمكن أن تكون أقل من 1',
+        item_added:'تم تعديل الكمية',empty_cart:'تفريغ السلة',empty_confirm:'هل أنت متأكد من تفريغ السلة بالكامل؟',empty_done:'تم تفريغ السلة',
+        savings:'توفيرك',saved:'وفرت على هذا الطلب',
+        pay_methods:'طرق الدفع المتاحة',
+    },
+    en:{
+        logo:'Souq',nav_home:'Home',nav_cart:'Shopping Cart',
+        cart_title:'Shopping Cart',cart_count:'items in cart',cart_empty:'Your cart is empty',cart_empty_d:"You haven't added any products yet",
+        cart_empty_btn:'Shop Now',continue_shop:'Continue Shopping',
+        coupon_ph:'Enter discount code',coupon_btn:'Apply',coupon_remove:'Remove',coupon_applied:'Code applied!',coupon_removed:'Coupon removed',coupon_err:'Invalid code',
+        sub:'Subtotal',disc:'Discount',ship:'Shipping',vat:'VAT (15%)',total:'Total',
+        free:'Free',currency:'EGP',
+        checkout:'Checkout',checkout_sub:'Secure payment & encrypted transactions',
+        ship_progress:'Add',ship_more:'EGP more for free shipping',ship_done:'Congratulations! You got free shipping',
+        confirm_title:'Remove Product',confirm_desc:'Are you sure you want to remove this product from cart?',cancel:'Cancel',delete:'Remove',
+        removed:'Product removed',qty_max:'Maximum available stock reached',qty_min:'Quantity cannot be less than 1',
+        item_added:'Quantity updated',empty_cart:'Empty Cart',empty_confirm:'Are you sure you want to empty the entire cart?',empty_done:'Cart emptied',
+        savings:'Your Savings',saved:'saved on this order',
+        pay_methods:'Available Payment Methods',
+    }
+};
+function t(k){return D[lang][k]||k}
+
+function toggleLang(){
+    lang=lang==='ar'?'en':'ar';const en=lang==='en';
+    document.documentElement.lang=lang;document.documentElement.dir=en?'ltr':'rtl';document.body.classList.toggle('ltr',en);
+    document.getElementById('lAr').style.cssText=en?'':'background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)';
+    document.getElementById('lEn').style.cssText=en?'background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)':'';
+    document.getElementById('lAr').className='px-3 py-1 rounded-full text-xs font-bold transition-all '+(en?'text-white/50':'');
+    document.getElementById('lEn').className='px-3 py-1 rounded-full text-xs font-bold transition-all '+(en?'':'text-white/50');
+    document.querySelectorAll('[data-t]').forEach(el=>{if(D[lang][el.dataset.t])el.textContent=D[lang][el.dataset.t];});
+    renderCart();
+}
+
+// ========== بيانات السلة ==========
+const SHIP_THRESHOLD=200;
+const COUPONS={WELCOME:15,SAVE10:10,SAVE20:20,SUMMER:25};
+
+let cart=[
+    {id:1,name:'هاتف Apple iPhone 15 Pro Max',nameEn:'Apple iPhone 15 Pro Max',brand:'Apple',price:5499,oldPrice:6399,img:'https://picsum.photos/seed/iphone15a/200/200',rating:4.8,qty:1,maxQty:12,color:'#3C3C3C',storage:'256GB'},
+    {id:2,name:'سماعات لاسلكية AirPods Pro 2',nameEn:'AirPods Pro 2 Wireless',brand:'Apple',price:899,oldPrice:1099,img:'https://picsum.photos/seed/airpods2/200/200',rating:4.8,qty:2,maxQty:25,color:'#F5F3F0',storage:''},
+    {id:3,name:'حذاء رياضي Nike Air Max 90',nameEn:'Nike Air Max 90 Sneakers',brand:'Nike',price:549,oldPrice:699,img:'https://picsum.photos/seed/airmax90x/200/200',rating:4.6,qty:1,maxQty:8,color:'#1A1A2E',size:'42'},
+    {id:4,name:'طقم أواني طبخ 12 قطعة',nameEn:'12-Piece Cookware Set',brand:'Tefal',price:599,oldPrice:899,img:'https://picsum.photos/seed/cookwarex/200/200',rating:4.6,qty:1,maxQty:15,color:'#E84B07',storage:''},
+    {id:5,name:'عطر رجالي Dior Sauvage',nameEn:'Dior Sauvage Perfume',brand:'Dior',price:549,oldPrice:699,img:'https://picsum.photos/seed/sauvagx/200/200',rating:4.9,qty:1,maxQty:30,color:'#1A1A2E',storage:'100ml'},
+];
+
+let couponCode='';let couponValue=0;let deleteTargetId=null;
+
+// ========== العرض ==========
+function renderCart(){
+    const count=cart.reduce((s,c)=>s+c.qty,0);
+    const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
+    const oldSub=cart.reduce((s,c)=>s+(c.oldPrice||c.price)*c.qty,0);
+    const disc=couponValue?Math.round(sub*couponValue/100):0;
+    const afterDisc=sub-disc;
+    const ship=sub>=SHIP_THRESHOLD?0:25;
+    const vat=Math.round(afterDisc*0.15);
+    const total=afterDisc+ship+vat;
+    const saved=oldSub-total;
+
+    // الهيدر
+    document.getElementById('cartHeader').innerHTML=cart.length?`
+        <div><h1 class="text-2xl font-extrabold text-ink-900">${t('cart_title')}</h1><p class="text-sm text-ink-500 mt-1">${count} ${t('cart_count')}</p></div>
+        <button onclick="emptyCartDialog()" class="text-sm text-red-500 hover:text-red-600 font-semibold transition-colors flex items-center gap-1.5"><i class="fas fa-trash-alt text-xs"></i>${t('empty_cart')}</button>
+    `:`<h1 class="text-2xl font-extrabold text-ink-900">${t('cart_title')}</h1>`;
+
+    // شريط الشحن
+    document.getElementById('shipBar').innerHTML=cart.length?`
+        <div class="bg-white border border-surface-200 rounded-2xl p-5 ${sub>=SHIP_THRESHOLD?'border-emerald-200 bg-emerald-50/50':'border-surface-200'}">
+            <div class="flex items-center gap-4 mb-3">
+                <div class="w-11 h-11 ${sub>=SHIP_THRESHOLD?'bg-emerald-500':'bg-brand-500'} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${sub>=SHIP_THRESHOLD?'shadow-emerald-500/20':'shadow-brand-500/20'}">
+                    <i class="fas ${sub>=SHIP_THRESHOLD?'fa-check':'fa-truck'} text-white"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-sm font-bold ${sub>=SHIP_THRESHOLD?'text-emerald-700':'text-ink-900'}">${sub>=SHIP_THRESHOLD?t('ship_done'):t('ship_progress')+' '+Math.max(0,SHIP_THRESHOLD-sub).toLocaleString()+' '+t('ship_more')}</span>
+                        <span class="text-sm font-bold ${sub>=SHIP_THRESHOLD?'text-emerald-600':'text-brand-500'}">${Math.min(100,Math.round((sub/SHIP_THRESHOLD)*100))}%</span>
+                    </div>
+                    <div class="ship-bar"><div class="ship-fill" style="width:${Math.min(100,Math.round((sub/SHIP_THRESHOLD)*100))}%;background:${sub>=SHIP_THRESHOLD?'linear-gradient(90deg,#10B981,#059669)':'linear-gradient(90deg,#F96316,#E84B07)'}"></div></div>
+                </div>
+            </div>
+        </div>
+    `:'';
+
+    // قائمة المنتجات
+    const list=document.getElementById('cartItemsList');
+    if(!cart.length){
+        list.innerHTML=`<div class="bg-white border border-surface-200 rounded-2xl p-12 text-center fade-up">
+            <div class="empty-bounce inline-block mb-5"><div class="w-28 h-28 bg-surface-100 rounded-full flex items-center justify-center mx-auto"><i class="fas fa-shopping-bag text-4xl text-ink-300"></i></div></div>
+            <h2 class="text-xl font-bold text-ink-900 mb-2">${t('cart_empty')}</h2>
+            <p class="text-sm text-ink-500 mb-6">${t('cart_empty_d')}</p>
+            <button class="btn-primary" style="display:inline-flex;padding:12px 32px;border:none;border-radius:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#F96316,#E84B07);color:white;transition:all .3s"><i class="fas fa-arrow-left text-xs mr-2"></i>${t('cart_empty_btn')}</button>
+        </div>`;
+        document.getElementById('cartSidebar').innerHTML='';
+        document.getElementById('cartLayout').className='max-w-2xl mx-auto';
+        return;
+    }
+    document.getElementById('cartLayout').className='flex gap-8';
+
+    list.innerHTML=`<div class="bg-white border border-surface-200 rounded-2xl px-6 pb-2">${cart.map((item,i)=>{
+        const nm=lang==='en'&&item.nameEn?item.nameEn:item.name;
+        const itemDisc=item.oldPrice?Math.round(((item.oldPrice-item.price)/item.oldPrice)*100):0;
+        const detail=item.color?`<span class="inline-block w-3.5 h-3.5 rounded-full border border-surface-300 mr-1" style="background:${item.color}"></span>${item.storage||item.size||''}`:`${item.storage||item.size||''}`;
+        return `<div class="cart-item" id="item-${item.id}">
+            <div class="relative">
+                <img src="${item.img}" alt="${nm}" class="w-full h-full object-cover rounded-xl">
+                ${itemDisc?`<span class="absolute -top-1 -left-1 bg-red-500 text-white text-[9px] font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-sm">-${itemDisc}%</span>`:''}
+            </div>
+            <div class="min-w-0">
+                <h3 class="text-sm font-bold text-ink-900 truncate mb-1">${nm}</h3>
+                <span class="text-[10px] font-bold text-brand-500 bg-brand-50 px-2 py-0.5 rounded-md">${item.brand}</span>
+                ${detail?`<p class="text-[11px] text-ink-400 mt-1.5 flex items-center gap-1">${detail}</p>`:''}
+                <div class="flex items-center gap-1 mt-1.5">${rStars(item.rating)}<span class="text-[10px] text-ink-400">${item.rating}</span></div>
+                <div class="flex items-end gap-2 mt-2 lg:hidden">
+                    <span class="text-base font-extrabold text-ink-900">${(item.price*item.qty).toLocaleString()} ${t('currency')}</span>
+                    ${item.oldPrice?`<span class="text-xs text-ink-300 line-through">${item.oldPrice.toLocaleString()}</span>`:''}
+                </div>
+                <div class="cart-item-actions flex items-center gap-3 mt-3 lg:hidden">
+                    <div class="flex items-center gap-2 bg-surface-50 rounded-xl p-1">
+                        <button class="qty-btn ${item.qty<=1?'disabled':''}" onclick="changeQty(${item.id},-1)"><i class="fas fa-minus" style="font-size:10px"></i></button>
+                        <span class="w-8 text-center text-sm font-bold">${item.qty}</span>
+                        <button class="qty-btn ${item.qty>=item.maxQty?'disabled':''}" onclick="changeQty(${item.id},1)"><i class="fas fa-plus" style="font-size:10px"></i></button>
+                    </div>
+                    <button class="remove-btn" onclick="deleteItem(${item.id})"><i class="fas fa-trash-alt text-xs"></i></button>
+                </div>
+            </div>
+            <div class="hidden lg:flex flex-col items-end gap-3">
+                <button class="remove-btn" style="width:32px;height:32px" onclick="deleteItem(${item.id})"><i class="fas fa-trash-alt text-[11px]"></i></button>
+                <div class="flex items-center gap-2 bg-surface-50 rounded-xl p-1">
+                    <button class="qty-btn ${item.qty<=1?'disabled':''}" onclick="changeQty(${item.id},-1)" style="width:34px;height:34px"><i class="fas fa-minus" style="font-size:9px"></i></button>
+                    <span class="w-8 text-center text-sm font-bold">${item.qty}</span>
+                    <button class="qty-btn ${item.qty>=item.maxQty?'disabled':''}" onclick="changeQty(${item.id},1)" style="width:34px;height:34px"><i class="fas fa-plus" style="font-size:9px"></i></button>
+                </div>
+                <div class="text-right">
+                    <span class="text-base font-extrabold text-ink-900">${(item.price*item.qty).toLocaleString()} <span class="text-[10px] font-normal text-ink-500">${t('currency')}</span></span>
+                    ${item.oldPrice?`<span class="text-[11px] text-ink-300 line-through block">${item.oldPrice.toLocaleString()} ${t('currency')}</span>`:''}
+                </div>
+            </div>
+        </div>`;
+    }).join('')}</div>`;
+
+    // الشريط الجانبي
+    document.getElementById('cartSidebar').innerHTML=`<div class="space-y-4 fade-up" style="animation-delay:.15s">
+        <!-- كوبون -->
+        <div class="bg-white border border-surface-200 rounded-2xl p-5">
+            <h4 class="text-sm font-bold text-ink-900 mb-3 flex items-center gap-2"><i class="fas fa-tag text-brand-500 text-xs"></i>${lang==='ar'?'كود الخصم':'Discount Code'}</h4>
+            <div class="coupon-wrap ${couponValue?'applied':''}">
+                <input type="text" id="couponInput" class="coupon-input" placeholder="${t('coupon_ph')}" value="${couponCode}" ${couponValue?'disabled':''}>
+                ${couponValue
+                    ?`<button onclick="removeCoupon()" class="coupon-btn" style="background:var(--success)"><i class="fas fa-times text-xs"></i></button>`
+                    :`<button onclick="applyCoupon()" class="coupon-btn">${t('coupon_btn')}</button>`
+                }
+            </div>
+            <div id="couponMsg" class="${couponValue?'':'hidden'} mt-2 text-xs font-semibold px-3 py-2 rounded-lg ${couponValue?'bg-emerald-50 text-emerald-700':'bg-red-50 text-red-600'}">
+                <i class="fas ${couponValue?'fa-check-circle':'fa-times-circle'} ml-1"></i>
+                ${couponValue?t('coupon_applied')+' (-'+couponValue+'%)':t('coupon_err')}
+            </div>
+            ${!couponValue?`<p class="text-[10px] text-ink-400 mt-2 flex items-center gap-1"><i class="fas fa-info-circle text-[8px]"></i>${lang==='ar'?'جرب: WELCOME, SAVE10, SAVE20, SUMMER':'Try: WELCOME, SAVE10, SAVE20, SUMMER'}</p>`:''}
+        </div>
+
+        <!-- ملخص الطلب -->
+        <div class="bg-white border border-surface-200 rounded-2xl p-5 sticky top-6">
+            <h4 class="text-sm font-bold text-ink-900 mb-4">${lang==='ar'?'ملخص الطلب':'Order Summary'}</h4>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between"><span class="text-ink-500">${t('sub')} (${count})</span><span class="font-semibold text-ink-900">${sub.toLocaleString()} ${t('currency')}</span></div>
+                ${couponValue?`<div class="flex justify-between text-emerald-600"><span>${t('disc')} (-${couponValue}%)</span><span class="font-semibold">-${disc.toLocaleString()} ${t('currency')}</span></div>`:''}
+                <div class="flex justify-between"><span class="text-ink-500">${t('ship')}</span><span class="font-semibold ${ship===0?'text-emerald-600':''}">${ship===0?t('free'):ship+' '+t('currency')}</span></div>
+                <div class="flex justify-between"><span class="text-ink-500">${t('vat')}</span><span class="font-semibold text-ink-900">${vat.toLocaleString()} ${t('currency')}</span></div>
+                <div class="h-px bg-surface-200 my-1"></div>
+                <div class="flex justify-between items-end"><span class="font-bold text-ink-900 text-base">${t('total')}</span><span class="text-2xl font-extrabold text-brand-600">${total.toLocaleString()} <span class="text-xs font-normal text-ink-500">${t('currency')}</span></span></div>
+            </div>
+
+            ${saved>0?`<div class="mt-4 bg-brand-50 border border-brand-200 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-9 h-9 bg-brand-500 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-piggy-bank text-white text-sm"></i></div>
+                <div><div class="text-xs font-bold text-brand-700">${t('savings')}</div><div class="text-base font-extrabold text-brand-600">${saved.toLocaleString()} ${t('currency')} ${t('saved')}</div></div>
+            </div>`:''}
+
+            <button class="w-full py-3.5 text-sm font-bold text-white rounded-2xl border-none cursor-pointer font-[inherit] mt-5 transition-all hover:shadow-lg hover:-translate-y-0.5" style="background:linear-gradient(135deg,#F96316,#E84B07)" onclick="toast(t('checkout'),'success')">
+                <i class="fas fa-lock text-xs ml-2"></i>${t('checkout')}
+            </button>
+            <p class="text-center text-[10px] text-ink-400 mt-3 flex items-center justify-center gap-2"><i class="fas fa-shield-alt text-[9px]"></i>${t('checkout_sub')}</p>
+
+            <!-- طرق الدفع -->
+            <div class="mt-5 pt-5 border-t border-surface-200">
+                <p class="text-[10px] text-ink-400 font-semibold mb-3 text-center">${t('pay_methods')}</p>
+                <div class="flex items-center justify-center gap-3">
+                    <div class="w-10 h-7 bg-surface-100 rounded flex items-center justify-center" title="Visa"><i class="fab fa-cc-visa text-xl text-blue-700"></i></div>
+                    <div class="w-10 h-7 bg-surface-100 rounded flex items-center justify-center" title="Mastercard"><i class="fab fa-cc-mastercard text-xl text-red-500"></i></div>
+                    <div class="w-10 h-7 bg-surface-100 rounded flex items-center justify-center" title="Mada"><i class="fab fa-cc-stripe text-xl text-green-600"></i></div>
+                    <div class="w-10 h-7 bg-surface-100 rounded flex items-center justify-center" title="Apple Pay"><i class="fab fa-apple-pay text-xl text-ink-900"></i></div>
+                    <div class="w-10 h-7 bg-surface-100 rounded flex items-center justify-center" title="STC Pay"><i class="fas fa-mobile-alt text-sm text-purple-500"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="toast(t('continue_shop'),'info')" class="w-full py-3 text-sm font-semibold text-ink-500 hover:text-ink-700 transition-colors bg-transparent border-none cursor-pointer font-[inherit]"><i class="fas fa-arrow-right text-xs ml-2"></i>${t('continue_shop')}</button>
+    </div>`;
+}
+
+// ========== عمليات السلة ==========
+function changeQty(id,delta){
+    const item=cart.find(c=>c.id===id);if(!item)return;
+    const newQty=item.qty+delta;
+    if(newQty<1){toast(t('qty_min'),'error');return;}
+    if(newQty>item.maxQty){toast(t('qty_max'),'warning');return;}
+    item.qty=newQty;
+    // تأثير تمييز الصف
+    const el=document.getElementById('item-'+id);
+    if(el){el.classList.remove('row-highlight');void el.offsetWidth;el.classList.add('row-highlight');}
+    renderCart();
+    toast(t('item_added'),'success');
+}
+
+function deleteItem(id){
+    deleteTargetId=id;
+    const item=cart.find(c=>c.id===id);
+    const nm=lang==='en'&&item.nameEn?item.nameEn:item.name;
+    document.getElementById('confirmDesc').textContent=nm;
+    document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('open');deleteTargetId=null;}
+function confirmDelete(){
+    if(deleteTargetId===null)return;
+    const el=document.getElementById('item-'+deleteTargetId);
+    if(el)el.classList.add('item-removing');
+    setTimeout(()=>{
+        cart=cart.filter(c=>c.id!==deleteTargetId);
+        deleteTargetId=null;closeConfirm();renderCart();
+        toast(t('removed'),'info');
+    },400);
+}
+
+function emptyCartDialog(){
+    deleteTargetId='ALL';
+    document.getElementById('confirmDesc').textContent=t('empty_confirm');
+    document.getElementById('confirmOverlay').classList.add('open');
+    // تعديل زر الحذف
+    const btn=document.getElementById('confirmOverlay').querySelector('button[onclick="confirmDelete()"]');
+    btn.textContent=t('empty_cart');
+    btn.style.background='linear-gradient(135deg,#EF4444,#DC2626)';
+    btn.style.border='none';
+    btn.style.color='white';
+    btn.style.borderRadius='12px';
+    btn.style.padding='12px';
+    btn.style.fontSize='14px';
+    btn.style.fontWeight='700';
+    btn.style.fontFamily='inherit';
+    btn.style.cursor='pointer';
+    btn.style.width='100%';
+}
+// إعادة تعيين الدالة لتعالج الحالتين
+const _origConfirmDelete=confirmDelete;
+confirmDelete=function(){
+    if(deleteTargetId==='ALL'){cart=[];closeConfirm();renderCart();toast(t('empty_done'),'info');return;}
+    _origConfirmDelete();
+};
+
+// ========== الكوبون ==========
+function applyCoupon(){
+    const input=document.getElementById('couponInput');
+    const code=input.value.trim().toUpperCase();
+    if(COUPONS[code]!==undefined){
+        couponCode=code;couponValue=COUPONS[code];
+        toast(t('coupon_applied')+' (-'+couponValue+'%)','success');
+    }else{
+        couponValue=0;
+        toast(t('coupon_err'),'error');
+    }
+    renderCart();
+    // إعادة تفعيل الحقل بعد التقديم
+    if(!couponValue){
+        setTimeout(()=>{const inp=document.getElementById('couponInput');if(inp){inp.disabled=false;inp.focus();}},50);
+    }
+}
+function removeCoupon(){
+    couponCode='';couponValue=0;
+    toast(t('coupon_removed'),'info');
+    renderCart();
+    setTimeout(()=>{const inp=document.getElementById('couponInput');if(inp)inp.focus();},50);
+}
+
+// ========== أدوات ==========
+function rStars(r){
+    let s='';for(let i=1;i<=5;i++){
+        if(i<=Math.floor(r))s+='<i class="fas fa-star star-fill text-[10px]"></i>';
+        else if(i-r<1&&i-r>0)s+='<i class="fas fa-star-half-alt star-fill text-[10px]"></i>';
+        else s+='<i class="fas fa-star star-empty text-[10px]"></i>';
+    }return s;
+}
+
+function toast(msg,type){
+    const box=document.getElementById('toastBox');
+    const icons={success:'fa-check-circle text-emerald-500',error:'fa-times-circle text-red-500',warning:'fa-exclamation-triangle text-amber-500',info:'fa-info-circle text-sky-500'};
+    const d=document.createElement('div');
+    d.className='toast-in flex items-center gap-3 bg-white border border-surface-200 rounded-xl px-5 py-3.5 shadow-lg min-w-[260px] max-w-[400px]';
+    d.innerHTML=`<i class="fas ${icons[type]||icons.info} text-lg flex-shrink-0"></i><p class="text-sm text-ink-900 flex-1 font-medium">${msg}</p><button onclick="this.parentElement.remove()" class="text-ink-300 hover:text-ink-500 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>`;
+    box.appendChild(d);
+    setTimeout(()=>{d.classList.remove('toast-in');d.classList.add('toast-out');setTimeout(()=>d.remove(),300);},3000);
+}
+
+// ========== التهيئة ==========
+renderCart();
+</script>
+</body>
+</html>

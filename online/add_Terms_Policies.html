@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الشروط والأحكام - لوحة التحكم</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--bg:#0c0e14;--bg2:#12151e;--card:#181c28;--card2:#1e2233;--border:#262b3d;--accent:#c2703e;--accent2:#e8925a;--accent-bg:rgba(194,112,62,.07);--green:#22c55e;--green-bg:rgba(34,197,94,.1);--red:#ef4444;--red-bg:rgba(239,68,68,.1);--blue:#3b82f6;--blue-bg:rgba(59,130,246,.1);--amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);--text:#e4e2de;--text2:#7c8194;--text3:#505468}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50;backdrop-filter:blur(16px)}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;position:relative;overflow:hidden;transition:all .3s}
+.stat-card:hover{border-color:rgba(194,112,62,.3);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.stat-card::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;border-radius:14px 14px 0 0}
+
+.tc-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative}
+.tc-card:hover{border-color:rgba(194,112,62,.25);box-shadow:0 8px 32px rgba(0,0,0,.2);transform:translateY(-3px)}
+.tc-card.inactive{opacity:.5;filter:grayscale(.3)}
+.tc-card.inactive:hover{opacity:.7;filter:grayscale(.1)}
+.tc-body{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s ease;padding:0 24px}
+.tc-card.expanded .tc-body{max-height:2000px;padding:20px 24px 24px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-accent{background:var(--accent-bg);color:var(--accent)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:'Cairo';white-space:nowrap}
+.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(194,112,62,.3)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,.2)}.btn-green:hover{background:var(--green);color:#fff}
+.btn-red{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.2)}.btn-red:hover{background:var(--red);color:#fff}
+.btn-blue{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(59,130,246,.2)}.btn-blue:hover{background:var(--blue);color:#fff}
+.btn-sm{padding:5px 10px;font-size:10px}
+.btn-icon{width:34px;height:34px;padding:0;justify-content:center;border-radius:8px}
+
+.input{background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;font-size:13px;font-family:'Cairo';width:100%;transition:all .2s;outline:none}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(194,112,62,.08)}
+textarea.input{resize:vertical;min-height:160px;line-height:1.8}
+.select{background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;font-size:13px;font-family:'Cairo';width:100%;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237c8194' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;padding-left:30px}
+.select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(194,112,62,.08)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;backdrop-filter:blur(4px);overflow-y:auto}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:860px;animation:modalIn .3s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:2;border-radius:16px 16px 0 0}
+.modal-body{padding:24px;max-height:70vh;overflow-y:auto}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;position:sticky;bottom:0;background:var(--card);border-radius:0 0 16px 16px}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px}
+.field .req{color:var(--red);margin-right:2px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+.tab-group{display:flex;gap:0;background:var(--bg);border-radius:10px;padding:3px;border:1px solid var(--border)}
+.tab-btn{flex:1;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;border:none;font-family:'Cairo';background:transparent;color:var(--text3);text-align:center}
+.tab-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(194,112,62,.3)}
+
+.toggle{width:42px;height:24px;border-radius:12px;background:var(--border);cursor:pointer;position:relative;transition:background .25s;flex-shrink:0}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px;transition:transform .25s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(-18px)}
+
+.toast{position:fixed;bottom:24px;left:24px;padding:14px 22px;border-radius:12px;font-size:13px;font-weight:600;z-index:300;animation:toastIn .3s ease;display:none;backdrop-filter:blur(8px)}
+.toast.show{display:flex;align-items:center;gap:8px}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+.type-selector{display:flex;gap:10px}
+.type-option{flex:1;padding:14px 16px;border-radius:12px;border:2px solid var(--border);cursor:pointer;transition:all .25s;text-align:center;background:var(--bg)}
+.type-option:hover{border-color:var(--accent)}
+.type-option.selected{border-color:var(--accent);background:var(--accent-bg)}
+.type-option i{font-size:24px;margin-bottom:6px;display:block}
+.type-option span{font-size:12px;font-weight:700;display:block}
+
+.content-preview{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;max-height:120px;overflow-y:auto;font-size:12px;line-height:1.8;color:var(--text2);white-space:pre-wrap}
+
+.bg-dots{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.02;background-image:radial-gradient(circle,var(--accent) 1px,transparent 1px);background-size:36px 36px}
+.glow-1{position:fixed;top:-120px;right:-80px;width:450px;height:450px;background:var(--accent);border-radius:50%;filter:blur(140px);pointer-events:none;opacity:.04;z-index:0}
+.glow-2{position:fixed;bottom:-150px;left:-80px;width:350px;height:350px;background:#4f46e5;border-radius:50%;filter:blur(120px);pointer-events:none;opacity:.03;z-index:0}
+
+@media(max-width:768px){.fg2{grid-template-columns:1fr}.type-selector{flex-direction:column}.topbar{padding:10px 14px;flex-wrap:wrap}.stat-grid{grid-template-columns:1fr 1fr!important}.tc-actions-bar{flex-wrap:wrap}}
+@media print{body{background:#fff!important;color:#000!important}.topbar,.no-print,.glow-1,.glow-2,.bg-dots,.tc-actions{display:none!important}.tc-card{break-inside:avoid;border:1px solid #ddd!important;box-shadow:none!important;animation:none!important;transform:none!important}.tc-card:hover{transform:none!important;box-shadow:none!important}.tc-card.inactive{opacity:1!important;filter:none!important}.stat-card{break-inside:avoid;border:1px solid #ddd!important;background:#f9f9f9!important;transform:none!important;box-shadow:none!important}.print-header{display:block!important;text-align:center;margin-bottom:24px;padding-bottom:12px;border-bottom:3px double #333}.content-preview{background:#f9f9f9!important;border:1px solid #ddd!important;max-height:none!important;overflow:visible!important;color:#333!important}.badge{border:1px solid #999!important;background:#f5f5f5!important;color:#333!important}}
+.print-header{display:none}
+</style>
+</head>
+<body>
+<div class="bg-dots"></div>
+<div class="glow-1"></div>
+<div class="glow-2"></div>
+
+<div class="topbar no-print" id="topbar"></div>
+
+<div style="position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:28px" id="contentArea"></div>
+
+<!-- نافذة الإضافة / التعديل -->
+<div class="modal-overlay" id="editModal">
+<div class="modal">
+<div class="modal-head">
+  <h3 id="modalTitle" style="font-size:15px;font-weight:800;color:var(--accent)"></h3>
+  <button onclick="closeModal()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='none'"><i class="fas fa-times"></i></button>
+</div>
+<div class="modal-body" id="modalBody"></div>
+<div class="modal-foot">
+  <button class="btn btn-accent" onclick="saveTerms()"><i class="fas fa-save"></i> <span data-t="save">حفظ</span></button>
+  <button class="btn btn-outline" onclick="closeModal()"><span data-t="cancel">إلغاء</span></button>
+</div>
+</div>
+</div>
+
+<!-- نافذة التأكيد -->
+<div class="modal-overlay" id="confirmModal">
+<div class="modal" style="max-width:420px">
+<div class="modal-head"><h3 style="font-size:15px;font-weight:800;color:var(--red)"><i class="fas fa-exclamation-triangle" style="margin-left:6px"></i> <span data-t="confirmTitle">تأكيد الحذف</span></h3><button onclick="closeConfirm()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px"><i class="fas fa-times"></i></button></div>
+<div class="modal-body" style="text-align:center;padding:30px">
+  <div style="width:64px;height:64px;border-radius:50%;background:var(--red-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="fas fa-trash-alt" style="font-size:24px;color:var(--red)"></i></div>
+  <p id="confirmText" style="font-size:14px;margin-bottom:6px;font-weight:700;line-height:1.6"></p>
+  <p style="font-size:12px;color:var(--text3)" data-t="confirmNote">لا يمكن التراجع عن هذا الإجراء</p>
+</div>
+<div class="modal-foot" style="justify-content:center;gap:12px">
+  <button class="btn btn-red" id="confirmBtn" style="min-width:120px;justify-content:center"><i class="fas fa-trash"></i> <span data-t="yesDelete">نعم، احذف</span></button>
+  <button class="btn btn-outline" onclick="closeConfirm()" style="min-width:100px;justify-content:center"><span data-t="cancel">إلغاء</span></button>
+</div>
+</div>
+</div>
+
+<!-- نافذة المعاينة -->
+<div class="modal-overlay" id="previewModal">
+<div class="modal" style="max-width:700px">
+<div class="modal-head"><h3 id="previewTitle" style="font-size:15px;font-weight:800;color:var(--accent)"></h3><button onclick="closePreview()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px"><i class="fas fa-times"></i></button></div>
+<div class="modal-body" id="previewBody" style="max-height:75vh"></div>
+</div>
+</div>
+
+<div class="toast" id="toast" style="background:var(--card2);border:1px solid var(--green);color:var(--green)"></div>
+<div id="printArea" style="display:none"></div>
+
+<script>
+// ============ الترجمات ============
+var T = {
+  ar:{
+    dashboard:"العودة للوحة التحكم",title:"الشروط والأحكام",search:"بحث في الشروط والأحكام...",
+    addNew:"إضافة شروط جديدة",edit:"تعديل",delete:"حذف",view:"معاينة",
+    activate:"تفعيل",deactivate:"إلغاء التفعيل",save:"حفظ",cancel:"إلغاء",
+    print:"طباعة",translate:"EN",
+    total:"إجمالي الشروط",activeTerms:"شروط مفعلة",inactiveTerms:"شروط غير مفعلة",
+    sellerTerms:"شروط البائعين",userTerms:"شروط المستخدمين",
+    termsTitle:"عنوان الشروط",termsTitleEn:"Title (English)",
+    termsType:"نوع الشروط",typeSeller:"شروط البائعين",typeUser:"شروط المستخدمين",
+    contentAr:"المحتوى بالعربية",contentEn:"المحتوى بالإنجليزية",
+    order:"ترتيب العرض",status:"الحالة",activeStatus:"مفعل",inactiveStatus:"غير مفعل",
+    createdDate:"تاريخ الإنشاء",updatedDate:"آخر تحديث",
+    confirmTitle:"تأكيد الحذف",confirmNote:"لا يمكن التراجع عن هذا الإجراء",
+    yesDelete:"نعم، احذف",confirmDeleteMsg:"هل أنت متأكد من حذف هذه الشروط والأحكام؟",
+    previewAr:"المحتوى بالعربية",previewEn:"المحتوى بالإنجليزية",
+    savedSuccess:"تم حفظ الشروط بنجاح",updatedSuccess:"تم تحديث الشروط بنجاح",
+    deletedSuccess:"تم حذف الشروط بنجاح",activatedSuccess:"تم تفعيل الشروط",
+    deactivatedSuccess:"تم إلغاء تفعيل الشروط",
+    required:"هذا الحقل مطلوب",noResults:"لا توجد نتائج",
+    of:"من",terms:"شروط",preview:"معاينة كاملة",
+    selectType:"اختر نوع الشروط",enterTitle:"أدخل عنوان الشروط",
+    enterContentAr:"اكتب محتوى الشروط والأحكام باللغة العربية",
+    enterContentEn:"اكتب محتوى الشروط والأحكام باللغة الإنجليزية",
+    printHeader:"الشروط والأحكام - تقرير شامل"
+  },
+  en:{
+    dashboard:"Back to Dashboard",title:"Terms & Conditions",search:"Search terms and conditions...",
+    addNew:"Add New Terms",edit:"Edit",delete:"Delete",view:"Preview",
+    activate:"Activate",deactivate:"Deactivate",save:"Save",cancel:"Cancel",
+    print:"Print",translate:"AR",
+    total:"Total Terms",activeTerms:"Active Terms",inactiveTerms:"Inactive Terms",
+    sellerTerms:"Seller Terms",userTerms:"User Terms",
+    termsTitle:"Terms Title",termsTitleEn:"Title (Arabic)",
+    termsType:"Terms Type",typeSeller:"Seller Terms",typeUser:"User Terms",
+    contentAr:"Content (Arabic)",contentEn:"Content (English)",
+    order:"Display Order",status:"Status",activeStatus:"Active",inactiveStatus:"Inactive",
+    createdDate:"Created Date",updatedDate:"Last Updated",
+    confirmTitle:"Confirm Deletion",confirmNote:"This action cannot be undone",
+    yesDelete:"Yes, Delete",confirmDeleteMsg:"Are you sure you want to delete these terms and conditions?",
+    previewAr:"Arabic Content",previewEn:"English Content",
+    savedSuccess:"Terms saved successfully",updatedSuccess:"Terms updated successfully",
+    deletedSuccess:"Terms deleted successfully",activatedSuccess:"Terms activated",
+    deactivatedSuccess:"Terms deactivated",
+    required:"This field is required",noResults:"No results found",
+    of:"of",terms:"Terms",preview:"Full Preview",
+    selectType:"Select terms type",enterTitle:"Enter terms title",
+    enterContentAr:"Write the terms and conditions content in Arabic",
+    enterContentEn:"Write the terms and conditions content in English",
+    printHeader:"Terms & Conditions - Comprehensive Report"
+  }
+};
+
+var lang = 'ar';
+var state = {search:'',filterType:'all',filterStatus:'all',editId:null,activeTab:'ar'};
+function t(k){return T[lang][k]||k;}
+
+// ============ البيانات ============
+var termsData = [
+  {
+    id:1,
+    title:"شروط وأحكام التسجيل كبائع",
+    titleEn:"Seller Registration Terms & Conditions",
+    type:"seller",
+    contentAr:"1. يتعهد البائع بتقديم جميع البيانات والمستندات المطلوبة بشكل صحيح وحديث.\n2. يجب أن يكون البائع مسجلاً قانونياً ويمتلك سجلاً تجارياً سارياً.\n3. يتحمل البائع المسؤولية الكاملة عن جودة المنتجات المعروضة.\n4. يلتزم البائع بالرد على طلبات العملاء خلال 24 ساعة كحد أقصى.\n5. يحظر عرض منتجات مخالفة للقوانين أو الأعراف السائدة.\n6. يحق للمنصة تعليق حساب البائع في حال مخالفة أي من هذه الشروط.\n7. يجب تحديث بيانات البائع فور حدوث أي تغيير.\n8. يلتزم البائع بتوفير ضمان كافٍ على جميع المنتجات.\n9. لا يجوز للبائع التعامل المباشر مع العملاء خارج المنصة.\n10. أي نزاع ينشأ يتم حله وفقاً للقوانين المعمول بها في المملكة.",
+    contentEn:"1. The seller undertakes to provide all required data and documents accurately and up to date.\n2. The seller must be legally registered and possess a valid commercial registration.\n3. The seller bears full responsibility for the quality of listed products.\n4. The seller commits to responding to customer inquiries within 24 hours maximum.\n5. Displaying products that violate laws or prevailing customs is prohibited.\n6. The platform reserves the right to suspend the seller's account for any violation.\n7. Seller data must be updated immediately upon any change.\n8. The seller is required to provide adequate warranty for all products.\n9. The seller may not deal directly with customers outside the platform.\n10. Any disputes shall be resolved in accordance with applicable laws in the Kingdom.",
+    order:1,active:true,
+    createdAt:"2024-01-15",updatedAt:"2024-11-20"
+  },
+  {
+    id:2,
+    title:"شروط الاستخدام للمستخدمين",
+    titleEn:"User Terms of Use",
+    type:"user",
+    contentAr:"1. يتعهد المستخدم بتقديم بيانات صحيحة وحديثة عند التسجيل.\n2. المسؤولية الكاملة تقع على عاتق المستخدم في حالة مشاركة بيانات الدخول.\n3. يمنع استخدام المنصة لأي أغراض غير مشروعة.\n4. يحظر نشر محتوى مسيء أو مخالف للقوانين.\n5. يحق للمنصة حذف أي محتوى مخالف دون إنذار مسبق.\n6. الطلبات المقدمة تعتبر ملزمة قانونياً بعد التأكيد.\n7. يحق للمستخدم إلغاء الطلب قبل الشحن مقابل رسوم إدارية.\n8. يجب فحص المنتجات فور الاستلام وإبلاغ المنصة بأي عيوب خلال 48 ساعة.\n9. لا يجوز إنشاء أكثر من حساب واحد لكل مستخدم.\n10. استخدام المنصة يعني موافقة تلقائية على جميع التحديثات المستقبلية لهذه الشروط.",
+    contentEn:"1. The user undertakes to provide accurate and up-to-date information upon registration.\n2. The user bears full responsibility for sharing login credentials.\n3. Using the platform for any illegal purposes is prohibited.\n4. Publishing offensive or unlawful content is prohibited.\n5. The platform reserves the right to remove any violating content without prior notice.\n6. Submitted orders are legally binding after confirmation.\n7. The user may cancel the order before shipping subject to administrative fees.\n8. Products must be inspected upon receipt and any defects reported within 48 hours.\n9. Creating more than one account per user is not permitted.\n10. Using the platform constitutes automatic acceptance of future updates to these terms.",
+    order:1,active:true,
+    createdAt:"2024-01-15",updatedAt:"2024-10-05"
+  },
+  {
+    id:3,
+    title:"شروط الإرجاع والاستبدال للبائعين",
+    titleEn:"Seller Return & Replacement Policy",
+    type:"seller",
+    contentAr:"1. يلتزم البائع بقبول إرجاع المنتجات المعيبة خلال 14 يوماً من تاريخ الاستلام.\n2. يجب أن يكون المنتج المرتجع في حالته الأصلية مع جميع الملحقات.\n3. يتحمل البائع تكاليف الشحن في حالة المنتجات المعيبة.\n4. يحق للبائع رفض الإرجاع إذا لم يستوفي المنتج شروط الإرجاع.\n5. يتم استرداد المبلغ خلال 7 أيام عمل كحد أقصى بعد استلام المنتج المرتجع.\n6. المنتجات المستخدمة أو التالفة بسبب سوء الاستخدام لا تقبل الإرجاع.\n7. يجب على البائع توفير عنوان واضح لاستلام المرتجعات.",
+    contentEn:"1. The seller commits to accepting returns of defective products within 14 days from receipt.\n2. Returned products must be in their original condition with all accessories.\n3. The seller bears shipping costs for defective products.\n4. The seller may refuse returns if the product does not meet return conditions.\n5. Refunds are processed within 7 business days maximum after receiving the returned product.\n6. Used or damaged products due to misuse are not eligible for return.\n7. The seller must provide a clear address for receiving returns.",
+    order:2,active:true,
+    createdAt:"2024-03-10",updatedAt:"2024-09-15"
+  },
+  {
+    id:4,
+    title:"سياسة الخصوصية وحماية البيانات",
+    titleEn:"Privacy & Data Protection Policy",
+    type:"user",
+    contentAr:"1. نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية.\n2. نجمع البيانات الضرورية فقط لتقديم خدمات أفضل.\n3. لا نشارك بياناتك مع أطراف ثالثة بدون موافقتك.\n4. يمكنك طلب حذف بياناتك في أي وقت.\n5. نستخدم تقنيات تشفير متقدمة لحماية معلوماتك.\n6. تحتفظ بالبيانات طالما كان حسابك نشطاً أو حسب ما يقتضيه القانون.\n7. يتم إخطارك بأي تغيير في سياسة الخصوصية.",
+    contentEn:"1. We respect your privacy and are committed to protecting your personal data.\n2. We collect only necessary data to provide better services.\n3. We do not share your data with third parties without your consent.\n4. You may request deletion of your data at any time.\n5. We use advanced encryption technologies to protect your information.\n6. Data is retained as long as your account is active or as required by law.\n7. You will be notified of any changes to the privacy policy.",
+    order:2,active:false,
+    createdAt:"2024-02-20",updatedAt:"2024-08-10"
+  },
+  {
+    id:5,
+    title:"شروط الشحن والتوصيل للبائعين",
+    titleEn:"Seller Shipping & Delivery Terms",
+    type:"seller",
+    contentAr:"1. يلتزم البائع بشحن الطلبات خلال المهلة المتفق عليها.\n2. يجب تعبئة المنتجات بشكل آمن لضمان سلامتها أثناء النقل.\n3. يتحمل البائع مسؤولية أي تلف يحدث بسبب التعبئة الرديئة.\n4. يلتزم البائع بتوفير رقم تتبع الشحن لكل طلب.\n5. في حالة تأخر الشحن يجب إبلاغ العميل والمنصة فوراً.\n6. يتم تحديد تكاليف الشحن بشكل واضح قبل تأكيد الطلب.",
+    contentEn:"1. The seller commits to shipping orders within the agreed timeframe.\n2. Products must be packaged safely to ensure their safety during transit.\n3. The seller bears responsibility for any damage caused by poor packaging.\n4. The seller must provide a tracking number for each shipment.\n5. In case of shipping delays, the customer and platform must be notified immediately.\n6. Shipping costs must be clearly determined before order confirmation.",
+    order:3,active:true,
+    createdAt:"2024-04-05",updatedAt:"2024-11-01"
+  }
+];
+
+// ============ الإحصائيات ============
+function getStats(){
+  return {
+    total: termsData.length,
+    active: termsData.filter(function(t){return t.active;}).length,
+    inactive: termsData.filter(function(t){return !t.active;}).length,
+    seller: termsData.filter(function(t){return t.type==='seller';}).length,
+    user: termsData.filter(function(t){return t.type==='user';}).length
+  };
+}
+
+// ============ الفلترة ============
+function getFiltered(){
+  var q = state.search.toLowerCase();
+  return termsData.filter(function(t){
+    if(state.filterType!=='all' && t.type!==state.filterType) return false;
+    if(state.filterStatus==='active' && !t.active) return false;
+    if(state.filterStatus==='inactive' && t.active) return false;
+    if(q){
+      var s = (t.title+' '+t.titleEn+' '+t.contentAr+' '+t.contentEn).toLowerCase();
+      if(s.indexOf(q)===-1) return false;
+    }
+    return true;
+  }).sort(function(a,b){return a.order - b.order;});
+}
+
+// ============ الشريط العلوي ============
+function renderTopbar(){
+  document.getElementById('topbar').innerHTML =
+    '<button class="btn btn-outline btn-sm" onclick="alert(t(\'dashboard\'))"><i class="fas fa-arrow-right"></i> '+t('dashboard')+'</button>'+
+    '<div style="flex:1;max-width:380px;margin:0 auto;position:relative">'+
+      '<i class="fas fa-search" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px"></i>'+
+      '<input class="input" style="padding-right:34px;font-size:12px" placeholder="'+t('search')+'" value="'+state.search+'" oninput="handleSearch(this.value)">'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;align-items:center">'+
+      '<button class="btn btn-outline btn-sm" onclick="toggleLang()"><i class="fas fa-globe"></i> '+t('translate')+'</button>'+
+      '<button class="btn btn-outline btn-sm" onclick="handlePrint()"><i class="fas fa-print"></i> '+t('print')+'</button>'+
+      '<button class="btn btn-accent btn-sm" onclick="openAddModal()"><i class="fas fa-plus"></i> '+t('addNew')+'</button>'+
+    '</div>';
+}
+
+// ============ المحتوى ============
+function renderContent(){
+  var stats = getStats();
+  var filtered = getFiltered();
+
+  var html = '<div class="print-header"><h1 style="font-size:22px;font-weight:900">'+t('printHeader')+'</h1><p style="font-size:12px;color:#666">'+new Date().toLocaleDateString(lang==='ar'?'ar-SA':'en-US')+'</p></div>';
+
+  // الإحصائيات
+  html += '<div class="stat-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px">';
+  html += statCard(t('total'),stats.total,'fa-file-contract','var(--accent)');
+  html += statCard(t('activeTerms'),stats.active,'fa-check-circle','var(--green)');
+  html += statCard(t('inactiveTerms'),stats.inactive,'fa-ban','var(--red)');
+  html += statCard(t('sellerTerms'),stats.seller,'fa-store','var(--blue)');
+  html += statCard(t('userTerms'),stats.user,'fa-user','var(--amber)');
+  html += '</div>';
+
+  // فلتر إضافي
+  html += '<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center">';
+  html += '<div class="tab-group">';
+  html += '<button class="tab-btn '+(state.filterType==='all'?'active':'')+'" onclick="handleTypeFilter(\'all\')">'+t('of')+' '+t('terms')+'</button>';
+  html += '<button class="tab-btn '+(state.filterType==='seller'?'active':'')+'" onclick="handleTypeFilter(\'seller\')"><i class="fas fa-store" style="margin-left:4px"></i>'+t('typeSeller')+'</button>';
+  html += '<button class="tab-btn '+(state.filterType==='user'?'active':'')+'" onclick="handleTypeFilter(\'user\')"><i class="fas fa-user" style="margin-left:4px"></i>'+t('typeUser')+'</button>';
+  html += '</div>';
+  html += '<div style="flex:1"></div>';
+  html += '<div class="tab-group">';
+  html += '<button class="tab-btn '+(state.filterStatus==='all'?'active':'')+'" onclick="handleStatusFilter(\'all\')">'+t('of')+' '+t('terms')+'</button>';
+  html += '<button class="tab-btn '+(state.filterStatus==='active'?'active':'')+'" onclick="handleStatusFilter(\'active\')"><i class="fas fa-check" style="margin-left:4px"></i>'+t('activeStatus')+'</button>';
+  html += '<button class="tab-btn '+(state.filterStatus==='inactive'?'active':'')+'" onclick="handleStatusFilter(\'inactive\')"><i class="fas fa-ban" style="margin-left:4px"></i>'+t('inactiveStatus')+'</button>';
+  html += '</div>';
+  html += '</div>';
+
+  // البطاقات
+  if(filtered.length === 0){
+    html += '<div style="text-align:center;padding:80px 20px;color:var(--text3)"><i class="fas fa-file-alt" style="font-size:48px;margin-bottom:16px;display:block;opacity:.2"></i><div style="font-size:16px;font-weight:600">'+t('noResults')+'</div></div>';
+  } else {
+    filtered.forEach(function(item,i){html += renderTCCard(item,i);});
+    html += '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px">'+filtered.length+' '+t('of')+' '+termsData.length+' '+t('terms')+'</div>';
+  }
+
+  document.getElementById('contentArea').innerHTML = html;
+}
+
+function statCard(label,val,icon,color){
+  return '<div class="stat-card" style="animation:fadeUp .4s ease both">'+
+    '<div style="position:absolute;top:0;right:0;left:0;height:3px;background:'+color+';border-radius:14px 14px 0 0"></div>'+
+    '<div style="display:flex;align-items:center;justify-content:space-between">'+
+      '<div><div style="font-size:28px;font-weight:900;color:'+color+'">'+val+'</div><div style="font-size:11px;color:var(--text2);margin-top:2px">'+label+'</div></div>'+
+      '<div style="width:44px;height:44px;border-radius:12px;background:'+color+'15;display:flex;align-items:center;justify-content:center"><i class="fas '+icon+'" style="color:'+color+';font-size:16px"></i></div>'+
+    '</div></div>';
+}
+
+function renderTCCard(item,i){
+  var title = lang==='ar' ? item.title : item.titleEn;
+  var content = lang==='ar' ? item.contentAr : item.contentEn;
+  var previewText = content.substring(0,180) + (content.length>180?'...':'');
+  var typeIcon = item.type==='seller'?'fa-store':'fa-user';
+  var typeColor = item.type==='seller'?'var(--blue)':'var(--amber)';
+  var typeBg = item.type==='seller'?'var(--blue-bg)':'var(--amber-bg)';
+  var typeLabel = item.type==='seller'?t('typeSeller'):t('typeUser');
+
+  return '<div class="tc-card '+(item.active?'':'inactive')+'" id="tc-'+item.id+'" style="animation:fadeUp .4s ease '+(i*0.08)+'s both">'+
+    '<div style="padding:20px 24px 16px">'+
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
+            '<span class="badge" style="background:'+typeBg+';color:'+typeColor+'"><i class="fas '+typeIcon+'" style="font-size:9px"></i> '+typeLabel+'</span>'+
+            (item.active?'<span class="badge badge-green"><i class="fas fa-check-circle" style="font-size:8px"></i> '+t('activeStatus')+'</span>':'<span class="badge badge-red"><i class="fas fa-times-circle" style="font-size:8px"></i> '+t('inactiveStatus')+'</span>')+
+            '<span class="badge" style="background:var(--card2);color:var(--text3)"><i class="fas fa-sort-numeric-down" style="font-size:9px"></i> #'+item.order+'</span>'+
+          '</div>'+
+          '<h3 style="font-size:16px;font-weight:800;margin-bottom:4px;line-height:1.5">'+title+'</h3>'+
+          '<div style="display:flex;gap:16px;font-size:11px;color:var(--text3);margin-top:6px">'+
+            '<span><i class="fas fa-calendar-plus" style="margin-left:4px"></i>'+t('createdDate')+': '+item.createdAt+'</span>'+
+            '<span><i class="fas fa-calendar-check" style="margin-left:4px"></i>'+t('updatedDate')+': '+item.updatedDate+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="toggle '+(item.active?'on':'')+'" onclick="toggleActive('+item.id+')" title="'+(item.active?t('deactivate'):t('activate'))+'"></div>'+
+      '</div>'+
+      '<div class="content-preview" style="margin-top:14px">'+previewText+'</div>'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px" class="tc-actions">'+
+        '<button class="btn btn-outline btn-sm" onclick="toggleExpand('+item.id+')" id="expandBtn-'+item.id+'"><i class="fas fa-chevron-down" style="transition:transform .3s"></i> <span data-t="view">'+t('view')+'</span></button>'+
+        '<div style="display:flex;gap:6px" class="tc-actions-bar">'+
+          '<button class="btn btn-blue btn-sm" onclick="openPreview('+item.id+')"><i class="fas fa-expand"></i> '+t('preview')+'</button>'+
+          '<button class="btn btn-outline btn-sm" onclick="openEditModal('+item.id+')"><i class="fas fa-pen"></i> '+t('edit')+'</button>'+
+          '<button class="btn btn-red btn-sm" onclick="confirmDelete('+item.id+')"><i class="fas fa-trash"></i></button>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="tc-body">'+
+      '<div style="display:flex;gap:0;margin-bottom:16px;background:var(--bg);border-radius:10px;padding:3px;border:1px solid var(--border)">'+
+        '<button class="tab-btn '+(state.activeTab==='ar'?'active':'')+'" onclick="switchTab(\'ar\','+item.id+')" style="font-size:11px">العربية</button>'+
+        '<button class="tab-btn '+(state.activeTab==='en'?'active':'')+'" onclick="switchTab(\'en\','+item.id+')" style="font-size:11px">English</button>'+
+      '</div>'+
+      '<div id="tabContent-'+item.id+'" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:13px;line-height:2;white-space:pre-wrap;color:var(--text)">'+(state.activeTab==='ar'?item.contentAr:item.contentEn)+'</div>'+
+    '</div>'+
+  '</div>';
+}
+
+// ============ التبويبات ============
+function switchTab(tab,id){
+  state.activeTab = tab;
+  var item = termsData.find(function(t){return t.id===id;});
+  if(!item) return;
+  var content = tab==='ar' ? item.contentAr : item.contentEn;
+  var el = document.getElementById('tabContent-'+id);
+  if(el) el.textContent = content;
+  var card = document.getElementById('tc-'+id);
+  if(card){
+    var btns = card.querySelectorAll('.tc-body .tab-btn');
+    btns.forEach(function(b,i){b.classList.toggle('active', (i===0&&tab==='ar')||(i===1&&tab==='en'));});
+  }
+}
+
+function toggleExpand(id){
+  var card = document.getElementById('tc-'+id);
+  var btn = document.getElementById('expandBtn-'+id);
+  if(card){
+    card.classList.toggle('expanded');
+    var icon = btn.querySelector('i');
+    if(card.classList.contains('expanded')){icon.style.transform='rotate(180deg)';}
+    else{icon.style.transform='rotate(0)';}
+  }
+}
+
+// ============ نافذة الإضافة / التعديل ============
+function openEditModal(id){
+  var item = id ? termsData.find(function(t){return t.id===id;}) : null;
+  state.editId = id || null;
+  document.getElementById('modalTitle').textContent = id ? t('edit')+': '+(lang==='ar'?item.title:item.titleEn) : t('addNew');
+
+  var v = function(f){return item ? item[f] : '';};
+  var selType = function(type){return item && item.type===type?'selected':'';};
+
+  document.getElementById('modalBody').innerHTML =
+    '<div class="field"><label>'+t('termsType')+' <span class="req" style="color:var(--red)">*</span></label>'+
+      '<div class="type-selector">'+
+        '<div class="type-option '+(item&&item.type==='seller'?'selected':'')+'" id="typeOpt-seller" onclick="selectType(\'seller\')"><i class="fas fa-store" style="color:var(--blue)"></i><span>'+t('typeSeller')+'</span></div>'+
+        '<div class="type-option '+(item&&item.type==='user'?'selected':'')+'" id="typeOpt-user" onclick="selectType(\'user\')"><i class="fas fa-user" style="color:var(--amber)"></i><span>'+t('typeUser')+'</span></div>'+
+      '</div>'+
+      '<input type="hidden" id="ef_type" value="'+v('type')+'">'+
+    '</div>'+
+    '<div class="fg2">'+
+      '<div class="field"><label>'+t('termsTitleEn')+' <span class="req" style="color:var(--red)">*</span></label><input class="input" id="ef_titleEn" value="'+v('titleEn')+'" placeholder="'+t('enterTitle')+'"></div>'+
+      '<div class="field"><label>'+t('termsTitle')+' <span class="req" style="color:var(--red)">*</span></label><input class="input" id="ef_titleAr" value="'+v('title')+'" placeholder="'+t('enterTitle')+'"></div>'+
+    '</div>'+
+    '<div class="fg2">'+
+      '<div class="field"><label>'+t('order')+'</label><input class="input" type="number" id="ef_order" value="'+v('order')+'" min="1" style="max-width:120px"></div>'+
+      '<div></div>'+
+    '</div>'+
+    '<div class="field"><label>'+t('contentAr')+' <span class="req" style="color:var(--red)">*</span></label><textarea class="input" id="ef_contentAr" rows="8" placeholder="'+t('enterContentAr')+'">'+v('contentAr')+'</textarea></div>'+
+    '<div class="field"><label>'+t('contentEn')+' <span class="req" style="color:var(--red)">*</span></label><textarea class="input" id="ef_contentEn" rows="8" placeholder="'+t('enterContentEn')+'" dir="ltr" style="text-align:left">'+v('contentEn')+'</textarea></div>';
+
+  // تحديد النوع إذا كان تعديل
+  if(item){setTimeout(function(){selectType(item.type);},10);}
+  else{setTimeout(function(){selectType('seller');},10);}
+
+  document.getElementById('editModal').classList.add('show');
+}
+
+function openAddModal(){openEditModal(null);}
+
+var selectedType = 'seller';
+function selectType(type){
+  selectedType = type;
+  document.getElementById('ef_type').value = type;
+  document.querySelectorAll('.type-option').forEach(function(el){el.classList.remove('selected');});
+  var opt = document.getElementById('typeOpt-'+type);
+  if(opt) opt.classList.add('selected');
+}
+
+function saveTerms(){
+  var gv = function(id){var el=document.getElementById(id);return el?el.value.trim():'';};
+  var gn = function(id){var el=document.getElementById(id);return el?parseInt(el.value)||1:1;};
+
+  var type = gv('ef_type');
+  var titleAr = gv('ef_titleAr');
+  var titleEn = gv('ef_titleEn');
+  var contentAr = gv('ef_contentAr');
+  var contentEn = gv('ef_contentEn');
+
+  if(!type||!titleAr||!titleEn||!contentAr||!contentEn){
+    showToast(t('required'),'error');return;
+  }
+
+  var today = new Date().toISOString().split('T')[0];
+  var data = {
+    type:type,
+    title:titleAr, titleEn:titleEn,
+    contentAr:contentAr, contentEn:contentEn,
+    order:gn('ef_order'),
+    updatedAt:today
+  };
+
+  if(state.editId){
+    var idx = termsData.findIndex(function(t){return t.id===state.editId;});
+    if(idx>=0){Object.assign(termsData[idx],data);}
+    showToast(t('updatedSuccess'),'success');
+  } else {
+    data.id = Math.max.apply(null,termsData.map(function(t){return t.id;}))+1;
+    data.active = true;
+    data.createdAt = today;
+    termsData.push(data);
+    showToast(t('savedSuccess'),'success');
+  }
+  closeModal();
+  renderAll();
+}
+
+function closeModal(){document.getElementById('editModal').classList.remove('show');state.editId=null;}
+
+// ============ المعاينة الكاملة ============
+function openPreview(id){
+  var item = termsData.find(function(t){return t.id===id;});
+  if(!item) return;
+  document.getElementById('previewTitle').textContent = lang==='ar'?item.title:item.titleEn;
+  document.getElementById('previewBody').innerHTML =
+    '<div style="display:flex;gap:0;margin-bottom:20px;background:var(--bg);border-radius:10px;padding:3px;border:1px solid var(--border)">'+
+      '<button class="tab-btn active" onclick="previewSwitchTab(\'ar\','+id+')" id="pvTab-ar" style="font-size:12px">العربية</button>'+
+      '<button class="tab-btn" onclick="previewSwitchTab(\'en\','+id+')" id="pvTab-en" style="font-size:12px">English</button>'+
+    '</div>'+
+    '<div id="pvContent-'+id+'" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:24px;font-size:14px;line-height:2.2;white-space:pre-wrap;color:var(--text)">'+item.contentAr+'</div>'+
+    '<div style="margin-top:16px;padding:12px;background:var(--card2);border-radius:8px;font-size:11px;color:var(--text3);display:flex;gap:20px;flex-wrap:wrap">'+
+      '<span><i class="fas fa-calendar-plus" style="margin-left:4px"></i>'+t('createdDate')+': '+item.createdAt+'</span>'+
+      '<span><i class="fas fa-calendar-check" style="margin-left:4px"></i>'+t('updatedDate')+': '+item.updatedAt+'</span>'+
+      '<span><i class="fas '+(item.type==='seller'?'fa-store':'fa-user')+'" style="margin-left:4px"></i>'+(item.type==='seller'?t('typeSeller'):t('typeUser'))+'</span>'+
+    '</div>';
+  document.getElementById('previewModal').classList.add('show');
+}
+
+function previewSwitchTab(tab,id){
+  var item = termsData.find(function(t){return t.id===id;});
+  if(!item) return;
+  var content = tab==='ar'?item.contentAr:item.contentEn;
+  document.getElementById('pvContent-'+id).textContent = content;
+  document.getElementById('pvTab-ar').classList.toggle('active',tab==='ar');
+  document.getElementById('pvTab-en').classList.toggle('active',tab==='en');
+}
+
+function closePreview(){document.getElementById('previewModal').classList.remove('show');}
+
+// ============ التفعيل / الإلغاء ============
+function toggleActive(id){
+  var item = termsData.find(function(t){return t.id===id;});
+  if(!item) return;
+  item.active = !item.active;
+  item.updatedAt = new Date().toISOString().split('T')[0];
+  showToast(item.active?t('activatedSuccess'):t('deactivatedSuccess'),item.active?'success':'warn');
+  renderAll();
+}
+
+// ============ الحذف ============
+var deleteTargetId = null;
+function confirmDelete(id){
+  deleteTargetId = id;
+  var item = termsData.find(function(t){return t.id===id;});
+  document.getElementById('confirmText').textContent = t('confirmDeleteMsg')+'\n'+(lang==='ar'?item.title:item.titleEn);
+  document.getElementById('confirmBtn').onclick = function(){executeDelete();};
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('show');deleteTargetId=null;}
+function executeDelete(){
+  termsData = termsData.filter(function(t){return t.id!==deleteTargetId;});
+  closeConfirm();
+  showToast(t('deletedSuccess'),'success');
+  renderAll();
+}
+
+// ============ الأدوات ============
+function handleSearch(q){state.search=q;renderContent();}
+function handleTypeFilter(v){state.filterType=v;renderContent();}
+function handleStatusFilter(v){state.filterStatus=v;renderContent();}
+
+function toggleLang(){
+  lang = lang==='ar'?'en':'ar';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang==='ar'?'rtl':'ltr';
+  renderAll();
+}
+
+function handlePrint(){
+  var pa = document.getElementById('printArea');
+  pa.style.display = 'block';
+  pa.innerHTML = '<div class="print-header" style="display:block!important;text-align:center;margin-bottom:24px;padding-bottom:12px;border-bottom:3px double #333">'+
+    '<h1 style="font-size:20px;font-weight:900;margin:0">'+t('printHeader')+'</h1>'+
+    '<p style="font-size:12px;color:#666;margin-top:4px">'+new Date().toLocaleDateString('ar-SA')+' | '+termsData.length+' '+t('terms')+'</p></div>';
+
+  termsData.forEach(function(item,i){
+    pa.innerHTML += '<div style="margin-bottom:24px;page-break-inside:avoid">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+        '<span style="font-size:10px;background:#f0f0f0;padding:2px 8px;border-radius:10px;font-weight:700">'+(item.type==='seller'?'بائعين':'مستخدمين')+'</span>'+
+        '<span style="font-size:10px;background:'+(item.active?'#dcfce7':'#fee2e2')+';color:'+(item.active?'#166534':'#991b1b')+';padding:2px 8px;border-radius:10px;font-weight:700">'+(item.active?'مفعل':'غير مفعل')+'</span>'+
+        '<span style="font-size:10px;color:#888">#'+item.order+'</span>'+
+      '</div>'+
+      '<h2 style="font-size:16px;font-weight:800;margin-bottom:4px;border-bottom:2px solid #333;padding-bottom:6px">'+item.title+'</h2>'+
+      '<h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:#555;direction:ltr;text-align:left">'+item.titleEn+'</h3>'+
+      '<div style="background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;padding:16px;font-size:12px;line-height:2;white-space:pre-wrap;margin-bottom:12px">'+item.contentAr+'</div>'+
+      '<div style="background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;padding:16px;font-size:12px;line-height:2;white-space:pre-wrap;direction:ltr;text-align:left">'+item.contentEn+'</div>'+
+      '<div style="font-size:10px;color:#999;margin-top:8px">إنشاء: '+item.createdAt+' | تحديث: '+item.updatedAt+'</div>'+
+    '</div>';
+  });
+
+  window.print();
+  setTimeout(function(){pa.style.display='none';},500);
+}
+
+function showToast(msg,type){
+  var el = document.getElementById('toast');
+  var colors = {success:'var(--green)',error:'var(--red)',warn:'var(--amber)'};
+  var bgs = {success:'var(--green-bg)',error:'var(--red-bg)',warn:'var(--amber-bg)'};
+  var icons = {success:'fa-check-circle',error:'fa-times-circle',warn:'fa-exclamation-triangle'};
+  el.style.borderColor = colors[type]||colors.success;
+  el.style.color = colors[type]||colors.success;
+  el.style.background = bgs[type]||bgs.success;
+  el.innerHTML = '<i class="fas '+(icons[type]||icons.success)+'" style="font-size:16px"></i><span>'+msg+'</span>';
+  el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show');},2800);
+}
+
+function renderAll(){renderTopbar();renderContent();}
+
+// ============ التهيئة ============
+renderAll();
+</script>
+</body>
+</html>

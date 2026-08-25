@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الشروط والأحكام</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--bg:#ffffff;--bg2:#f8f9fb;--card:#ffffff;--card2:#f3f4f6;--border:#e5e7eb;--border2:#d1d5db;--accent:#b45309;--accent2:#d97706;--accent-bg:rgba(180,83,9,.05);--green:#16a34a;--green-bg:rgba(22,163,74,.06);--blue:#2563eb;--blue-bg:rgba(37,99,235,.06);--amber:#d97706;--amber-bg:rgba(217,119,6,.06);--red:#dc2626;--red-bg:rgba(220,38,38,.05);--text:#1f2937;--text2:#6b7280;--text3:#9ca3af}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.hero{position:relative;padding:60px 32px 40px;text-align:center;overflow:hidden;background:linear-gradient(180deg,#fefce8 0%,#fff 100%)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(180,83,9,.06) 0%,transparent 70%);pointer-events:none}
+.hero-pattern{position:absolute;inset:0;opacity:.025;background-image:radial-gradient(circle,var(--accent) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
+
+.toc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:32px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.toc-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--text2);font-size:13px;font-weight:600}
+.toc-item:hover{background:var(--accent-bg);color:var(--accent);transform:translateX(-4px)}
+.toc-item.active-toc{background:var(--accent-bg);color:var(--accent)}
+.toc-num{width:28px;height:28px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--accent);flex-shrink:0;transition:all .2s}
+.toc-item:hover .toc-num,.toc-item.active-toc .toc-num{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.section-block{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:20px;overflow:hidden;transition:all .3s;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.section-block:hover{border-color:rgba(180,83,9,.2);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.section-head{padding:20px 28px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(180,83,9,.03),transparent);cursor:pointer;transition:all .2s}
+.section-head:hover{background:linear-gradient(135deg,rgba(180,83,9,.06),rgba(180,83,9,.01))}
+.section-num{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 3px 10px rgba(180,83,9,.25)}
+.section-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.section-body{padding:24px 28px 28px;max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),padding .3s ease;opacity:0}
+.section-block.open .section-body{max-height:3000px;opacity:1;padding:24px 28px 28px}
+.section-chevron{margin-right:auto;color:var(--text3);transition:transform .35s;font-size:14px}
+.section-block.open .section-chevron{transform:rotate(180deg)}
+
+.terms-text{font-size:14px;line-height:2.1;color:var(--text);white-space:pre-wrap}
+.terms-text .clause{padding:8px 0 8px 16px;border-right:3px solid var(--border);margin-bottom:6px;transition:all .2s;border-radius:0 4px 4px 0}
+.terms-text .clause:hover{border-right-color:var(--accent);background:var(--accent-bg);border-radius:0 6px 6px 0}
+.terms-text .clause-num{color:var(--accent);font-weight:800;margin-left:6px}
+
+/* ===== Checkbox الموافقة ===== */
+.agreement-section{
+  background:var(--card);
+  border:2px solid var(--border);
+  border-radius:20px;
+  padding:28px 32px;
+  margin:32px 0;
+  transition:all .4s;
+  position:relative;
+  overflow:hidden;
+}
+.agreement-section::before{
+  content:'';
+  position:absolute;
+  top:0;right:0;left:0;
+  height:4px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent));
+  opacity:0;
+  transition:opacity .4s;
+}
+.agreement-section.checked{
+  border-color:var(--green);
+  box-shadow:0 4px 24px rgba(22,163,74,.1);
+}
+.agreement-section.checked::before{
+  opacity:1;
+  background:linear-gradient(90deg,var(--green),#22c55e,var(--green));
+}
+
+.agreement-header{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:16px;
+}
+
+/* Checkbox مخصص */
+.custom-checkbox{
+  position:relative;
+  width:28px;
+  height:28px;
+  flex-shrink:0;
+  cursor:pointer;
+}
+.custom-checkbox input{
+  position:absolute;
+  opacity:0;
+  width:100%;
+  height:100%;
+  cursor:pointer;
+  z-index:2;
+  margin:0;
+}
+.checkmark-box{
+  position:absolute;
+  top:0;right:0;
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  border:2.5px solid var(--border2);
+  background:#fff;
+  transition:all .3s cubic-bezier(.175,.885,.32,1.275);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.checkmark-box svg{
+  width:16px;
+  height:16px;
+  stroke:#fff;
+  stroke-width:3;
+  fill:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:30;
+  stroke-dashoffset:30;
+  transition:stroke-dashoffset .3s ease .1s;
+  transform:scale(0);
+  transition:all .3s cubic-bezier(.175,.885,.32,1.275);
+}
+.custom-checkbox input:checked ~ .checkmark-box{
+  background:var(--green);
+  border-color:var(--green);
+  box-shadow:0 2px 8px rgba(22,163,74,.3);
+  transform:scale(1);
+}
+.custom-checkbox input:checked ~ .checkmark-box svg{
+  stroke-dashoffset:0;
+  transform:scale(1);
+}
+.custom-checkbox input:focus-visible ~ .checkmark-box{
+  outline:3px solid rgba(22,163,74,.3);
+  outline-offset:2px;
+}
+.custom-checkbox input:hover:not(:checked) ~ .checkmark-box{
+  border-color:var(--green);
+  background:var(--green-bg);
+}
+
+.agreement-label{
+  font-size:15px;
+  font-weight:700;
+  color:var(--text);
+  cursor:pointer;
+  line-height:1.5;
+  transition:color .2s;
+}
+.agreement-label:hover{color:var(--green)}
+
+.agreement-desc{
+  font-size:12px;
+  color:var(--text3);
+  line-height:1.7;
+  margin-bottom:16px;
+  padding:12px 16px;
+  background:var(--bg2);
+  border-radius:10px;
+  border-right:3px solid var(--border);
+}
+
+.agreement-status{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 16px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:700;
+  transition:all .4s;
+  opacity:0;
+  max-height:0;
+  overflow:hidden;
+  margin-top:0;
+  padding:0 16px;
+}
+.agreement-status.show{
+  opacity:1;
+  max-height:60px;
+  margin-top:16px;
+  padding:10px 16px;
+}
+.agreement-status.accepted{
+  background:var(--green-bg);
+  color:var(--green);
+  border:1px solid rgba(22,163,74,.2);
+}
+.agreement-status.rejected{
+  background:var(--red-bg);
+  color:var(--red);
+  border:1px solid rgba(220,38,38,.2);
+}
+
+.agreement-actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+}
+
+.btn-accept{
+  flex:1;
+  padding:12px 24px;
+  border-radius:12px;
+  font-family:'Cairo';
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+  border:2px solid var(--green);
+  background:var(--green);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:all .3s;
+  opacity:.4;
+  pointer-events:none;
+  transform:translateY(4px);
+}
+.btn-accept.enabled{
+  opacity:1;
+  pointer-events:auto;
+  transform:translateY(0);
+}
+.btn-accept.enabled:hover{
+  background:#15803d;
+  border-color:#15803d;
+  box-shadow:0 4px 16px rgba(22,163,74,.3);
+  transform:translateY(-2px);
+}
+.btn-accept:active{
+  transform:translateY(0) scale(.98);
+}
+
+.lang-toggle{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:3px;gap:2px}
+.lang-btn{padding:7px 18px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:'Cairo';background:transparent;color:var(--text3);transition:all .25s;display:flex;align-items:center;gap:5px}
+.lang-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(180,83,9,.25)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:'Cairo'}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.expand-all-btn{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text3);font-family:'Cairo';transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.expand-all-btn:hover{border-color:var(--accent);color:var(--accent)}
+.toast{position:fixed;bottom:24px;left:24px;padding:14px 22px;border-radius:12px;font-size:13px;font-weight:600;z-index:300;animation:toastIn .3s ease;display:none}
+.toast.show{display:flex;align-items:center;gap:8px}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes checkBounce{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+.footer{background:var(--bg2);border-top:1px solid var(--border);padding:28px 32px;text-align:center;margin-top:0}
+
+@media(max-width:768px){
+  .hero{padding:40px 16px 28px}
+  .toc{padding:20px 16px}
+  .section-head{padding:16px 18px}
+  .section-body{padding:16px 18px 20px}
+  .topbar{padding:12px 16px;flex-wrap:wrap;gap:10px}
+  .terms-text{font-size:13px;line-height:2}
+  .toc-grid{grid-template-columns:1fr!important}
+  .agreement-section{padding:20px 18px;margin:24px 0}
+  .agreement-actions{flex-direction:column}
+  .agreement-label{font-size:14px}
+}
+@media print{
+  .topbar,.no-print,.float-icon,.agreement-actions,.footer{display:none!important}
+  .section-block{break-inside:avoid;border:1px solid #ddd!important;box-shadow:none!important}
+  .section-body{max-height:none!important;opacity:1!important;overflow:visible!important}
+  .toc{break-inside:avoid;border:1px solid #ddd!important;background:#fafafa!important}
+  .toc-num{background:#eee!important;color:#333!important;border-color:#ddd!important}
+  .terms-text .clause{border-right-color:#ccc!important}
+  .terms-text .clause-num{color:#333!important}
+  .hero{padding:20px!important;background:#fafafa!important;border-bottom:2px solid #333;margin-bottom:20px;box-shadow:none!important}
+  .hero h1{color:#000!important}
+  .hero p{color:#555!important}
+  .hero-pattern,.hero::before{display:none!important}
+  .print-header{display:block!important;text-align:center;margin-bottom:16px;padding-bottom:10px;border-bottom:3px double #333}
+  .section-head{background:#fafafa!important}
+  .agreement-section{border:1px solid #ddd!important;background:#fafafa!important;box-shadow:none!important;break-inside:avoid}
+  .agreement-section::before{display:none!important}
+  .agreement-section.checked{border-color:#ddd!important}
+  .checkmark-box{border-color:#bbb!important}
+  .agreement-desc{background:#f5f5f5!important;border-right-color:#ddd!important}
+  body{background:#fff!important;color:#000!important}
+}
+.print-header{display:none}
+</style>
+</head>
+<body>
+
+<header class="topbar no-print" id="topbar"></header>
+
+<section class="hero" id="heroSection"></section>
+
+<div style="position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px" id="contentArea"></div>
+
+<!-- قسم الموافقة -->
+<div style="position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px" id="agreementArea"></div>
+
+<footer class="footer no-print" id="footerSection"></footer>
+
+<div class="toast" id="toast" style="background:#fff;border:1px solid var(--green);color:var(--green);box-shadow:0 4px 20px rgba(0,0,0,.1)"></div>
+<div id="printArea" style="display:none"></div>
+
+<script>
+var T = {
+  ar:{
+    title:"الشروط والأحكام",subtitle:"يرجى قراءة هذه الشروط بعناية قبل استخدام المنصة",
+    lastUpdate:"آخر تحديث",print:"طباعة",expandAll:"توسيع الكل",collapseAll:"طي الكل",
+    toc:"فهرس المحتوى",backToTop:"العودة للأعلى",footerText:"جميع الحقوق محفوظة",printedMsg:"تم إرسال إلى الطابعة",
+    agreeLabel:"أوافق على جميع الشروط والأحكام المذكورة أعلاه",
+    agreeDesc:"بالضغط على مربع الموافقة، تقر بأنك قرأت وفهمت جميع الشروط والأحكام المنشورة في هذه الصفحة، وتوافق على الالتزام بها بالكامل. يُعد هذا الموافقة الرسمية والملزمة قانونياً لاستخدامك للمنصة وخدماتها.",
+    acceptBtn:"متابعة بعد الموافقة",
+    acceptedMsg:"تم تسجيل موافقتك بنجاح على الشروط والأحكام",
+    rejectedMsg:"تم إلغاء الموافقة على الشروط والأحكام",
+    mustAgree:"يجب الموافقة على الشروط للمتابعة",
+    printAgreement:"طباعة مع توقيع الموافقة"
+  },
+  en:{
+    title:"Terms & Conditions",subtitle:"Please read these terms carefully before using the platform",
+    lastUpdate:"Last Updated",print:"Print",expandAll:"Expand All",collapseAll:"Collapse All",
+    toc:"Table of Contents",backToTop:"Back to Top",footerText:"All Rights Reserved",printedMsg:"Sent to printer",
+    agreeLabel:"I agree to all the terms and conditions listed above",
+    agreeDesc:"By checking the agreement box, you confirm that you have read and understood all the terms and conditions published on this page, and agree to fully comply with them. This constitutes your official and legally binding consent to use the platform and its services.",
+    acceptBtn:"Continue After Agreement",
+    acceptedMsg:"Your agreement to the terms and conditions has been recorded successfully",
+    rejectedMsg:"Agreement to the terms and conditions has been revoked",
+    mustAgree:"You must agree to the terms to continue",
+    printAgreement:"Print with Agreement Signature"
+  }
+};
+var lang = 'ar';
+function t(k){return T[lang][k]||k;}
+var allOpen = false;
+var isAgreed = false;
+
+var sections = [
+  {id:1,icon:'fa-user-plus',color:'var(--blue)',bgColor:'var(--blue-bg)',
+    titleAr:"شروط التسجيل والحسابات",titleEn:"Registration & Accounts",
+    contentAr:"1. يجب أن يكون عمرك 18 عاماً على الأقل لإنشاء حساب على المنصة.\n2. يتحمل المستخدم المسؤولية الكاملة عن صحة البيانات المقدمة عند التسجيل.\n3. لا يجوز إنشاء أكثر من حساب واحد لنفس المستخدم.\n4. يجب الحفاظ على سرية بيانات الدخول وعدم مشاركتها مع أي طرف ثالث.\n5. في حالة اكتشاف أي استخدام غير مصرح به للحساب، يجب إبلاغ المنصة فوراً.\n6. يحتفظ المستخدم بحق تعديل بياناته الشخصية في أي وقت من خلال إعدادات الحساب.\n7. الحسابات غير النشطة لمدة تزيد عن 12 شهراً قد يتم تعليقها أو حذفها.\n8. المنصة غير مسؤولة عن أي خسائر ناتجة عن إهمال المستخدم في حماية حسابه.",
+    contentEn:"1. You must be at least 18 years old to create an account on the platform.\n2. The user bears full responsibility for the accuracy of information provided during registration.\n3. Creating more than one account for the same user is not permitted.\n4. You must keep your login credentials confidential and not share them with any third party.\n5. If any unauthorized use of the account is discovered, the platform must be notified immediately.\n6. The user reserves the right to modify personal data at any time through account settings.\n7. Accounts inactive for more than 12 months may be suspended or deleted.\n8. The platform is not liable for any losses resulting from the user's negligence in protecting their account."},
+  {id:2,icon:'fa-shield-halved',color:'var(--green)',bgColor:'var(--green-bg)',
+    titleAr:"شروط الخصوصية وحماية البيانات",titleEn:"Privacy & Data Protection",
+    contentAr:"1. نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية وفقاً للأنظمة المعمول بها.\n2. نجمع البيانات الضرورية فقط لتقديم خدماتنا وتحسين تجربة المستخدم.\n3. لا نبيع أو نتاجر أو ننقل بياناتك الشخصية إلى أطراف ثالثة بدون موافقتك الصريحة.\n4. نستخدم تقنيات التشفير المتقدمة لحماية المعلومات الحساسة أثناء النقل والتخزين.\n5. يمكنك في أي وقت طلب نسخة من بياناتك الشخصية أو طلب حذفها.\n6. نحتفظ ببعض البيانات للفترة اللازمة وفقاً للمتطلبات القانونية والتنظيمية.\n7. في حالة حدوث اختراق أمني، نلتزم بإبلاغ المستخدمين المتأثرين خلال 72 ساعة.\n8. ملفات تعريف الارتباط تستخدم لتحسين الأداء وتخصيص المحتوى ويمكن إدارتها من إعدادات المتصفح.\n9. سياسة الخصوصية تخضع للتحديث المستمر وسنقوم بإخطارك بأي تغييرات جوهرية.",
+    contentEn:"1. We respect your privacy and are committed to protecting your personal data in accordance with applicable regulations.\n2. We collect only necessary data to provide our services and improve user experience.\n3. We do not sell, trade, or transfer your personal data to third parties without your explicit consent.\n4. We use advanced encryption technologies to protect sensitive information during transmission and storage.\n5. You may request a copy of your personal data or request its deletion at any time.\n6. We retain certain data for the necessary period in accordance with legal and regulatory requirements.\n7. In the event of a security breach, we commit to notifying affected users within 72 hours.\n8. Cookies are used to improve performance and personalize content and can be managed through browser settings.\n9. The privacy policy is subject to ongoing updates and we will notify you of any material changes."},
+  {id:3,icon:'fa-shopping-cart',color:'var(--accent)',bgColor:'var(--accent-bg)',
+    titleAr:"شروط الطلبات والمشتريات",titleEn:"Orders & Purchases",
+    contentAr:"1. تقديم الطلب يعني موافقتك على هذه الشروط وأسعار المنتجات المعروضة.\n2. الأسعار المعروضة شاملة الضريبة المضافة ما لم يُنص على خلاف ذلك.\n3. يحق للمنصة تعديل الأسعار في أي وقت دون إشعار مسبق للمنتجات المعروضة.\n4. الطلب يعتبر ملزماً قانونياً بعد تأكيد الدفع واستلام إشعار التأكيد.\n5. يحق للمستخدم إلغاء الطلب قبل بدء الشحن دون رسوم إدارية.\n6. بعد بدء الشحن لا يمكن إلغاء الطلب ويجب اتباع إجراءات الإرجاع.\n7. الفواتير الإلكترونية تصدر تلقائياً ويمكن تحميلها من حساب المستخدم.\n8. المنصة غير مسؤولة عن أي أخطاء في الأسعار الناتجة عن خطأ تقني واضح.\n9. الكميات المطلوبة تخضع للتوافر الفعلي في مخزن المورد.\n10. العروض والخصومات لها فترة زمنية محددة ولا تنطبق retrospectively.",
+    contentEn:"1. Submitting an order means you agree to these terms and the displayed product prices.\n2. Displayed prices are inclusive of value-added tax unless otherwise stated.\n3. The platform reserves the right to modify prices at any time without prior notice.\n4. The order is legally binding after payment confirmation and receipt of confirmation notice.\n5. The user may cancel the order before shipping begins without administrative fees.\n6. After shipping begins, the order cannot be canceled and return procedures must be followed.\n7. Electronic invoices are issued automatically and can be downloaded from the user account.\n8. The platform is not liable for any pricing errors resulting from an obvious technical error.\n9. Requested quantities are subject to actual availability in the supplier's warehouse.\n10. Offers and discounts have a limited time period and do not apply retrospectively."},
+  {id:4,icon:'fa-truck',color:'var(--amber)',bgColor:'var(--amber-bg)',
+    titleAr:"شروط الشحن والتوصيل",titleEn:"Shipping & Delivery",
+    contentAr:"1. يتم الشحن خلال المهلة المحددة في صفحة المنتج من تاريخ تأكيد الطلب.\n2. تكاليف الشحن تظهر بوضوح قبل تأكيد الطلب وقد تختلف حسب الوجهة والوزن.\n3. المنصة ليست مسؤولة عن التأخيرات الناتجة عن ظروف خارجة عن إرادتها مثل الكوارث الطبيعية.\n4. يتم توفير رقم تتبع الشحن لكل طلب يمكن متابعته من حساب المستخدم.\n5. المستخدم مسؤول عن توفير عنوان صحيح وكامل للتوصيل.\n6. في حالة فشل التوصيل بسبب عنوان خاطئ، تتحمل تكاليف إعادة الشحن على المستخدم.\n7. يمكن للشحن الدولي أن يخضع لرسوم جمارك وضرائب إضافية يتحملها المستخدم.\n8. المنتجات القابلة للتلف تتطلب توقيع استلام فوري ولا يمكن إرجاعها بعد الرفض.\n9. يجب فحص المنتج عند الاستلام أمام مندوب الشحن وتدوين أي ملاحظات.\n10. مطالبة التأخير يجب تقديمها خلال 7 أيام من تاريخ التوصيل المتوقع.",
+    contentEn:"1. Shipping is completed within the timeframe specified on the product page from the order confirmation date.\n2. Shipping costs are clearly displayed before order confirmation and may vary by destination and weight.\n3. The platform is not responsible for delays caused by force majeure events such as natural disasters.\n4. A tracking number is provided for each order and can be tracked from the user account.\n5. The user is responsible for providing a correct and complete delivery address.\n6. If delivery fails due to an incorrect address, re-shipping costs are borne by the user.\n7. International shipping may be subject to additional customs duties and taxes borne by the user.\n8. Perishable products require immediate signature and cannot be returned after refusal.\n9. Products must be inspected upon delivery in the presence of the shipping agent and any notes should be recorded.\n10. Delay claims must be submitted within 7 days from the expected delivery date."},
+  {id:5,icon:'fa-rotate-left',color:'var(--red)',bgColor:'var(--red-bg)',
+    titleAr:"شروط الإرجاع والاستبدال",titleEn:"Returns & Replacements",
+    contentAr:"1. يحق للمستخدم إرجاع المنتج خلال 14 يوماً من تاريخ الاستلام إذا كان معيباً.\n2. يجب أن يكون المنتج المرتجع في حالته الأصلية مع جميع الملحقات والتغليف.\n3. المنتجات التي تم استخدامها أو تعرضها للتلف بسبب سوء الاستخدام لا تقبل الإرجاع.\n4. يتم فحص المنتج المرتجع من قبل المنصة قبل اعتماد الإرجاع.\n5. يتم استرداد المبلغ خلال 7 أيام عمل من تاريخ اعتماد الإرجاع.\n6. يمكن استبدال المنتج بمنتج آخر بنفس القيمة أو أعلى مع دفع الفرق.\n7. المنتجات المباعة بعروض خاصة أو تخفيضات قد تخضع لشروط إرجاع مختلفة.\n8. تكاليف إرجاع المنتجات غير المعيبة يتحملها المستخدم.\n9. يجب تقديم طلب الإرجاع من خلال المنصة وليس بالتواصل المباشر مع المورد.\n10. المنتجات الرقمية والخدمات المقدمة إلكترونياً لا تخضع لسياسة الإرجاع بعد التسليم.",
+    contentEn:"1. The user may return a defective product within 14 days from the delivery date.\n2. The returned product must be in its original condition with all accessories and packaging.\n3. Products that have been used or damaged due to misuse are not eligible for return.\n4. Returned products are inspected by the platform before the return is approved.\n5. Refunds are processed within 7 business days from the return approval date.\n6. The product may be replaced with another product of the same or higher value with payment of the difference.\n7. Products sold under special offers or discounts may be subject to different return conditions.\n8. Return costs for non-defective products are borne by the user.\n9. Return requests must be submitted through the platform, not by contacting the supplier directly.\n10. Digital products and electronically delivered services are not subject to the return policy after delivery."},
+  {id:6,icon:'fa-credit-card',color:'#7c3aed',bgColor:'rgba(124,58,237,.05)',
+    titleAr:"شروط الدفع والتحويلات المالية",titleEn:"Payments & Financial Transactions",
+    contentAr:"1. نقبل طرق الدفع المتاحة على المنصة وهي: التحويل البنكي، المحافظ الإلكترونية، بطاقات الائتمان، والنقد عند الاستلام.\n2. جميع المعاملات المالية مشفرة ومحمية بأحدث بروتوكولات الأمان.\n3. لا يتم تخزين بيانات بطاقات الدفع على خوادمنا بل لدى مزود خدمة الدفع المعتمد.\n4. في حالة فشل عملية الدفع، يتم استرداد المبلغ تلقائياً خلال 3-5 أيام عمل.\n5. الأسعار المعروضة شاملة ضريبة القيمة المضافة ما لم يُنص على خلاف ذلك.\n6. يحق للمنصة حجب جزء من المبلغ كضمان حتى استلام المنتج وتأكيد جودته.\n7. أي عمليات احتيال ستُبلغ للجهات المختصة وقد تؤدي لتعليق الحساب نهائياً.\n8. المنصة غير مسؤولة عن أي رسوم بنكية إضافية قد يفرضها البنك المُصدر.",
+    contentEn:"1. We accept the payment methods available on the platform: bank transfer, e-wallets, credit cards, and cash on delivery.\n2. All financial transactions are encrypted and protected by the latest security protocols.\n3. Payment card data is not stored on our servers but with the approved payment service provider.\n4. In case of payment failure, the amount is automatically refunded within 3-5 business days.\n5. Displayed prices are inclusive of value-added tax unless otherwise stated.\n6. The platform may withhold part of the amount as a guarantee until product receipt and quality confirmation.\n7. Any fraudulent activities will be reported to the relevant authorities and may result in permanent account suspension.\n8. The platform is not liable for any additional bank fees that may be charged by the issuing bank."},
+  {id:7,icon:'fa-store',color:'var(--blue)',bgColor:'var(--blue-bg)',
+    titleAr:"شروط البائعين والموردين",titleEn:"Sellers & Suppliers",
+    contentAr:"1. يتعهد البائع بتقديم منتجات أصلية ومطابقة للمواصفات المعلنة.\n2. يجب أن يمتلك البائع جميع التراخيص والشهادات المطلوبة قانونياً.\n3. يتحمل البائع المسؤولية الكاملة عن جودة المنتجات وسلامتها.\n4. يلتزم البائع بالرد على استفسارات العملاء خلال 24 ساعة.\n5. يحظر عرض منتجات مقلدة أو مخالفة لحقوق الملكية الفكرية.\n6. يجب تحديث المخزون بشكل دوري لضمان دقة التوافر المعروض.\n7. يحق للمنصة فرض غرامات على البائعين المخالفين لشروط الجودة.\n8. في حالة شكاوى متكررة، يتم مراجعة حساب البائع وقد يؤدي لتعليقه.\n9. البائع مسؤول عن تعبئة المنتجات بشكل يضمن سلامتها أثناء الشحن.\n10. يجب الالتزام بأسعار البيع المحددة وعدم التلاعب بالأسعار.",
+    contentEn:"1. The seller undertakes to provide genuine products that match the declared specifications.\n2. The seller must possess all legally required licenses and certificates.\n3. The seller bears full responsibility for product quality and safety.\n4. The seller commits to responding to customer inquiries within 24 hours.\n5. Displaying counterfeit products or products violating intellectual property rights is prohibited.\n6. Inventory must be updated periodically to ensure accuracy of displayed availability.\n7. The platform may impose penalties on sellers who violate quality conditions.\n8. In case of repeated complaints, the seller's account will be reviewed and may lead to suspension.\n9. The seller is responsible for packaging products in a manner that ensures their safety during shipping.\n10. Compliance with specified selling prices and no price manipulation is required."},
+  {id:8,icon:'fa-gavel',color:'var(--accent)',bgColor:'var(--accent-bg)',
+    titleAr:"الأحكام العامة وحل النزاعات",titleEn:"General Provisions & Dispute Resolution",
+    contentAr:"1. هذه الشروط والأحكام تخضع لقوانين المملكة العربية السعودية.\n2. أي بنود غير صالحة في هذه الشروط لا تؤثر على صلاحية البنود الأخرى.\n3. تقبل المحاكم المختصة في المملكة العربية السعودية اختصاصاً حصرياً للنظر في أي نزاع.\n4. يجب حل النزاعات أولاً بالطرق الودية خلال 30 يوماً قبل اللجوء للقضاء.\n5. يحق للمنصة تعديل هذه الشروط في أي وقت وسيتم إخطار المستخدمين بالتغييرات.\n6. استمرار استخدام المنصة بعد نشر التعديلات يعتبر موافقة ضمنية على الشروط المحدثة.\n7. عدم ممارسة المنصة لأي حق من هذه الحقوق لا يعني التنازل عنه.\n8. هذه الشروط تمثل الاتفاق الكامل بين المستخدم والمنصة وتلغي أي اتفاقيات سابقة.\n9. يمكن التواصل مع فريق الدعم القانوني عبر البريد الإلكتروني الرسمي للمنصة.\n10. النسخة العربية من هذه الشروط هي المعتمدة في حالة أي تعارض مع النسخة الإنجليزية.",
+    contentEn:"1. These terms and conditions are subject to the laws of the Kingdom of Saudi Arabia.\n2. Any invalid provisions in these terms do not affect the validity of other provisions.\n3. The competent courts in the Kingdom of Saudi Arabia have exclusive jurisdiction to consider any dispute.\n4. Disputes must first be resolved amicably within 30 days before resorting to litigation.\n5. The platform reserves the right to modify these terms at any time and users will be notified of changes.\n6. Continued use of the platform after modifications are published constitutes implicit consent to the updated terms.\n7. The platform's failure to exercise any right does not constitute a waiver of that right.\n8. These terms represent the complete agreement between the user and the platform and supersede any previous agreements.\n9. You may contact the legal support team via the platform's official email.\n10. The Arabic version of these terms is the authoritative version in case of any conflict with the English version."}
+];
+
+function renderTopbar(){
+  document.getElementById('topbar').innerHTML =
+    '<div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center"><i class="fas fa-file-contract" style="color:#fff;font-size:14px"></i></div><span style="font-size:15px;font-weight:800;color:var(--text)">'+t('title')+'</span></div>'+
+    '<div style="display:flex;gap:10px;align-items:center"><button class="expand-all-btn" onclick="toggleAll()"><i class="fas '+(allOpen?'fa-compress-alt':'fa-expand-alt')+'"></i> '+(allOpen?t('collapseAll'):t('expandAll'))+'</button><button class="btn btn-outline btn-sm" onclick="handlePrint()"><i class="fas fa-print"></i> '+t('print')+'</button><div class="lang-toggle"><button class="lang-btn '+(lang==='ar'?'active':'')+'" onclick="setLang(\'ar\')"><i class="fas fa-globe"></i> عربي</button><button class="lang-btn '+(lang==='en'?'active':'')+'" onclick="setLang(\'en\')">EN</button></div></div>';
+}
+
+function renderHero(){
+  document.getElementById('heroSection').innerHTML =
+    '<div class="hero-pattern"></div>'+
+    '<i class="fas fa-file-contract float-icon" style="font-size:60px;color:var(--accent);top:20%;right:10%;animation-delay:0s;opacity:.06"></i>'+
+    '<i class="fas fa-shield-halved float-icon" style="font-size:40px;color:var(--blue);top:30%;left:12%;animation-delay:1s;opacity:.06"></i>'+
+    '<i class="fas fa-gavel float-icon" style="font-size:50px;color:var(--green);bottom:20%;right:18%;animation-delay:2s;opacity:.06"></i>'+
+    '<div style="position:relative;z-index:2"><div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(180,83,9,.2)"><i class="fas fa-file-contract" style="color:#fff;font-size:28px"></i></div><h1 style="font-size:32px;font-weight:900;margin-bottom:8px;line-height:1.3;color:var(--text)">'+t('title')+'</h1><p style="font-size:14px;color:var(--text2);max-width:500px;margin:0 auto 14px;line-height:1.7">'+t('subtitle')+'</p><p style="font-size:11px;color:var(--text3)"><i class="fas fa-calendar-check" style="margin-left:4px"></i>'+t('lastUpdate')+': 2025/01/15</p></div>';
+}
+
+function renderTOC(){
+  var h = '<div class="toc" style="animation:fadeUp .4s ease both"><h2 style="font-size:16px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:var(--text)"><i class="fas fa-list-ul" style="color:var(--accent)"></i> '+t('toc')+'</h2><div class="toc-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:4px">';
+  sections.forEach(function(s){var title=lang==='ar'?s.titleAr:s.titleEn;h+='<a class="toc-item" onclick="scrollToSection('+s.id+')"><span class="toc-num">'+s.id+'</span><span>'+title+'</span></a>';});
+  return h+'</div></div>';
+}
+
+function renderSections(){
+  var h='';
+  sections.forEach(function(s,i){
+    var title=lang==='ar'?s.titleAr:s.titleEn;
+    var content=lang==='ar'?s.contentAr:s.contentEn;
+    var fc=content.split('\n').map(function(line){
+      var m=line.match(/^(\d+)\.\s(.*)/);
+      if(m) return '<div class="clause"><span class="clause-num">'+m[1]+'.</span>'+m[2]+'</div>';
+      return '<div style="padding:4px 0">'+line+'</div>';
+    }).join('');
+    h+='<div class="section-block" id="sec-'+s.id+'" style="animation:fadeUp .4s ease '+(i*.07)+'s both"><div class="section-head" onclick="toggleSection('+s.id+')"><div class="section-num">'+s.id+'</div><div class="section-icon" style="background:'+s.bgColor+';color:'+s.color+'"><i class="fas '+s.icon+'"></i></div><div style="flex:1;min-width:0"><h3 style="font-size:15px;font-weight:800;line-height:1.5;color:var(--text)">'+title+'</h3></div><i class="fas fa-chevron-down section-chevron"></i></div><div class="section-body"><div class="terms-text">'+fc+'</div></div></div>';
+  });
+  return h;
+}
+
+// ===== قسم الموافقة =====
+function renderAgreement(){
+  document.getElementById('agreementArea').innerHTML =
+    '<div class="agreement-section no-print" id="agreementBox" style="animation:fadeUp .4s ease .6s both">'+
+      '<div class="agreement-header">'+
+        '<label class="custom-checkbox" for="agreeCheck">'+
+          '<input type="checkbox" id="agreeCheck" onchange="handleAgreement(this.checked)">'+
+          '<span class="checkmark-box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"></polyline></svg></span>'+
+        '</label>'+
+        '<label class="agreement-label" for="agreeCheck">'+t('agreeLabel')+'</label>'+
+      '</div>'+
+      '<div class="agreement-desc"><i class="fas fa-info-circle" style="margin-left:6px;color:var(--accent)"></i>'+t('agreeDesc')+'</div>'+
+      '<div class="agreement-status" id="agreementStatus"></div>'+
+      '<div class="agreement-actions">'+
+        '<button class="btn-accept" id="acceptBtn" onclick="handleAccept()"><i class="fas fa-check-circle"></i> '+t('acceptBtn')+'</button>'+
+        '<button class="btn btn-outline btn-sm" onclick="printWithAgreement()" style="flex-shrink:0"><i class="fas fa-print"></i> '+t('printAgreement')+'</button>'+
+      '</div>'+
+    '</div>';
+}
+
+function handleAgreement(checked){
+  var box = document.getElementById('agreementBox');
+  var btn = document.getElementById('acceptBtn');
+  var status = document.getElementById('agreementStatus');
+
+  if(checked){
+    box.classList.add('checked');
+    btn.classList.add('enabled');
+    status.className = 'agreement-status show accepted';
+    status.innerHTML = '<i class="fas fa-check-circle"></i> '+t('acceptedMsg');
+    isAgreed = true;
+  } else {
+    box.classList.remove('checked');
+    btn.classList.remove('enabled');
+    status.className = 'agreement-status show rejected';
+    status.innerHTML = '<i class="fas fa-times-circle"></i> '+t('rejectedMsg');
+    isAgreed = false;
+  }
+}
+
+function handleAccept(){
+  if(!isAgreed){
+    showToast(t('mustAgree'),'warn');
+    // اهتزاز الـ checkbox
+    var box = document.getElementById('agreementBox');
+    box.style.animation = 'none';
+    box.offsetHeight;
+    box.style.animation = 'shake .4s ease';
+    return;
+  }
+  showToast(t('acceptedMsg'),'success');
+  // محاكاة الانتقال
+  var btn = document.getElementById('acceptBtn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحويل...';
+  btn.style.pointerEvents = 'none';
+  setTimeout(function(){
+    btn.innerHTML = '<i class="fas fa-check"></i> تم بنجاح';
+    btn.style.background = '#15803d';
+    btn.style.borderColor = '#15803d';
+  }, 1500);
+}
+
+function printWithAgreement(){
+  var pa = document.getElementById('printArea');
+  pa.style.display = 'block';
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA');
+  var h = '<div style="text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:3px double #333"><h1 style="font-size:20px;font-weight:900;margin:0">'+t('title')+'</h1><p style="font-size:12px;color:#666;margin-top:4px">'+t('lastUpdate')+': 2025/01/15</p></div>';
+
+  sections.forEach(function(s){
+    var title=lang==='ar'?s.titleAr:s.titleEn;
+    var content=lang==='ar'?s.contentAr:s.contentEn;
+    h+='<div style="margin-bottom:14px;page-break-inside:avoid;border:1px solid #ddd;border-radius:8px;overflow:hidden"><div style="background:#f5f5f5;padding:8px 14px;font-weight:800;font-size:13px;border-bottom:1px solid #ddd;display:flex;align-items:center;gap:8px"><span style="width:26px;height:26px;background:#333;color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">'+s.id+'</span>'+title+'</div><div style="padding:12px 14px;font-size:11px;line-height:2;white-space:pre-wrap">'+content+'</div></div>';
+  });
+
+  h += '<div style="margin-top:24px;padding-top:16px;border-top:2px solid #333">'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
+    '<span style="width:20px;height:20px;border:2px solid #333;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900">'+(isAgreed?'&#10003;':'')+'</span>'+
+    '<span style="font-size:13px;font-weight:700">'+t('agreeLabel')+'</span></div>'+
+    '<div style="display:flex;align-items:center;gap:16px;font-size:11px;color:#666">'+
+    '<span><strong>التوقيع:</strong> _________________________</span>'+
+    '<span><strong>الاسم:</strong> _________________________</span></div>'+
+    '<div style="font-size:11px;color:#999;margin-top:8px">التاريخ والوقت: '+dateStr+'</div></div>';
+
+  pa.innerHTML = h;
+  window.print();
+  setTimeout(function(){pa.style.display='none';},500);
+  showToast(t('printedMsg'),'success');
+}
+
+function renderFooter(){
+  document.getElementById('footerSection').innerHTML =
+    '<div style="margin-bottom:12px"><button class="btn btn-outline btn-sm" onclick="scrollToTop()" style="margin:0 auto"><i class="fas fa-arrow-up"></i> '+t('backToTop')+'</button></div>'+
+    '<p style="font-size:12px;color:var(--text3)">&copy; '+new Date().getFullYear()+' '+t('footerText')+'</p>';
+}
+
+function setLang(l){
+  lang=l;document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';
+  var openIds=[];document.querySelectorAll('.section-block.open').forEach(function(el){openIds.push(parseInt(el.id.replace('sec-','')));});
+  var wasAgreed = isAgreed;
+  renderAll();
+  openIds.forEach(function(id){var el=document.getElementById('sec-'+id);if(el)el.classList.add('open');});
+  if(wasAgreed){
+    var cb = document.getElementById('agreeCheck');
+    if(cb){cb.checked=true;handleAgreement(true);}
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function toggleSection(id){var el=document.getElementById('sec-'+id);if(el)el.classList.toggle('open');}
+function toggleAll(){allOpen=!allOpen;document.querySelectorAll('.section-block').forEach(function(el){el.classList.toggle('open',allOpen);});renderTopbar();}
+function scrollToSection(id){var el=document.getElementById('sec-'+id);if(el){el.classList.add('open');el.scrollIntoView({behavior:'smooth',block:'start'});}}
+function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'});}
+
+function handlePrint(){
+  var pa=document.getElementById('printArea');pa.style.display='block';
+  var h='<div class="print-header" style="display:block!important;text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:3px double #333"><h1 style="font-size:20px;font-weight:900;margin:0">'+t('title')+'</h1><p style="font-size:12px;color:#666;margin-top:4px">'+t('lastUpdate')+': 2025/01/15</p></div>';
+  h+='<div style="margin-bottom:20px;padding:16px;border:1px solid #ddd;border-radius:8px;background:#fafafa"><h3 style="font-size:14px;font-weight:800;margin-bottom:10px">'+t('toc')+'</h3>';
+  sections.forEach(function(s){var title=lang==='ar'?s.titleAr:s.titleEn;h+='<div style="font-size:12px;padding:3px 0;color:#555"><strong>'+s.id+'.</strong> '+title+'</div>';});
+  h+='</div>';
+  sections.forEach(function(s){
+    var title=lang==='ar'?s.titleAr:s.titleEn;var content=lang==='ar'?s.contentAr:s.contentEn;
+    h+='<div style="margin-bottom:16px;page-break-inside:avoid;border:1px solid #ddd;border-radius:8px;overflow:hidden"><div style="background:#f5f5f5;padding:10px 16px;font-weight:800;font-size:14px;border-bottom:1px solid #ddd;display:flex;align-items:center;gap:8px"><span style="width:28px;height:28px;background:#333;color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">'+s.id+'</span>'+title+'</div><div style="padding:14px 16px;font-size:12px;line-height:2;white-space:pre-wrap">'+content+'</div></div>';
+  });
+  h+='<div style="text-align:center;margin-top:20px;padding-top:12px;border-top:2px solid #ddd;font-size:10px;color:#999">&copy; '+new Date().getFullYear()+' '+t('footerText')+'</div>';
+  pa.innerHTML=h;window.print();setTimeout(function(){pa.style.display='none';},500);
+  showToast(t('printedMsg'),'success');
+}
+
+function showToast(msg,type){
+  var el=document.getElementById('toast');
+  var colors={success:'var(--green)',error:'var(--red)',warn:'var(--amber)'};
+  var bgs={success:'var(--green-bg)',error:'var(--red-bg)',warn:'var(--amber-bg)'};
+  var icons={success:'fa-check-circle',error:'fa-times-circle',warn:'fa-exclamation-triangle'};
+  el.style.borderColor=colors[type]||colors.success;el.style.color=colors[type]||colors.success;el.style.background=bgs[type]||bgs.success;
+  el.innerHTML='<i class="fas '+(icons[type]||icons.success)+'" style="font-size:16px"></i><span>'+msg+'</span>';
+  el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2800);
+}
+
+var scrollObserver=new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if(entry.isIntersecting){var id=entry.target.id.replace('sec-','');document.querySelectorAll('.toc-item').forEach(function(item){item.classList.remove('active-toc');});var a=document.querySelector('.toc-item[onclick*="scrollToSection('+id+')"]');if(a)a.classList.add('active-toc');}
+  });
+},{threshold:0.15,rootMargin:'-80px 0px -60% 0px'});
+function observeSections(){sections.forEach(function(s){var el=document.getElementById('sec-'+s.id);if(el)scrollObserver.observe(el);});}
+
+function renderAll(){
+  renderTopbar();renderHero();
+  document.getElementById('contentArea').innerHTML=renderTOC()+renderSections();
+  renderAgreement();renderFooter();setTimeout(observeSections,100);
+}
+
+// إضافة أنيميشن الاهتزاز
+var shakeStyle = document.createElement('style');
+shakeStyle.textContent = '@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-6px)}20%,40%,60%,80%{transform:translateX(6px)}}';
+document.head.appendChild(shakeStyle);
+
+renderAll();
+</script>
+</body>
+</html>

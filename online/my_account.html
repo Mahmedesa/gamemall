@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سوق.نت | حسابي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { cairo:['Cairo','sans-serif'], inter:['Inter','sans-serif'] },
+                    colors: {
+                        brand:{50:'#FFF4ED',100:'#FFE6D5',200:'#FECCAA',300:'#FDAA74',400:'#FB7C38',500:'#F96316',600:'#E84B07',700:'#C23807',800:'#9C2E0D',900:'#7F290F'},
+                        surface:{50:'#FAFAF8',100:'#F5F3F0',200:'#EDEAE5',300:'#DDD8D0',400:'#C4BDB2'},
+                        ink:{900:'#1A1A2E',700:'#374151',500:'#6B7280',300:'#9CA3AF'}
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root{--brand:#F96316;--brand-dark:#E84B07;--ink:#1A1A2E;--surface:#FAFAF8;--border:#EDEAE5;--success:#10B981;--danger:#EF4444;--info:#3498DB;--warning:#F59E0B;--purple:#7C3AED}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh}
+        body.ltr{font-family:'Inter',sans-serif}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#C4BDB2;border-radius:10px}
+
+        .top-bar{background:linear-gradient(135deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%);position:relative;overflow:hidden}
+        .top-bar::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 400px 300px at 80% 20%,rgba(249,99,22,0.1) 0%,transparent 70%);pointer-events:none}
+
+        .sidebar-link{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;font-size:14px;font-weight:500;color:#6B7280;cursor:pointer;transition:all .25s;border:1px solid transparent}
+        .sidebar-link:hover{background:white;color:var(--ink);border-color:var(--border)}
+        .sidebar-link.active{background:var(--brand);color:white;border-color:var(--brand);box-shadow:0 4px 16px rgba(249,99,22,0.25)}
+        .sidebar-link.active i{color:white}
+        .sidebar-link i{width:20px;text-align:center;font-size:15px;transition:color .25s}
+
+        .card{background:white;border:1px solid var(--border);border-radius:20px;transition:box-shadow .3s}
+        .card:hover{box-shadow:0 8px 30px rgba(0,0,0,0.04)}
+
+        .field{position:relative}
+        .field label{display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px}
+        .field input,.field select,.field textarea{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;background:white;outline:none;color:var(--ink);transition:all .25s;appearance:auto}
+        .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(249,99,22,0.08)}
+        .field input:disabled,.field select:disabled{background:#F5F3F0;color:#9CA3AF;cursor:not-allowed}
+        .field textarea{resize:vertical;min-height:80px}
+        .field .field-error{font-size:11px;color:#EF4444;margin-top:4px;display:none;align-items:center;gap:4px}
+        .field .field-error.show{display:flex}
+        .field input.err,.field select.err,.field textarea.err{border-color:#EF4444}
+        .field input.err:focus,.field select.err:focus{box-shadow:0 0 0 3px rgba(239,68,68,0.08)}
+
+        .btn-primary{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,#F96316,#E84B07);color:white;border:none;border-radius:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,99,22,0.3)}
+        .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-secondary{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:white;color:var(--ink);border:2px solid var(--border);border-radius:14px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .3s}
+        .btn-secondary:hover{border-color:#9CA3AF;background:#FAFAF8}
+        .btn-danger{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#FEF2F2;color:#EF4444;border:1px solid #FECACA;border-radius:12px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .3s}
+        .btn-danger:hover{background:#FEE2E2}
+        .btn-sm{padding:8px 16px;font-size:12px;border-radius:10px}
+        .btn-icon{width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;border:1px solid var(--border);background:white;cursor:pointer;transition:all .25s;color:#6B7280}
+        .btn-icon:hover{border-color:var(--brand);color:var(--brand);background:#FFF4ED}
+
+        @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        .panel-enter{animation:fadeUp .4s ease both}
+        @keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(20px)}}
+        .toast-in{animation:toastIn .35s ease}.toast-out{animation:toastOut .3s ease forwards}
+
+        .status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700}
+        .status-delivered{background:#D1FAE5;color:#065F46}
+        .status-shipped{background:#DBEAFE;color:#1E40AF}
+        .status-processing{background:#FEF3C7;color:#92400E}
+        .status-cancelled{background:#FEE2E2;color:#991B1B}
+        .status-pending{background:#F3F4F6;color:#374151}
+        .status-out-delivery{background:#D1FAE5;color:#065F46}
+        .status-tracking{background:#EDE9FE;color:#5B21B6}
+
+        .avatar-ring{background:conic-gradient(var(--brand) 0deg,var(--brand) 270deg,#EDEAE5 270deg,#EDEAE5 360deg);border-radius:50%;padding:3px}
+        .avatar-ring.editing{background:conic-gradient(var(--brand) 0deg,var(--brand) 360deg);cursor:pointer}
+
+        .address-card{border:2px solid var(--border);border-radius:16px;padding:20px;transition:all .3s;position:relative}
+        .address-card.default{border-color:var(--brand);background:#FFF4ED}
+        .address-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.05)}
+
+        .mini-map{background:linear-gradient(135deg,#E8F4E8 0%,#D4EDDA 30%,#CCE5CC 60%,#B8D8B8 100%);border-radius:12px;position:relative;overflow:hidden;height:120px}
+        .mini-map::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 19px,rgba(255,255,255,0.4) 19px,rgba(255,255,255,0.4) 20px),repeating-linear-gradient(90deg,transparent,transparent 19px,rgba(255,255,255,0.4) 19px,rgba(255,255,255,0.4) 20px)}
+        .mini-map .pin{position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);filter:drop-shadow(0 3px 4px rgba(0,0,0,0.2))}
+        .mini-map .pin-dot{width:12px;height:12px;background:var(--brand);border-radius:50%;border:3px solid white;position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);box-shadow:0 2px 6px rgba(0,0,0,0.15)}
+        .mini-map .road{position:absolute;background:rgba(255,255,255,0.7);border-radius:2px}
+
+        .mobile-nav{display:none}
+        @media(max-width:1023px){
+            .desktop-sidebar{display:none!important}
+            .mobile-nav{display:flex;overflow-x:auto;gap:6px;padding:12px 0;scrollbar-width:none;-ms-overflow-style:none}
+            .mobile-nav::-webkit-scrollbar{display:none}
+            .mobile-nav button{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:12px;font-size:12px;font-weight:600;border:1px solid var(--border);background:white;color:#6B7280;cursor:pointer;transition:all .25s;white-space:nowrap}
+            .mobile-nav button.active{background:var(--brand);color:white;border-color:var(--brand)}
+        }
+
+        .order-row{display:grid;grid-template-columns:auto 1.5fr 1fr 1fr 1fr auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--border)}
+        @media(max-width:768px){.order-row{grid-template-columns:1fr 1fr;gap:8px}.order-row>*:nth-child(1){grid-column:1/-1}}
+        .order-header{font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);padding-bottom:12px}
+
+        .modal-overlay{transition:opacity .3s}
+        .modal-box{transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s}
+        .modal-box.hidden-modal{transform:translateY(20px) scale(.97);opacity:0}
+        .modal-box.visible-modal{transform:translateY(0) scale(1);opacity:1}
+
+        /* ========== أنماط تتبع الطلبات ========== */
+        .orders-tab-btn{padding:10px 20px;border:none;background:none;font-size:13px;font-weight:600;color:#9CA3AF;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;font-family:'Cairo',sans-serif;white-space:nowrap}
+        .orders-tab-btn:hover{color:#374151}
+        .orders-tab-btn.active{color:var(--brand-dark);border-bottom-color:var(--brand);font-weight:800}
+
+        .track-order-card{background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;transition:box-shadow .2s}
+        .track-order-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+        .track-order-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .track-order-body{padding:16px 20px}
+
+        .track-status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700}
+        .track-status-badge.processing{background:#FEF3C7;color:#92400E}
+        .track-status-badge.shipped{background:#DBEAFE;color:#1E40AF}
+        .track-status-badge.out-delivery{background:#D1FAE5;color:#065F46}
+        .track-status-badge.delivered{background:#EDE9FE;color:#5B21B6}
+        .track-status-badge.cancelled{background:#FEE2E2;color:#991B1B}
+
+        .track-timeline{position:relative;padding-right:36px}
+        .track-timeline::before{content:'';position:absolute;right:13px;top:8px;bottom:8px;width:2px;background:var(--border)}
+        .track-step{position:relative;padding-bottom:28px;display:flex;gap:16px;align-items:flex-start}
+        .track-step:last-child{padding-bottom:0}
+        .track-dot{position:absolute;right:-36px;top:2px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:2;flex-shrink:0;transition:all .3s}
+        .track-dot.done{background:var(--success);color:#fff}
+        .track-dot.current{background:var(--brand);color:#fff;box-shadow:0 0 0 4px rgba(249,99,22,0.2);animation:dotPulse 2s ease infinite}
+        .track-dot.pending{background:#EDEAE5;color:#9CA3AF}
+        @keyframes dotPulse{0%,100%{box-shadow:0 0 0 4px rgba(249,99,22,0.2)}50%{box-shadow:0 0 0 12px rgba(249,99,22,0)}}
+        .track-step.done .track-line-seg{position:absolute;right:-30px;top:30px;width:2px;height:calc(100% - 30px);background:var(--success)}
+
+        .track-detail-panel{max-height:0;overflow:hidden;opacity:0;transition:max-height .5s ease,opacity .3s ease;border-top:0px solid var(--border)}
+        .track-detail-panel.open{max-height:2000px;opacity:1;border-top-width:1px}
+
+        .track-mini-map{background:linear-gradient(135deg,#E8F5E9 0%,#C8E6C9 100%);border-radius:12px;height:160px;position:relative;overflow:hidden}
+        .track-map-road{position:absolute;background:#fff;border-radius:2px;opacity:.7}
+        .track-map-pin{position:absolute;z-index:2;display:flex;flex-direction:column;align-items:center}
+        .track-map-pin-icon{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center}
+        .track-map-pin-icon i{transform:rotate(45deg);font-size:12px;color:#fff}
+        .track-map-pin-label{font-size:10px;font-weight:700;margin-top:2px;white-space:nowrap}
+        .track-map-truck{position:absolute;z-index:3;animation:truckMove 4s ease-in-out infinite alternate}
+        @keyframes truckMove{0%{left:25%;top:55%}100%{left:65%;top:40%}}
+
+        .progress-bar-bg{height:6px;background:#EDEAE5;border-radius:3px;overflow:hidden}
+        .progress-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--success),var(--brand));transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+        .track-detail-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px}
+        .track-detail-row+.track-detail-row{border-top:1px solid #f5f5f5}
+
+        /* مودال التتبع */
+        .track-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:120;padding:16px}
+        .track-modal-overlay.show{display:flex}
+        .track-modal-box{background:#fff;border-radius:20px;max-width:580px;width:100%;max-height:90vh;overflow-y:auto;animation:modalIn .3s ease;box-shadow:0 25px 60px rgba(0,0,0,0.15)}
+        @keyframes modalIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+        .track-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Cairo',sans-serif;border:none}
+        .track-btn-primary{background:linear-gradient(135deg,#F96316,#E84B07);color:#fff}
+        .track-btn-primary:hover{box-shadow:0 4px 16px rgba(249,99,22,0.3);transform:translateY(-1px)}
+        .track-btn-outline{background:transparent;color:var(--ink);border:1px solid var(--border)}
+        .track-btn-outline:hover{border-color:#9CA3AF;background:#FAFAF8}
+        .track-btn-success{background:transparent;color:var(--success);border:1px solid #A7F3D0}
+        .track-btn-success:hover{background:#D1FAE5}
+        .track-btn-danger{background:transparent;color:var(--danger);border:1px solid #FECACA}
+        .track-btn-danger:hover{background:#FEE2E2}
+
+        @media(max-width:640px){
+            .track-order-header{padding:12px 16px}
+            .track-order-body{padding:12px 16px}
+            .orders-tab-btn{padding:8px 14px;font-size:12px}
+            .track-timeline{padding-right:30px}
+            .track-dot{right:-30px;width:22px;height:22px;font-size:9px}
+            .track-step.done .track-line-seg{right:-24px}
+        }
+
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    </style>
+</head>
+<body>
+
+<!-- الشريط العلوي -->
+<div class="top-bar text-white py-8 mb-8">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center justify-between mb-6">
+            <a href="#" class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center"><i class="fas fa-store text-white"></i></div>
+                <span class="text-xl font-extrabold" data-t="logo">سوق</span><span class="text-xl font-extrabold text-brand-400">.نت</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center bg-white/10 border border-white/15 rounded-full p-0.5 cursor-pointer" onclick="toggleLang()">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold transition-all" id="lAr" style="background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)">عربي</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold text-white/50 transition-all" id="lEn">EN</span>
+                </div>
+                <button class="w-10 h-10 bg-white/10 border border-white/15 rounded-xl flex items-center justify-center hover:bg-white/20 transition-colors relative">
+                    <i class="fas fa-shopping-cart text-sm"></i>
+                    <span class="absolute -top-1 -left-1 w-5 h-5 bg-brand-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">3</span>
+                </button>
+            </div>
+        </div>
+        <div class="flex items-center gap-5">
+            <div class="avatar-ring" onclick="document.getElementById('avatarInput').click()" style="cursor:pointer">
+                <img src="https://picsum.photos/seed/avataruser/120/120" alt="Avatar" class="w-20 h-20 rounded-full object-cover" id="avatarImg">
+            </div>
+            <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="changeAvatar(event)">
+            <div>
+                <h1 class="text-2xl font-extrabold" data-t="greeting">مرحباً، أحمد</h1>
+                <p class="text-white/50 text-sm mt-1" data-t="member_since">عضو منذ يناير 2023</p>
+                <div class="flex items-center gap-4 mt-3">
+                    <div class="flex items-center gap-1.5 text-xs text-white/60"><i class="fas fa-box text-brand-400"></i><span data-t="total_orders">12 طلب</span></div>
+                    <div class="flex items-center gap-1.5 text-xs text-white/60"><i class="fas fa-heart text-brand-400"></i><span data-t="total_wish">8 مفضلات</span></div>
+                    <div class="flex items-center gap-1.5 text-xs text-white/60"><i class="fas fa-map-marker-alt text-brand-400"></i><span data-t="total_addr">3 عناوين</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- المحتوى -->
+<div class="max-w-7xl mx-auto px-4 pb-16">
+    <div class="mobile-nav" id="mobileNav"></div>
+    <div class="flex gap-6">
+        <aside class="desktop-sidebar w-64 flex-shrink-0">
+            <div class="card p-4 sticky top-6 space-y-1.5" id="sidebar"></div>
+        </aside>
+        <div class="flex-1 min-w-0" id="contentArea"></div>
+    </div>
+</div>
+
+<div id="toastBox" class="fixed bottom-6 left-6 z-[999] flex flex-col gap-3"></div>
+
+<!-- نافذة العنوان -->
+<div id="addressModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4 modal-overlay" onclick="if(event.target===this)closeAddressModal()">
+    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl modal-box hidden-modal" id="addressModalContent"></div>
+</div>
+
+<!-- نافذة التأكيد -->
+<div id="confirmModal" class="fixed inset-0 bg-black/50 z-[110] hidden flex items-center justify-center p-4" onclick="if(event.target===this)closeConfirm()">
+    <div class="bg-white rounded-2xl w-full max-w-sm p-6 text-center shadow-2xl">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-trash-alt text-red-500 text-2xl"></i></div>
+        <h3 class="text-lg font-bold text-ink-900 mb-2" id="confirmTitle"></h3>
+        <p class="text-sm text-ink-500 mb-6" id="confirmDesc"></p>
+        <div class="flex gap-3">
+            <button class="btn-secondary flex-1 justify-center" onclick="closeConfirm()" data-t="cancel">إلغاء</button>
+            <button class="btn-primary flex-1 justify-center" style="background:linear-gradient(135deg,#EF4444,#DC2626)" id="confirmBtn" data-t="delete">حذف</button>
+        </div>
+    </div>
+</div>
+
+<!-- مودال تتبع الشحن التفصيلي -->
+<div class="track-modal-overlay" id="trackModal" onclick="if(event.target===this)closeTrackModal()">
+    <div class="track-modal-box" id="trackModalContent"></div>
+</div>
+
+<script>
+// ========== الترجمة ==========
+let lang='ar';
+const D={
+    ar:{
+        logo:'سوق',greeting:'مرحباً، أحمد',member_since:'عضو منذ يناير 2023',
+        total_orders:'12 طلب',total_wish:'8 مفضلات',total_addr:'3 عناوين',
+        nav_profile:'البيانات الشخصية',nav_password:'تعديل كلمة المرور',nav_addresses:'إدارة العناوين',nav_orders:'سجل الطلبات',nav_wishlist:'قائمة الأمنيات',
+        prof_title:'البيانات الشخصية',prof_subtitle:'إدارة معلوماتك الشخصية',
+        prof_first:'الاسم الأول',prof_last:'اسم العائلة',prof_email:'البريد الإلكتروني',prof_phone:'رقم الجوال',prof_gender:'الجنس',prof_dob:'تاريخ الميلاد',
+        gender_male:'ذكر',gender_female:'أنثى',
+        prof_save:'حفظ التغييرات',prof_cancel:'إلغاء',prof_editing:'أنت الآن في وضع التعديل',
+        pass_title:'تعديل كلمة المرور',pass_subtitle:'تأكد من استخدام كلمة مرور قوية لحماية حسابك',
+        pass_current:'كلمة المرور الحالية',pass_new:'كلمة المرور الجديدة',pass_confirm:'تأكيد كلمة المرور الجديدة',
+        pass_btn:'تحديث كلمة المرور',pass_req:'كلمة المرور يجب أن تكون 8 أحرف على الأقل',pass_match:'كلمتا المرور غير متطابقتين',
+        pass_success:'تم تحديث كلمة المرور بنجاح',pass_wrong:'كلمة المرور الحالية غير صحيحة',
+        addr_title:'إدارة العناوين',addr_subtitle:'إضافة وتعديل عناوين الشحن والتوصيل',
+        addr_add:'إضافة عنوان جديد',addr_default:'الافتراضي',addr_set_default:'تعيين كافتراضي',
+        addr_edit:'تعديل',addr_delete:'حذف',addr_label:'تسمية العنوان',addr_address:'العنوان التفصيلي',
+        addr_region:'المنطقة',addr_gov:'المحافظة',addr_city:'المدينة',addr_district:'الحي',addr_zip:'الرمز البريدي',addr_phone:'رقم الجوال للتوصيل',
+        addr_save:'حفظ العنوان',addr_cancel:'إلغاء',addr_added:'تمت إضافة العنوان بنجاح',
+        addr_updated:'تم تحديث العنوان بنجاح',addr_deleted:'تم حذف العنوان',addr_confirm_delete:'هل أنت متأكد من حذف هذا العنوان؟',
+        addr_home:'المنزل',addr_work:'العمل',addr_other:'أخرى',
+        addr_select_region:'اختر المنطقة',addr_select_gov:'اختر المحافظة',addr_no_gov:'قم باختيار المنطقة أولاً',
+        addr_map_label:'موقع العنوان على الخريطة',
+        err_region:'المنطقة مطلوبة',err_gov:'المحافظة مطلوبة',err_city:'المدينة مطلوبة',err_addr:'العنوان التفصيلي مطلوب',err_phone:'رقم الجوال مطلوب',
+        ord_title:'سجل الطلبات',ord_subtitle:'تتبع حالة طلباتك وخط سير الشحن بالتفصيل',
+        ord_all:'الكل',ord_processing:'قيد التنفيذ',ord_shipped:'تم الشحن',ord_out_delivery:'في الطريق',ord_delivered:'تم التسليم',ord_cancelled:'ملغى',
+        ord_search:'بحث برقم الطلب...',ord_no:'لا توجد طلبات في هذا التصنيف',
+        ord_track:'تتبع الشحن',ord_details:'التفاصيل',ord_rate:'تقييم الطلب',ord_cancel_btn:'إلغاء الطلب',
+        ord_ship_progress:'تقدم الشحن',ord_expected:'التسليم المتوقع',ord_delivered_at:'تم التسليم',
+        ord_cancel_reason:'سبب الإلغاء',ord_confirm_cancel:'تأكيد إلغاء الطلب',
+        ord_cancel_msg:'هل أنت متأكد من إلغاء الطلب',ord_cancel_note:'لن يتم خصم أي مبلغ إذا لم يتم شحن الطلب بعد',
+        ord_yes_cancel:'نعم، إلغاء الطلب',ord_back:'تراجع',
+        ord_cancelled_success:'تم إلغاء الطلب بنجاح',
+        ord_shipper:'شركة الشحن',ord_track_no:'رقم التتبع',ord_pieces:'عدد القطع',
+        ord_delivery_address:'عنوان التسليم',ord_timeline:'خط سير الطلب التفصيلي',
+        ord_current_step:'المرحلة الحالية',ord_expected_time:'المتوقع',
+        ord_delivered_label:'تم التسليم',ord_your_dest:'وجهتك',ord_warehouse:'المستودع',
+        ord_time_expected:'الوقت المتوقع للتسليم',ord_delivered_text:'تم التوصيل',
+        ord_order_no:'رقم الطلب',ord_order_date:'تاريخ الطلب',ord_order_total:'المجموع الكلي',
+        ord_order_address:'عنوان الشحن',ord_order_phone:'رقم الجوال',ord_order_items:'عدد المنتجات',
+        wish_title:'قائمة الأمنيات',wish_subtitle:'المنتجات التي حفظتها لاحقاً',
+        wish_add_cart:'أضف للسلة',wish_remove:'إزالة',wish_empty:'قائمة الأمنيات فارغة',wish_empty_d:'لم تقم بإضافة أي منتجات بعد',
+        wish_removed:'تمت الإزالة من القائمة',wish_added_cart:'تمت الإضافة إلى السلة',
+        cancel:'إلغاء',delete:'حذف',save:'حفظ',edit:'تعديل',close:'إغلاق',currency:'جنيه',
+    },
+    en:{
+        logo:'Souq',greeting:'Hello, Ahmed',member_since:'Member since Jan 2023',
+        total_orders:'12 Orders',total_wish:'8 Wishlists',total_addr:'3 Addresses',
+        nav_profile:'Personal Info',nav_password:'Change Password',nav_addresses:'Manage Addresses',nav_orders:'Order History',nav_wishlist:'Wishlist',
+        prof_title:'Personal Information',prof_subtitle:'Manage your personal details',
+        prof_first:'First Name',prof_last:'Last Name',prof_email:'Email',prof_phone:'Phone',prof_gender:'Gender',prof_dob:'Date of Birth',
+        gender_male:'Male',gender_female:'Female',
+        prof_save:'Save Changes',prof_cancel:'Cancel',prof_editing:'You are now in edit mode',
+        pass_title:'Change Password',pass_subtitle:'Make sure to use a strong password to protect your account',
+        pass_current:'Current Password',pass_new:'New Password',pass_confirm:'Confirm New Password',
+        pass_btn:'Update Password',pass_req:'Password must be at least 8 characters',pass_match:'Passwords do not match',
+        pass_success:'Password updated successfully',pass_wrong:'Current password is incorrect',
+        addr_title:'Manage Addresses',addr_subtitle:'Add and edit your shipping addresses',
+        addr_add:'Add New Address',addr_default:'Default',addr_set_default:'Set as Default',
+        addr_edit:'Edit',addr_delete:'Delete',addr_label:'Address Label',addr_address:'Detailed Address',
+        addr_region:'Region',addr_gov:'Governorate',addr_city:'City',addr_district:'District',addr_zip:'Zip Code',addr_phone:'Delivery Phone',
+        addr_save:'Save Address',addr_cancel:'Cancel',addr_added:'Address added successfully',
+        addr_updated:'Address updated successfully',addr_deleted:'Address deleted',addr_confirm_delete:'Are you sure you want to delete this address?',
+        addr_home:'Home',addr_work:'Work',addr_other:'Other',
+        addr_select_region:'Select Region',addr_select_gov:'Select Governorate',addr_no_gov:'Select a region first',
+        addr_map_label:'Address location on map',
+        err_region:'Region is required',err_gov:'Governorate is required',err_city:'City is required',err_addr:'Address is required',err_phone:'Phone is required',
+        ord_title:'Order History',ord_subtitle:'Track all your orders and shipping progress',
+        ord_all:'All',ord_processing:'Processing',ord_shipped:'Shipped',ord_out_delivery:'Out for Delivery',ord_delivered:'Delivered',ord_cancelled:'Cancelled',
+        ord_search:'Search by order #...',ord_no:'No orders in this category',
+        ord_track:'Track Shipping',ord_details:'Details',ord_rate:'Rate Order',ord_cancel_btn:'Cancel Order',
+        ord_ship_progress:'Shipping Progress',ord_expected:'Expected Delivery',ord_delivered_at:'Delivered',
+        ord_cancel_reason:'Cancellation Reason',ord_confirm_cancel:'Confirm Order Cancellation',
+        ord_cancel_msg:'Are you sure you want to cancel order',ord_cancel_note:'No charges will apply if the order hasn\'t been shipped yet',
+        ord_yes_cancel:'Yes, Cancel Order',ord_back:'Back',
+        ord_cancelled_success:'Order cancelled successfully',
+        ord_shipper:'Shipping Company',ord_track_no:'Tracking Number',ord_pieces:'Pieces',
+        ord_delivery_address:'Delivery Address',ord_timeline:'Detailed Order Timeline',
+        ord_current_step:'Current Step',ord_expected_time:'Expected',
+        ord_delivered_label:'Delivered',ord_your_dest:'Your Destination',ord_warehouse:'Warehouse',
+        ord_time_expected:'Expected Delivery Time',ord_delivered_text:'Delivered',
+        ord_order_no:'Order #',ord_order_date:'Order Date',ord_order_total:'Total',
+        ord_order_address:'Shipping Address',ord_order_phone:'Phone',ord_order_items:'Items',
+        wish_title:'Wishlist',wish_subtitle:'Products you saved for later',
+        wish_add_cart:'Add to Cart',wish_remove:'Remove',wish_empty:'Your wishlist is empty',wish_empty_d:"You haven't added any products yet",
+        wish_removed:'Removed from wishlist',wish_added_cart:'Added to cart',
+        cancel:'Cancel',delete:'Delete',save:'Save',edit:'Edit',close:'Close',currency:'EGP',
+    }
+};
+function t(k){return D[lang][k]||k}
+
+function toggleLang(){
+    lang=lang==='ar'?'en':'ar';
+    const en=lang==='en';
+    document.documentElement.lang=lang;document.documentElement.dir=en?'ltr':'rtl';
+    document.body.classList.toggle('ltr',en);
+    document.getElementById('lAr').style.cssText=en?'':'background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)';
+    document.getElementById('lEn').style.cssText=en?'background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)':'';
+    document.getElementById('lAr').className='px-3 py-1 rounded-full text-xs font-bold transition-all '+(en?'text-white/50':'');
+    document.getElementById('lEn').className='px-3 py-1 rounded-full text-xs font-bold transition-all '+(en?'':'text-white/50');
+    document.querySelectorAll('[data-t]').forEach(el=>{if(D[lang][el.dataset.t])el.textContent=D[lang][el.dataset.t];});
+    buildNav();renderPanel(currentTab);
+}
+
+// ========== بيانات المحافظات ==========
+const regionsData={
+    ar:{'الرياض':{en:'Riyadh',govs:['الرياض','الدرعية','المجمعة','الخرج','القويعية','الدوادمي']},'مكة المكرمة':{en:'Makkah',govs:['مكة المكرمة','جدة','الطائف','القنفذة','الليث','رابغ']},'المدينة المنورة':{en:'Madinah',govs:['المدينة المنورة','ينبع','العلا','بدر']},'المنطقة الشرقية':{en:'Eastern Province',govs:['الدمام','الخبر','الظهران','الجبيل','القطيف','الاحساء']},'عسير':{en:'Asir',govs:['أبها','خميس مشيط','النماص','بيشة','محايل عسير']},'تبوك':{en:'Tabuk',govs:['تبوك','الوجه','تيماء','حقل']},'حائل':{en:"Ha'il",govs:['حائل','بقعاء','الغزالة','الحائط']},'الحدود الشمالية':{en:'Northern Borders',govs:['عرعر','رفحاء','طريف']},'الجوف':{en:'Al Jouf',govs:['سكاكا','دومة الجندل','القريات']},'نجران':{en:'Najran',govs:['نجران','شرورة','ثاران']},'الباحة':{en:'Al Bahah',govs:['الباحة','بلجرشي','المندق']},'جازان':{en:'Jizan',govs:['جازان','صبيا','أبو عريش','صامطة','الدرب']}},
+    en:{'Riyadh':{ar:'الرياض',govs:['Riyadh','Diriyah','Majmaah','Al Kharj','Al Quwaiiyah','Dawadmi']},'Makkah':{ar:'مكة المكرمة',govs:['Makkah','Jeddah','Taif','Al Qunfudhah','Al Laith','Rabigh']},'Madinah':{ar:'المدينة المنورة',govs:['Madinah','Yanbu','Al Ula','Badr']},'Eastern Province':{ar:'المنطقة الشرقية',govs:['Dammam','Khobar','Dhahran','Jubail','Qatif','Al Ahsa']},'Asir':{ar:'عسير',govs:['Abha','Khamis Mushait','Al Namas','Bisha','Muhayil Asir']},'Tabuk':{ar:'تبوك',govs:['Tabuk','Al Wajh','Tayma','Hail']},'Ha\'il':{ar:'حائل',govs:["Ha'il","Baqa'a","Al Ghazalah","Al Hait"]},'Northern Borders':{ar:'الحدود الشمالية',govs:['Arar','Rafha','Turaif']},'Al Jouf':{ar:'الجوف',govs:['Sakaka','Dumat Al Jandal','Al Qurayyat']},'Najran':{ar:'نجران',govs:['Najran','Sharurah','Tharan']},'Al Bahah':{ar:'الباحة',govs:['Al Bahah','Baljurashi','Al Mandaq']},'Jizan':{ar:'جازان',govs:['Jizan','Sabya','Abu Arish','Samtah','Al Darb']}}
+};
+function getRegions(){return Object.keys(regionsData[lang]);}
+function getGovs(region){const data=regionsData[lang];if(!region)return[];let key=region;if(!data[key]){const otherLang=lang==='ar'?'en':'ar';for(const k of Object.keys(data)){if(data[k].en===region||data[k].ar===region){key=k;break;}}}return data[key]?data[key].govs:[];}
+function getRegionEn(arName){return regionsData.ar[arName]?.en||arName;}
+function getRegionAr(enName){return regionsData.en[enName]?.ar||enName;}
+
+// ========== البيانات ==========
+let currentTab='profile',isEditing=false,editingAddrId=null,deleteAddrId=null;
+let orderFilter='all',openOrderId=null;
+const userData={first:'أحمد',firstEn:'Ahmed',last:'العمري',lastEn:'Al-Omari',email:'ahmed@example.com',phone:'+966 55 123 4567',gender:'male',dob:'1992-03-15',currentPass:'12345678'};
+let addresses=[
+    {id:1,label:'home',region:'الرياض',gov:'الرياض',city:'الرياض',district:'الورود',address:'شارع الملك فهد، حي الورود، عمارة 15، طابق 3',zip:'12211',phone:'+966 55 123 4567',isDefault:true},
+    {id:2,label:'work',region:'المنطقة الشرقية',gov:'الدمام',city:'الدمام',district:'العليا',address:'طريق الأمير محمد بن عبدالعزيز، برج الأعمال، مكتب 402',zip:'12241',phone:'+966 55 987 6543',isDefault:false},
+    {id:3,label:'other',region:'مكة المكرمة',gov:'جدة',city:'جدة',district:'الحمراء',address:'شارع الحمراء، فيلا 22',zip:'21432',phone:'+966 50 111 2233',isDefault:false},
+];
+let trackOrders=[
+    {id:"ORD-20250112-4827",date:"12 يناير 2025",time:"02:35 م",status:"out-delivery",statusText:lang==='ar'?'في الطريق إليك':'Out for Delivery',total:977,items:3,address:"الرياض، حي العليا، شارع الملك فهد",phone:"050123****",shipper:"أرامكس",trackNo:"ARM-9876543210",estimatedDelivery:"اليوم، 14 يناير — بين 4:00 م و 7:00 م",progress:80,timeline:[{step:"تم إنشاء الطلب",date:"12 يناير 2025",time:"02:35 م",location:"سوق.نت — عبر الموقع",done:true,icon:"fa-solid fa-cart-shopping"},{step:"تم تأكيد الدفع",date:"12 يناير 2025",time:"02:36 م",location:"بوابة الدفع الإلكتروني",done:true,icon:"fa-solid fa-credit-card"},{step:"قيد التحضير",date:"12 يناير 2025",time:"05:00 م",location:"مستودع سوق.نت — الرياض",done:true,icon:"fa-solid fa-box"},{step:"تم استلامها من شركة الشحن",date:"13 يناير 2025",time:"09:15 ص",location:"مركز أرامكس — الرياض",done:true,icon:"fa-solid fa-truck-ramp-box"},{step:"وصلت إلى فرع التوزيع",date:"14 يناير 2025",time:"06:30 ص",location:"فرع أرامكس — حي العليا",done:true,icon:"fa-solid fa-warehouse"},{step:"خرج المندوب للتوصيل",date:"14 يناير 2025",time:"10:00 ص",location:"جاري التوصيل في الرياض",done:false,current:true,icon:"fa-solid fa-motorcycle",eta:"بين 4:00 م و 7:00 م"},{step:"تم التسليم",date:"",time:"",location:"الرياض، حي العليا، شارع الملك فهد",done:false,icon:"fa-solid fa-circle-check"}]},
+    {id:"ORD-20250110-3156",date:"10 يناير 2025",time:"11:20 ص",status:"shipped",statusText:lang==='ar'?'تم الشحن':'Shipped',total:259,items:1,address:"جدة، حي الروضة، شارع التحلية",phone:"054111****",shipper:"سمسا",trackNo:"SMS-5566778899",estimatedDelivery:"16 يناير 2025 — بين 9:00 ص و 12:00 م",progress:50,timeline:[{step:"تم إنشاء الطلب",date:"10 يناير 2025",time:"11:20 ص",location:"سوق.نت — عبر الموقع",done:true,icon:"fa-solid fa-cart-shopping"},{step:"تم تأكيد الدفع",date:"10 يناير 2025",time:"11:21 ص",location:"بوابة الدفع الإلكتروني",done:true,icon:"fa-solid fa-credit-card"},{step:"قيد التحضير",date:"10 يناير 2025",time:"03:00 م",location:"مستودع سوق.نت — جدة",done:true,icon:"fa-solid fa-box"},{step:"تم استلامها من شركة الشحن",date:"11 يناير 2025",time:"08:45 ص",location:"مركز سمسا — جدة",done:true,icon:"fa-solid fa-truck-ramp-box"},{step:"في الطريق إلى مدينة الوصول",date:"12 يناير 2025",time:"07:00 ص",location:"قيد النقل — على الطريق",done:false,current:true,icon:"fa-solid fa-truck",eta:"16 يناير 2025"},{step:"وصلت إلى فرع التوزيع",date:"",time:"",location:"فرع سمسا — جدة",done:false,icon:"fa-solid fa-warehouse"},{step:"خرج المندوب للتوصيل",date:"",time:"",location:"",done:false,icon:"fa-solid fa-motorcycle"},{step:"تم التسليم",date:"",time:"",location:"جدة، حي الروضة",done:false,icon:"fa-solid fa-circle-check"}]},
+    {id:"ORD-20250108-7290",date:"8 يناير 2025",time:"08:10 ص",status:"delivered",statusText:lang==='ar'?'تم التسليم':'Delivered',total:540,items:2,address:"الرياض، حي النجنيه، شارع الأميجنيهعد",phone:"055987****",shipper:"DHL Express",trackNo:"DHL-1122334455",estimatedDelivery:"تم التسليم في 9 يناير 2025 — 11:30 ص",progress:100,deliveredAt:"9 يناير 2025 — 11:30 ص",timeline:[{step:"تم إنشاء الطلب",date:"8 يناير 2025",time:"08:10 ص",location:"سوق.نت — عبر الموقع",done:true,icon:"fa-solid fa-cart-shopping"},{step:"تم تأكيد الدفع",date:"8 يناير 2025",time:"08:11 ص",location:"بوابة الدفع الإلكتروني",done:true,icon:"fa-solid fa-credit-card"},{step:"قيد التحضير",date:"8 يناير 2025",time:"10:30 ص",location:"مستودع سوق.نت — الرياض",done:true,icon:"fa-solid fa-box"},{step:"تم استلامها من شركة الشحن",date:"8 يناير 2025",time:"02:00 م",location:"مركز DHL — الرياض",done:true,icon:"fa-solid fa-truck-ramp-box"},{step:"وصلت إلى فرع التوزيع",date:"9 يناير 2025",time:"07:00 ص",location:"فرع DHL — الرياض",done:true,icon:"fa-solid fa-warehouse"},{step:"خرج المندوب للتوصيل",date:"9 يناير 2025",time:"09:15 ص",location:"جاري التوصيل في الرياض",done:true,icon:"fa-solid fa-motorcycle"},{step:"تم التسليم",date:"9 يناير 2025",time:"11:30 ص",location:"الرياض، حي النجنيه — تم الاستلام",done:true,icon:"fa-solid fa-circle-check"}]},
+    {id:"ORD-20250105-1843",date:"5 يناير 2025",time:"09:45 م",status:"processing",statusText:lang==='ar'?'قيد التنفيذ':'Processing',total:189,items:1,address:"الدمام، حي الفيصلية، شارع الملك فهد",phone:"053333****",shipper:lang==='ar'?'لم يتم التحديد':'TBD',trackNo:"—",estimatedDelivery:lang==='ar'?'سيتم تحديده قريباً':'TBD',progress:20,timeline:[{step:"تم إنشاء الطلب",date:"5 يناير 2025",time:"09:45 م",location:"سوق.نت — عبر الموقع",done:true,icon:"fa-solid fa-cart-shopping"},{step:"تم تأكيد الدفع",date:"5 يناير 2025",time:"09:46 م",location:"بوابة الدفع الإلكتروني",done:true,icon:"fa-solid fa-credit-card"},{step:"قيد التحضير",date:"",time:"",location:"مستودع سوق.نت — الدمام",done:false,current:true,icon:"fa-solid fa-box",eta:lang==='ar'?'في انتظار التحضير':'Awaiting preparation'},{step:"تم استلامها من شركة الشحن",date:"",time:"",location:"",done:false,icon:"fa-solid fa-truck-ramp-box"},{step:"في الطريق",date:"",time:"",location:"",done:false,icon:"fa-solid fa-truck"},{step:"تم التسليم",date:"",time:"",location:"الدمام، حي الفيصلية",done:false,icon:"fa-solid fa-circle-check"}]},
+    {id:"ORD-20241228-6011",date:"28 ديسمبر 2024",time:"03:15 م",status:"cancelled",statusText:lang==='ar'?'ملغى':'Cancelled',total:750,items:2,address:lang==='ar'?'مكة المكرمة، حي العزيزية':'Makkah, Al Aziziyah',phone:"056777****",shipper:"—",trackNo:"—",estimatedDelivery:"—",progress:0,cancelReason:lang==='ar'?'إلغاء بواسطة العميل':'Cancelled by customer',timeline:[{step:"تم إنشاء الطلب",date:"28 ديسمبر 2024",time:"03:15 م",location:"سوق.نت — عبر الموقع",done:true,icon:"fa-solid fa-cart-shopping"},{step:"تم تأكيد الدفع",date:"28 ديسمبر 2024",time:"03:16 م",location:"بوابة الدفع الإلكتروني",done:true,icon:"fa-solid fa-credit-card"},{step:lang==='ar'?'تم إلغاء الطلب':'Order Cancelled',date:"28 ديسمبر 2024",time:"05:00 م",location:lang==='ar'?'طلب إلغاء من العميل':'Customer cancellation request',done:true,icon:"fa-solid fa-ban",cancelled:true}]},
+];
+let wishlist=[
+    {id:1,name:'هاتف Galaxy S24 Ultra',nameEn:'Galaxy S24 Ultra',price:4499,oldPrice:5199,brand:'Samsung',img:'https://picsum.photos/seed/galaxys24u/200/200',rating:4.9},
+    {id:2,name:'لابتوب MacBook Air M3',nameEn:'MacBook Air M3',price:5299,oldPrice:5999,brand:'Apple',img:'https://picsum.photos/seed/macbookm3a/200/200',rating:4.9},
+    {id:3,name:'ساعة ذكية Watch Ultra 2',nameEn:'Watch Ultra 2',price:3199,oldPrice:3699,brand:'Apple',img:'https://picsum.photos/seed/watchultra2/200/200',rating:4.7},
+    {id:4,name:'جهاز跑步 كهربائي',nameEn:'Electric Treadmill',price:3299,oldPrice:4499,brand:'NordicTrack',img:'https://picsum.photos/seed/treadmlx/200/200',rating:4.6},
+];
+
+// ========== التنقل ==========
+const tabs=[{id:'profile',icon:'fa-user',key:'nav_profile'},{id:'password',icon:'fa-lock',key:'nav_password'},{id:'addresses',icon:'fa-map-marker-alt',key:'nav_addresses'},{id:'orders',icon:'fa-box',key:'nav_orders'},{id:'wishlist',icon:'fa-heart',key:'nav_wishlist'}];
+function buildNav(){
+    document.getElementById('sidebar').innerHTML=tabs.map(tb=>`<div class="sidebar-link ${currentTab===tb.id?'active':''}" onclick="switchTab('${tb.id}')"><i class="fas ${tb.icon}"></i><span>${t(tb.key)}</span></div>`).join('');
+    document.getElementById('mobileNav').innerHTML=tabs.map(tb=>`<button class="${currentTab===tb.id?'active':''}" onclick="switchTab('${tb.id}')"><i class="fas ${tb.icon}"></i>${t(tb.key)}</button>`).join('');
+}
+function switchTab(id){currentTab=id;isEditing=false;orderFilter='all';openOrderId=null;buildNav();renderPanel(id);}
+function renderPanel(id){const fn={profile:renderProfile,password:renderPassword,addresses:renderAddresses,orders:renderOrders,wishlist:renderWishlist};document.getElementById('contentArea').innerHTML=`<div class="panel-enter">${(fn[id]||fn.profile)()}</div>`;}
+
+// ========== البيانات الشخصية ==========
+function renderProfile(){const d=!isEditing,fn=lang==='en'?userData.firstEn:userData.first,ln=lang==='en'?userData.lastEn:userData.last;return `<div class="card p-6 sm:p-8"><div class="flex items-center justify-between mb-6"><div><h2 class="text-xl font-extrabold text-ink-900">${t('prof_title')}</h2><p class="text-sm text-ink-500 mt-1">${t('prof_subtitle')}</p></div>${d?`<button class="btn-primary btn-sm" onclick="isEditing=true;renderPanel('profile')"><i class="fas fa-pen text-xs"></i>${t('edit')}</button>`:''}</div>${isEditing?`<div class="bg-brand-50 border border-brand-200 rounded-xl px-4 py-3 flex items-center gap-3 mb-6"><i class="fas fa-info-circle text-brand-500"></i><span class="text-sm text-brand-700 font-medium">${t('prof_editing')}</span></div>`:''}<div class="grid grid-cols-1 sm:grid-cols-2 gap-5"><div class="field"><label>${t('prof_first')}</label><input type="text" value="${fn}" ${d?'disabled':''} id="pFirst"></div><div class="field"><label>${t('prof_last')}</label><input type="text" value="${ln}" ${d?'disabled':''} id="pLast"></div><div class="field"><label>${t('prof_email')}</label><input type="email" value="${userData.email}" ${d?'disabled':''}></div><div class="field"><label>${t('prof_phone')}</label><input type="tel" value="${userData.phone}" ${d?'disabled':''}></div><div class="field"><label>${t('prof_gender')}</label><select ${d?'disabled':''} id="pGender"><option value="male" ${userData.gender==='male'?'selected':''}>${t('gender_male')}</option><option value="female" ${userData.gender==='female'?'selected':''}>${t('gender_female')}</option></select></div><div class="field"><label>${t('prof_dob')}</label><input type="date" value="${userData.dob}" ${d?'disabled':''}></div></div>${isEditing?`<div class="flex items-center gap-3 mt-8"><button class="btn-primary" onclick="saveProfile()"><i class="fas fa-check text-xs"></i>${t('prof_save')}</button><button class="btn-secondary" onclick="isEditing=false;renderPanel('profile')">${t('prof_cancel')}</button></div>`:''}</div>`;}
+function saveProfile(){isEditing=false;renderPanel('profile');toast(t('prof_save'),'success');}
+
+// ========== كلمة المرور ==========
+function renderPassword(){return `<div class="card p-6 sm:p-8"><div class="mb-6"><h2 class="text-xl font-extrabold text-ink-900">${t('pass_title')}</h2><p class="text-sm text-ink-500 mt-1">${t('pass_subtitle')}</p></div><div class="max-w-md space-y-5"><div class="field"><label>${t('pass_current')}</label><input type="password" id="passCurr" placeholder="********"></div><div class="field"><label>${t('pass_new')}</label><input type="password" id="passNew" placeholder="********" oninput="checkStr(this.value)"><div class="mt-2 h-1 bg-surface-200 rounded-full overflow-hidden"><div id="strBar" class="h-full rounded-full transition-all" style="width:0"></div></div><p id="strTxt" class="text-[11px] mt-1 text-ink-300"></p></div><div class="field"><label>${t('pass_confirm')}</label><input type="password" id="passConf" placeholder="********"></div><div id="passErr" class="hidden text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3 items-center gap-2"><i class="fas fa-exclamation-circle"></i><span></span></div><button class="btn-primary" onclick="changePass()"><i class="fas fa-lock text-xs"></i>${t('pass_btn')}</button></div></div>`;}
+function checkStr(v){const b=document.getElementById('strBar'),x=document.getElementById('strTxt');if(!v){b.style.width='0';x.textContent='';return;}let s=0;if(v.length>=8)s++;if(v.length>=12)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;const l=[{w:'20%',c:'#EF4444'},{w:'40%',c:'#F59E0B'},{w:'60%',c:'#F59E0B'},{w:'80%',c:'#10B981'},{w:'100%',c:'#059669'}];const n=lang==='ar'?['ضعيفة','ضعيفة','متوسطة','قوية','قوية جداً']:['Weak','Weak','Medium','Strong','Very Strong'];const i=Math.min(s,l.length-1);b.style.width=l[i].w;b.style.background=l[i].c;x.textContent=n[i];x.style.color=l[i].c;}
+function changePass(){const e=document.getElementById('passErr');e.classList.add('hidden');e.classList.remove('flex');const c=document.getElementById('passCurr').value,n=document.getElementById('passNew').value,f=document.getElementById('passConf').value;if(!c||!n||!f){e.classList.remove('hidden');e.classList.add('flex');e.querySelector('span').textContent=t('pass_req');return;}if(n!==f){e.classList.remove('hidden');e.classList.add('flex');e.querySelector('span').textContent=t('pass_match');return;}if(c!==userData.currentPass){e.classList.remove('hidden');e.classList.add('flex');e.querySelector('span').textContent=t('pass_wrong');return;}document.getElementById('passCurr').value='';document.getElementById('passNew').value='';document.getElementById('passConf').value='';document.getElementById('strBar').style.width='0';document.getElementById('strTxt').textContent='';toast(t('pass_success'),'success');}
+
+// ========== العناوين ==========
+function renderAddresses(){const labels={home:t('addr_home'),work:t('addr_work'),other:t('addr_other')};const icons={home:'fa-home',work:'fa-briefcase',other:'fa-map-pin'};return `<div class="card p-6 sm:p-8"><div class="flex items-center justify-between mb-6"><div><h2 class="text-xl font-extrabold text-ink-900">${t('addr_title')}</h2><p class="text-sm text-ink-500 mt-1">${t('addr_subtitle')}</p></div><button class="btn-primary btn-sm" onclick="openAddrModal()"><i class="fas fa-plus text-xs"></i>${t('addr_add')}</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4">${addresses.map(a=>{let regionDisplay=a.region,govDisplay=a.gov;if(lang==='en'){const rd=regionsData.ar[a.region];if(rd){regionDisplay=rd.en;const idx=rd.govs.indexOf(a.gov);if(idx>=0&&regionsData.en[rd.en])govDisplay=regionsData.en[rd.en].govs[idx]||a.gov;}}return `<div class="address-card ${a.isDefault?'default':''}">${a.isDefault?`<span class="absolute top-3 left-3 status-badge status-delivered"><i class="fas fa-check text-[9px]"></i>${t('addr_default')}</span>`:''}<div class="flex items-start gap-3 mb-3"><div class="w-10 h-10 bg-surface-100 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas ${icons[a.label]} text-brand-500"></i></div><div class="flex-1 min-w-0"><span class="font-bold text-sm text-ink-900">${labels[a.label]}</span><div class="flex items-center gap-2 mt-1 flex-wrap"><span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md"><i class="fas fa-map text-[8px] ml-1"></i>${regionDisplay}</span><span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded-md"><i class="fas fa-location-dot text-[8px] ml-1"></i>${govDisplay}</span></div><p class="text-sm text-ink-500 mt-2 leading-relaxed">${a.address}</p><p class="text-xs text-ink-400 mt-2">${a.district} - ${a.city} ${a.zip?'• '+a.zip:''}</p><p class="text-xs text-ink-400 mt-1"><i class="fas fa-phone text-[10px] ml-1"></i>${a.phone}</p></div></div><div class="flex items-center gap-2 pt-3 border-t border-surface-200">${!a.isDefault?`<button class="btn-sm btn-secondary" onclick="setDefaultAddr(${a.id})"><i class="fas fa-star text-[10px] text-amber-500"></i>${t('addr_set_default')}</button>`:''}<button class="btn-icon" style="width:32px;height:32px" onclick="openAddrModal(${a.id})" title="${t('edit')}"><i class="fas fa-pen text-[11px]"></i></button><button class="btn-icon" style="width:32px;height:32px;border-color:#FECACA;color:#EF4444" onclick="confirmDelAddr(${a.id})" title="${t('delete')}"><i class="fas fa-trash-alt text-[11px]"></i></button></div></div>`}).join('')}</div></div>`;}
+function setDefaultAddr(id){addresses.forEach(a=>a.isDefault=a.id===id);renderPanel('addresses');toast(t('addr_updated'),'success');}
+function openAddrModal(id=null){editingAddrId=id;const a=id?addresses.find(x=>x.id===id):{label:'home',region:'',gov:'',city:'',district:'',address:'',zip:'',phone:''};const labels={home:t('addr_home'),work:t('addr_work'),other:t('addr_other')};const regions=getRegions();let selectedRegion=a.region;if(lang==='en'&&a.region){const rd=regionsData.ar[a.region];if(rd)selectedRegion=rd.en;}const govs=getGovs(selectedRegion);let selectedGov=a.gov;if(lang==='en'&&a.gov&&govs.length){const rd=regionsData.ar[a.region];if(rd){const idx=rd.govs.indexOf(a.gov);if(idx>=0&&regionsData.en[rd.en])selectedGov=regionsData.en[rd.en].govs[idx]||a.gov;}}document.getElementById('addressModalContent').innerHTML=`<div class="p-6 sm:p-8"><div class="flex items-center justify-between mb-6"><h3 class="text-lg font-bold text-ink-900">${id?t('addr_edit'):t('addr_add')}</h3><button class="btn-icon" onclick="closeAddrModal()"><i class="fas fa-times text-xs"></i></button></div><div class="mini-map mb-6"><div class="road" style="width:60%;height:3px;top:30%;left:20%;transform:rotate(-5deg)"></div><div class="road" style="width:40%;height:3px;top:55%;left:35%;transform:rotate(8deg)"></div><div class="road" style="width:3px;height:50%;top:25%;left:50%"></div><div class="pin"><svg width="32" height="40" viewBox="0 0 32 40" fill="none"><path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 24 16 24s16-12 16-24C32 7.16 24.84 0 16 0z" fill="#F96316"/><circle cx="16" cy="16" r="7" fill="white"/></svg><div class="pin-dot"></div></div><div class="absolute bottom-2 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm"><span class="text-[10px] font-bold text-ink-700"><i class="fas fa-map-marker-alt text-brand-500 ml-1"></i>${t('addr_map_label')}</span></div></div><div class="space-y-4"><div class="field"><label>${t('addr_label')}</label><select id="amLabel"><option value="home" ${a.label==='home'?'selected':''}>${labels.home}</option><option value="work" ${a.label==='work'?'selected':''}>${labels.work}</option><option value="other" ${a.label==='other'?'selected':''}>${labels.other}</option></select></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><div class="field"><label><i class="fas fa-map text-brand-500 text-xs ml-1"></i>${t('addr_region')}</label><select id="amRegion" onchange="onRegionChange(this.value)"><option value="">${t('addr_select_region')}</option>${regions.map(r=>`<option value="${r}" ${selectedRegion===r?'selected':''}>${r}</option>`).join('')}</select><div class="field-error" id="errRegion"><i class="fas fa-exclamation-circle text-[10px]"></i><span>${t('err_region')}</span></div></div><div class="field"><label><i class="fas fa-location-dot text-sky-500 text-xs ml-1"></i>${t('addr_gov')}</label><select id="amGov" ${!selectedRegion?'disabled':''}><option value="">${govs.length?t('addr_select_gov'):t('addr_no_gov')}</option>${govs.map(g=>`<option value="${g}" ${selectedGov===g?'selected':''}>${g}</option>`).join('')}</select><div class="field-error" id="errGov"><i class="fas fa-exclamation-circle text-[10px]"></i><span>${t('err_gov')}</span></div></div></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><div class="field"><label>${t('addr_city')}</label><input type="text" id="amCity" value="${a.city}"><div class="field-error" id="errCity"><i class="fas fa-exclamation-circle text-[10px]"></i><span>${t('err_city')}</span></div></div><div class="field"><label>${t('addr_district')}</label><input type="text" id="amDist" value="${a.district}"></div></div><div class="field"><label>${t('addr_address')}</label><textarea id="amAddr">${a.address}</textarea><div class="field-error" id="errAddr"><i class="fas fa-exclamation-circle text-[10px]"></i><span>${t('err_addr')}</span></div></div><div class="grid grid-cols-2 gap-4"><div class="field"><label>${t('addr_zip')}</label><input type="text" id="amZip" value="${a.zip}"></div><div class="field"><label>${t('addr_phone')}</label><input type="tel" id="amPhone" value="${a.phone}"><div class="field-error" id="errPhone"><i class="fas fa-exclamation-circle text-[10px]"></i><span>${t('err_phone')}</span></div></div></div></div><div class="flex gap-3 mt-6"><button class="btn-primary flex-1 justify-center" onclick="saveAddr()"><i class="fas fa-check text-xs"></i>${t('addr_save')}</button><button class="btn-secondary flex-1 justify-center" onclick="closeAddrModal()">${t('addr_cancel')}</button></div></div>`;document.getElementById('addressModal').classList.remove('hidden');requestAnimationFrame(()=>{document.getElementById('addressModalContent').classList.remove('hidden-modal');document.getElementById('addressModalContent').classList.add('visible-modal');});}
+function onRegionChange(region){const govSel=document.getElementById('amGov');const govs=getGovs(region);govSel.disabled=!region;govSel.innerHTML=!region?`<option value="">${t('addr_no_gov')}</option>`:`<option value="">${t('addr_select_gov')}</option>`+govs.map(g=>`<option value="${g}">${g}</option>`).join('');}
+function closeAddrModal(){const box=document.getElementById('addressModalContent');box.classList.remove('visible-modal');box.classList.add('hidden-modal');setTimeout(()=>{document.getElementById('addressModal').classList.add('hidden');},300);editingAddrId=null;}
+function saveAddr(){['errRegion','errGov','errCity','errAddr','errPhone'].forEach(id=>{document.getElementById(id).classList.remove('show');});['amRegion','amGov','amCity','amAddr','amPhone'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('err');});const region=document.getElementById('amRegion').value;const gov=document.getElementById('amGov').value;const city=document.getElementById('amCity').value.trim();const dist=document.getElementById('amDist').value.trim();const addr=document.getElementById('amAddr').value.trim();const zip=document.getElementById('amZip').value.trim();const phone=document.getElementById('amPhone').value.trim();const label=document.getElementById('amLabel').value;let valid=true;if(!region){showFieldErr('amRegion','errRegion');valid=false;}if(!gov){showFieldErr('amGov','errGov');valid=false;}if(!city){showFieldErr('amCity','errCity');valid=false;}if(!addr){showFieldErr('amAddr','errAddr');valid=false;}if(!phone){showFieldErr('amPhone','errPhone');valid=false;}if(!valid)return;let regionAr=region,govAr=gov;if(lang==='en'){regionAr=getRegionAr(region);const rd=regionsData.en[region];if(rd){const idx=rd.govs.indexOf(gov);if(idx>=0)govAr=regionsData.ar[rd.ar]?regionsData.ar[rd.ar].govs[idx]||gov:gov;}}const data={label,region:regionAr,gov:govAr,city,district:dist,address:addr,zip,phone};if(editingAddrId){const a=addresses.find(x=>x.id===editingAddrId);if(a)Object.assign(a,data);toast(t('addr_updated'),'success');}else{data.id=Date.now();data.isDefault=addresses.length===0;addresses.push(data);toast(t('addr_added'),'success');}closeAddrModal();renderPanel('addresses');}
+function showFieldErr(inputId,errId){document.getElementById(inputId).classList.add('err');document.getElementById(errId).classList.add('show');}
+function confirmDelAddr(id){deleteAddrId=id;document.getElementById('confirmTitle').textContent=t('addr_confirm_delete');document.getElementById('confirmDesc').textContent='';document.getElementById('confirmBtn').onclick=()=>{addresses=addresses.filter(a=>a.id!==deleteAddrId);closeConfirm();renderPanel('addresses');toast(t('addr_deleted'),'success');};document.getElementById('confirmModal').classList.remove('hidden');}
+function closeConfirm(){document.getElementById('confirmModal').classList.add('hidden');deleteAddrId=null;}
+
+// ========== سجل الطلبات (مع التتبع الكامل) ==========
+function getTrackStatusIcon(s){return{processing:'fa-clock',shipped:'fa-truck','out-delivery':'fa-motorcycle',delivered:'fa-circle-check',cancelled:'fa-ban'}[s]||'fa-circle';}
+
+function renderOrders(){
+    const search=document.getElementById('orderSearch')?.value?.trim().toLowerCase()||'';
+    let filtered=trackOrders;
+    if(orderFilter!=='all')filtered=filtered.filter(o=>o.status===orderFilter);
+    if(search)filtered=filtered.filter(o=>o.id.toLowerCase().includes(search));
+
+    return `<div class="card p-6 sm:p-8">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div><h2 class="text-xl font-extrabold text-ink-900">${t('ord_title')}</h2><p class="text-sm text-ink-500 mt-1">${t('ord_subtitle')}</p></div>
+            <div class="relative w-full sm:w-auto"><i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-ink-300 text-xs"></i><input type="text" class="field" style="padding-right:36px;width:100%;min-width:220px" placeholder="${t('ord_search')}" id="orderSearch" oninput="renderPanel('orders')"></div>
+        </div>
+        <!-- تبويبات -->
+        <div class="flex overflow-x-auto gap-1 mb-6 pb-1" style="border-bottom:2px solid var(--border)">
+            <button class="orders-tab-btn ${orderFilter==='all'?'active':''}" onclick="orderFilter='all';renderPanel('orders')">${t('ord_all')} <span class="text-[11px] opacity-50 mr-1">${trackOrders.length}</span></button>
+            <button class="orders-tab-btn ${orderFilter==='processing'?'active':''}" onclick="orderFilter='processing';renderPanel('orders')">${t('ord_processing')}</button>
+            <button class="orders-tab-btn ${orderFilter==='shipped'?'active':''}" onclick="orderFilter='shipped';renderPanel('orders')">${t('ord_shipped')}</button>
+            <button class="orders-tab-btn ${orderFilter==='out-delivery'?'active':''}" onclick="orderFilter='out-delivery';renderPanel('orders')">${t('ord_out_delivery')}</button>
+            <button class="orders-tab-btn ${orderFilter==='delivered'?'active':''}" onclick="orderFilter='delivered';renderPanel('orders')">${t('ord_delivered')}</button>
+            <button class="orders-tab-btn ${orderFilter==='cancelled'?'active':''}" onclick="orderFilter='cancelled';renderPanel('orders')">${t('ord_cancelled')}</button>
+        </div>
+        ${filtered.length===0?`<div class="text-center py-16"><i class="fas fa-box-open text-5xl text-surface-300 mb-4"></i><h3 class="text-lg font-bold text-ink-900 mb-2">${t('ord_no')}</h3></div>`:
+        `<div class="space-y-4">${filtered.map(o=>`
+            <div class="track-order-card">
+                <div class="track-order-header">
+                    <div class="flex items-center gap-3 flex-wrap"><span class="text-sm font-extrabold text-ink-900">${o.id}</span><span class="text-xs text-ink-400">${o.date} — ${o.time}</span></div>
+                    <span class="track-status-badge ${o.status}"><i class="fas ${getTrackStatusIcon(o.status)} text-[10px]"></i>${o.statusText}</span>
+                </div>
+                <div class="track-order-body">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="text-sm text-ink-500"><i class="fas fa-box text-xs ml-1 text-ink-300"></i>${o.items} ${lang==='ar'?'منتج':'items'}<span class="mx-2 text-surface-300">|</span><i class="fas fa-truck text-xs ml-1 text-ink-300"></i>${o.shipper}</div>
+                        <div class="text-lg font-extrabold text-brand-600">${o.total.toLocaleString()} ${t('currency')}</div>
+                    </div>
+                    ${o.status!=='cancelled'?`
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-1.5"><span class="text-xs font-600 text-ink-400">${t('ord_ship_progress')}</span><span class="text-xs font-700" style="color:${o.progress===100?'var(--success)':'var(--brand-dark)'}">${o.progress}%</span></div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${o.progress}%"></div></div>
+                        <div class="text-xs mt-1.5 text-ink-400">${o.status==='delivered'?`<i class="fas fa-check-circle ml-1 text-emerald-500"></i>${t('ord_delivered_at')}: ${o.deliveredAt}`:`<i class="far fa-clock ml-1"></i>${t('ord_expected')}: ${o.estimatedDelivery}`}</div>
+                    </div>`:`
+                    <div class="mb-4 p-3 rounded-xl bg-red-50"><div class="text-xs font-600 text-red-600"><i class="fas fa-exclamation-triangle ml-1"></i>${t('ord_cancel_reason')}: ${o.cancelReason}</div></div>`}
+                    <div class="flex items-center gap-2 flex-wrap">
+                        ${o.status!=='cancelled'?`<button class="track-btn track-btn-primary" onclick="openTrackModal('${o.id}')"><i class="fas fa-route text-xs"></i>${t('ord_track')}</button>`:''}
+                        <button class="track-btn track-btn-outline" onclick="toggleTrackDetails('${o.id}')"><i class="fas fa-chevron-${openOrderId===o.id?'up':'down'} text-[10px]"></i>${t('ord_details')}</button>
+                        ${o.status==='delivered'?`<button class="track-btn track-btn-success" onclick="toast('${t('ord_rate')}','success')"><i class="fas fa-star text-xs"></i>${t('ord_rate')}</button>`:''}
+                        ${o.status==='out-delivery'||o.status==='shipped'?`<button class="track-btn track-btn-danger" onclick="confirmCancelOrder('${o.id}')">${t('ord_cancel_btn')}</button>`:''}
+                    </div>
+                    <div class="track-detail-panel ${openOrderId===o.id?'open':''}" id="details-${o.id}">
+                        <div class="pt-5 mt-5" style="border-top:1px solid var(--border)">
+                            <h4 class="font-bold text-sm mb-4 text-ink-900">${t('ord_details')}</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                                <div><div class="track-detail-row"><span class="text-ink-400">${t('ord_order_no')}</span><span class="font-semibold text-ink-900">${o.id}</span></div><div class="track-detail-row"><span class="text-ink-400">${t('ord_order_date')}</span><span class="font-semibold text-ink-900">${o.date}</span></div><div class="track-detail-row"><span class="text-ink-400">${t('ord_shipper')}</span><span class="font-semibold text-ink-900">${o.shipper}</span></div><div class="track-detail-row"><span class="text-ink-400">${t('ord_track_no')}</span><span class="font-semibold text-ink-900" dir="ltr">${o.trackNo}</span></div></div>
+                                <div><div class="track-detail-row"><span class="text-ink-400">${t('ord_order_address')}</span><span class="font-semibold text-ink-900 text-left">${o.address}</span></div><div class="track-detail-row"><span class="text-ink-400">${t('ord_order_phone')}</span><span class="font-semibold text-ink-900" dir="ltr">${o.phone}</span></div><div class="track-detail-row"><span class="text-ink-400">${t('ord_order_items')}</span><span class="font-semibold text-ink-900">${o.items}</span></div><div class="track-detail-row"><span class="text-ink-400">${t('ord_order_total')}</span><span class="font-extrabold text-brand-600">${o.total.toLocaleString()} ${t('currency')}</span></div></div>
+                            </div>
+                            ${o.status!=='cancelled'&&o.timeline.length>0?`
+                            <div class="mt-6 pt-5" style="border-top:1px solid var(--border)">
+                                <h4 class="font-bold text-sm mb-4 text-ink-900">${t('ord_timeline')}</h4>
+                                <div class="track-timeline">${o.timeline.map(tl=>`
+                                    <div class="track-step ${tl.done?'done':''}">
+                                        ${tl.done&&!tl.cancelled?'<div class="track-line-seg"></div>':''}
+                                        <div class="track-dot ${tl.cancelled?'':(tl.done?'done':(tl.current?'current':'pending'))}" ${tl.cancelled?'style="background:#EF4444;color:#fff"':''}><i class="${tl.icon}"></i></div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between gap-2"><span class="font-semibold text-sm ${!tl.done&&!tl.current?'opacity-40':''}">${tl.step}</span>${tl.current?`<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-50 text-brand-700">${t('ord_current_step')}</span>`:''}</div>
+                                            ${tl.date?`<div class="text-xs mt-1 text-ink-400"><i class="far fa-calendar ml-0.5 text-[10px]"></i>${tl.date} — ${tl.time}</div>`:''}
+                                            ${tl.location?`<div class="text-xs mt-0.5 text-ink-300"><i class="fas fa-location-dot ml-0.5 text-[9px]"></i>${tl.location}</div>`:''}
+                                            ${tl.eta?`<div class="mt-2 p-2 rounded-lg text-xs font-semibold bg-brand-50 text-brand-700"><i class="far fa-clock ml-1 text-[10px]"></i>${t('ord_expected_time')}: ${tl.eta}</div>`:''}
+                                        </div>
+                                    </div>`).join('')}
+                                </div>
+                            </div>`:''}
+                        </div>
+                    </div>
+                </div>
+            </div>`).join('')}</div>`}
+    </div>`;
+}
+
+function toggleTrackDetails(id){openOrderId=openOrderId===id?null:id;renderPanel('orders');}
+
+function openTrackModal(id){
+    const o=trackOrders.find(x=>x.id===id);if(!o)return;
+    const modal=document.getElementById('trackModalContent');
+    modal.innerHTML=`
+        <div class="p-6 pb-4" style="border-bottom:1px solid var(--border)">
+            <div class="flex items-center justify-between mb-3"><h2 class="text-lg font-extrabold text-ink-900">${t('ord_track')}</h2><button onclick="closeTrackModal()" class="btn-icon"><i class="fas fa-times text-xs"></i></button></div>
+            <div class="flex items-center gap-3 flex-wrap"><span class="font-bold text-sm text-ink-900">${o.id}</span><span class="track-status-badge ${o.status}"><i class="fas ${getTrackStatusIcon(o.status)} text-[10px]"></i>${o.statusText}</span></div>
+        </div>
+        <div class="p-6 pb-4">
+            <div class="track-mini-map">
+                <div class="track-map-road" style="width:70%;height:3px;top:45%;right:10%"></div>
+                <div class="track-map-road" style="width:3px;height:50%;top:25%;right:45%"></div>
+                <div class="track-map-road" style="width:50%;height:3px;top:70%;right:25%"></div>
+                <div class="track-map-road" style="width:3px;height:35%;top:45%;right:72%"></div>
+                <div class="track-map-road" style="width:40%;height:3px;top:30%;right:15%"></div>
+                <div class="track-map-pin" style="right:15%;top:35%"><div class="track-map-pin-icon" style="background:var(--info)"><i class="fas fa-warehouse"></i></div><span class="track-map-pin-label" style="color:var(--info)">${t('ord_warehouse')}</span></div>
+                ${o.status!=='delivered'&&o.status!=='cancelled'?`<div class="track-map-truck" style="font-size:22px;color:var(--brand)"><i class="fas fa-truck-fast"></i></div>`:''}
+                <div class="track-map-pin" style="right:70%;top:25%"><div class="track-map-pin-icon" style="background:${o.status==='delivered'?'var(--success)':'var(--brand)'}"><i class="fas fa-house"></i></div><span class="track-map-pin-label" style="color:${o.status==='delivered'?'var(--success)':'var(--brand)'}">${o.status==='delivered'?t('ord_delivered_label'):t('ord_your_dest')}</span></div>
+                <div class="absolute bottom-3 right-3 left-3 bg-white rounded-xl px-4 py-2.5 flex items-center justify-between" style="box-shadow:0 4px 12px rgba(0,0,0,0.08)"><div class="flex items-center gap-2"><i class="far fa-clock text-sm text-brand-500"></i><span class="text-xs font-semibold text-ink-700">${o.status==='delivered'?t('ord_delivered_text'):t('ord_time_expected')}</span></div><span class="text-xs font-extrabold text-brand-600">${o.status==='delivered'?o.deliveredAt:o.estimatedDelivery}</span></div>
+            </div>
+        </div>
+        <div class="px-6 pb-4">
+            <div class="grid grid-cols-3 gap-3">
+                <div class="text-center p-3 rounded-xl bg-surface-50"><i class="fas fa-truck text-brand-500 mb-1"></i><div class="text-[10px] text-ink-400">${t('ord_shipper')}</div><div class="text-xs font-bold text-ink-900 mt-0.5">${o.shipper}</div></div>
+                <div class="text-center p-3 rounded-xl bg-surface-50"><i class="fas fa-barcode text-brand-500 mb-1"></i><div class="text-[10px] text-ink-400">${t('ord_track_no')}</div><div class="text-xs font-bold text-ink-900 mt-0.5" dir="ltr">${o.trackNo}</div></div>
+                <div class="text-center p-3 rounded-xl bg-surface-50"><i class="fas fa-box text-brand-500 mb-1"></i><div class="text-[10px] text-ink-400">${t('ord_pieces')}</div><div class="text-xs font-bold text-ink-900 mt-0.5">${o.items}</div></div>
+            </div>
+        </div>
+        <div class="p-6 pt-4" style="border-top:1px solid var(--border)">
+            <h3 class="font-extrabold text-sm mb-5 text-ink-900">${t('ord_timeline')}</h3>
+            <div class="track-timeline">${o.timeline.map(tl=>`
+                <div class="track-step ${tl.done?'done':''}">
+                    ${tl.done&&!tl.cancelled?'<div class="track-line-seg"></div>':''}
+                    <div class="track-dot ${tl.cancelled?'':(tl.done?'done':(tl.current?'current':'pending'))}" ${tl.cancelled?'style="background:#EF4444;color:#fff"':''}><i class="${tl.icon}"></i></div>
+                    <div class="flex-1 min-w-0 pb-1">
+                        <div class="flex items-center justify-between gap-2"><span class="font-bold text-sm ${!tl.done&&!tl.current?'opacity-40':''}">${tl.step}</span>${tl.current?`<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-50 text-brand-700">${t('ord_current_step')}</span>`:''}</div>
+                        ${tl.date?`<div class="text-xs mt-1 text-ink-400 flex items-center gap-3 flex-wrap"><span><i class="far fa-calendar ml-0.5 text-[10px]"></i>${tl.date}</span><span><i class="far fa-clock ml-0.5 text-[10px]"></i>${tl.time}</span></div>`:''}
+                        ${tl.location?`<div class="text-xs mt-1 text-ink-300"><i class="fas fa-location-dot ml-0.5 text-[9px]"></i>${tl.location}</div>`:''}
+                        ${tl.eta?`<div class="mt-2 p-2.5 rounded-xl text-xs font-semibold bg-brand-50 text-brand-700"><i class="far fa-clock ml-1 text-[10px]"></i>${t('ord_expected_time')}: ${tl.eta}</div>`:''}
+                    </div>
+                </div>`).join('')}
+            </div>
+        </div>
+        <div class="p-6" style="border-top:1px solid var(--border);background:#FAFAF8;border-radius:0 0 20px 20px">
+            <div class="flex items-start gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-brand-50"><i class="fas fa-location-dot text-brand-500"></i></div><div><div class="text-xs font-bold text-ink-900 mb-0.5">${t('ord_delivery_address')}</div><div class="text-xs text-ink-500">${o.address}</div><div class="text-xs text-ink-400 mt-0.5">${lang==='ar'?'الجوال':'Phone'}: ${o.phone}</div></div></div>
+        </div>`;
+    document.getElementById('trackModal').classList.add('show');document.body.style.overflow='hidden';
+}
+
+function closeTrackModal(){document.getElementById('trackModal').classList.remove('show');document.body.style.overflow='';}
+
+function confirmCancelOrder(id){
+    const o=trackOrders.find(x=>x.id===id);if(!o)return;
+    const overlay=document.createElement('div');overlay.className='track-modal-overlay show';overlay.style.zIndex='130';
+    overlay.innerHTML=`<div class="track-modal-box" style="max-width:420px;padding:36px;text-align:center">
+        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5"><i class="fas fa-exclamation-triangle text-2xl text-red-500"></i></div>
+        <h3 class="text-lg font-extrabold text-ink-900 mb-2">${t('ord_confirm_cancel')}</h3>
+        <p class="text-sm text-ink-500 mb-1">${t('ord_cancel_msg')}</p><p class="text-sm font-bold text-ink-900 mb-4">${o.id}؟</p>
+        <p class="text-xs mb-6 p-3 rounded-xl bg-amber-50 text-amber-700"><i class="fas fa-info-circle ml-1"></i>${t('ord_cancel_note')}</p>
+        <div class="flex gap-3 justify-center">
+            <button class="btn-primary" style="background:linear-gradient(135deg,#EF4444,#DC2626)" onclick="doCancelOrder('${o.id}',this)">${t('ord_yes_cancel')}</button>
+            <button class="btn-secondary" onclick="this.closest('.track-modal-overlay').remove()">${t('ord_back')}</button>
+        </div></div>`;
+    document.body.appendChild(overlay);
+}
+
+function doCancelOrder(id,btn){
+    const o=trackOrders.find(x=>x.id===id);
+    if(o){o.status='cancelled';o.statusText=lang==='ar'?'ملغى':'Cancelled';o.progress=0;o.cancelReason=lang==='ar'?'إلغاء بواسطة العميل':'Cancelled by customer';o.timeline.push({step:lang==='ar'?'تم إلغاء الطلب':'Order Cancelled',date:new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'}),time:new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit',hour12:true}),location:lang==='ar'?'طلب إلغاء من العميل':'Customer cancellation request',done:true,icon:'fa-solid fa-ban',cancelled:true});}
+    btn.closest('.track-modal-overlay').remove();if(document.getElementById('trackModal').classList.contains('show'))closeTrackModal();renderPanel('orders');toast(t('ord_cancelled_success'),'success');
+}
+
+// ========== قائمة الأمنيات ==========
+function renderWishlist(){
+    if(!wishlist.length)return `<div class="card p-12 text-center"><div class="w-20 h-20 bg-surface-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="far fa-heart text-3xl text-ink-300"></i></div><h3 class="text-lg font-bold text-ink-900 mb-2">${t('wish_empty')}</h3><p class="text-sm text-ink-500">${t('wish_empty_d')}</p></div>`;
+    return `<div class="card p-6 sm:p-8"><div class="mb-6"><h2 class="text-xl font-extrabold text-ink-900">${t('wish_title')}</h2><p class="text-sm text-ink-500 mt-1">${t('wish_subtitle')}</p></div><div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">${wishlist.map(w=>{const nm=lang==='en'?w.nameEn:w.name;return `<div class="bg-white border border-surface-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all"><div class="relative"><img src="${w.img}" alt="${nm}" class="w-full h-44 object-cover"><button class="absolute top-3 left-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow hover:bg-red-50 transition" onclick="removeWish(${w.id})" style="border:none;cursor:pointer"><i class="fas fa-heart text-xs text-red-500"></i></button></div><div class="p-4"><div class="text-[10px] font-bold text-ink-400 mb-1">${w.brand}</div><h4 class="font-bold text-sm text-ink-900 mb-2 line-clamp-1">${nm}</h4><div class="flex items-center gap-1 mb-3"><i class="fas fa-star text-amber-400 text-[10px]"></i><span class="text-xs font-semibold text-ink-700">${w.rating}</span></div><div class="flex items-center justify-between"><div><span class="font-extrabold text-brand-600">${w.price.toLocaleString()} ${t('currency')}</span>${w.oldPrice?`<span class="text-xs text-ink-300 line-through mr-1">${w.oldPrice.toLocaleString()}</span>`:''}</div><button class="btn-primary btn-sm" onclick="addWishToCart(${w.id})"><i class="fas fa-cart-plus text-[10px]"></i>${t('wish_add_cart')}</button></div></div></div>`;}).join('')}</div></div>`;
+}
+function removeWish(id){wishlist=wishlist.filter(w=>w.id!==id);renderPanel('wishlist');toast(t('wish_removed'),'success');}
+function addWishToCart(id){toast(t('wish_added_cart'),'success');}
+
+// ========== إشعار ==========
+function toast(msg,type='success'){
+    const box=document.getElementById('toastBox');
+    const el=document.createElement('div');
+    el.className='toast-in flex items-center gap-3 px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold';
+    el.style.cssText=`background:${type==='success'?'#065F46':'#991B1B'};color:white;min-width:250px`;
+    el.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}"></i><span>${msg}</span>`;
+    box.appendChild(el);
+    setTimeout(()=>{el.classList.remove('toast-in');el.classList.add('toast-out');setTimeout(()=>el.remove(),300);},2800);
+}
+
+function changeAvatar(e){const f=e.target.files[0];if(f){const r=new FileReader();r.onload=ev=>{document.getElementById('avatarImg').src=ev.target.result;toast(lang==='ar'?'تم تحديث الصورة':'Avatar updated','success');};r.readAsDataURL(f);}}
+
+// ========== بدء التطبيق ==========
+buildNav();renderPanel('profile');
+</script>
+</body>
+</html>

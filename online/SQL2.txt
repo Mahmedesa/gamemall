@@ -1,0 +1,211 @@
+CREATE TABLE ST_product_departments (
+    product_department_id INT AUTO_INCREMENT PRIMARY KEY,
+    department_name_ar VARCHAR(200) NOT NULL,
+    department_name_en VARCHAR(200) NOT NULL,
+    image_url VARCHAR(500),
+    icon VARCHAR(100),
+    sort_order INT DEFAULT 0,
+    is_active BIT DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE ST_product_categories (
+    product_category_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_department_id INT NOT NULL,
+    category_name_ar VARCHAR(200) NOT NULL,
+    category_name_en VARCHAR(200) NOT NULL,
+    image_url VARCHAR(500),
+    sort_order INT DEFAULT 0,
+    is_active BIT DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT FK_Category_Department
+        FOREIGN KEY (product_department_id)
+        REFERENCES ST_product_departments(product_department_id)
+);
+
+CREATE TABLE ST_product_subcategories (
+    subcategory_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_category_id INT NOT NULL,
+    subcategory_name_ar VARCHAR(200) NOT NULL,
+    subcategory_name_en VARCHAR(200) NOT NULL,
+    image_url VARCHAR(500),
+    sort_order INT DEFAULT 0,
+    is_active BIT DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT FK_SubCategory_Category
+        FOREIGN KEY(product_category_id)
+        REFERENCES ST_product_categories(product_category_id)
+);
+
+CREATE TABLE ST_product_brands (
+    brand_id INT AUTO_INCREMENT PRIMARY KEY,
+    brand_code VARCHAR(50) UNIQUE,
+    brand_name_ar VARCHAR(200),
+    brand_name_en VARCHAR(200),
+    logo VARCHAR(500),
+    website VARCHAR(300),
+    country_id INT comment 'بلد المنشاء',
+    is_active BIT DEFAULT 1 , 
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,   
+        CONSTRAINT FK_country_id_Brand
+        FOREIGN KEY(country_id)
+        REFERENCES st_countries(country_id)
+);
+
+CREATE TABLE ST_product_attributes (
+
+attribute_id INT AUTO_INCREMENT PRIMARY KEY,
+attribute_name_ar VARCHAR(100),
+attribute_name_en VARCHAR(100),
+attribute_icon  VARCHAR(100) ,
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+(' البيع بالجملة','wholesale');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('الحجم','size');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('النكهة','flavor');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('السعة','Capacity');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('الوزن','weight');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('الخامة','material');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('الرائحة','smell');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('الكمية','Quantity');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('الطول','height');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('المساحة','Area');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('التعبئة','Packaging');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('الاقمشة','fabrics');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('الادوية','pharmaceutical');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('المشروبات','Drinks');
+insert into ST_product_attributes (attribute_name_ar , attribute_name_en ) values 
+('التخزين','Storage');
+
+CREATE TABLE ST_attributes_units (
+    unit_id INT AUTO_INCREMENT PRIMARY KEY,
+    unit_name_ar VARCHAR(100),
+    unit_name_en VARCHAR(100),
+    unit_symbol VARCHAR(20),
+    attribute_id int , 
+	color_id int , 
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,   
+        CONSTRAINT FK_attribute_id_units
+        FOREIGN KEY(attribute_id)
+        REFERENCES ST_product_attributes(attribute_id) , 
+         CONSTRAINT FK_attribute_id_units
+        FOREIGN KEY(color_id)
+        REFERENCES ST_color (id)    
+);
+INSERT INTO units (unit_name_ar, unit_name_en, unit_symbol) VALUES
+
+-- وحدات العدد
+('قطعة','Piece','PCS' , 8),
+('وحدة','Unit','UNIT' ,8 ),
+('زوج','Pair','PR' ,8 ),
+('طقم','Set','SET' ,8 ),
+('حبة','Item','EA' ,8 ),
+('دستة','Dozen','DOZ' ,8 ),
+('نصف دستة','Half Dozen','HDOZ' ,8 ),
+('مائة','Hundred','HUN' ,8 ),
+('ألف','Thousand','THD' ,8 ),
+
+-- وحدات الوزن
+('ميليجرام','Milligram','mg' , 5 ),
+('جرام','Gram','g' , 5),
+('كيلوجرام','Kilogram','kg' , 5 ),
+('طن','Metric Ton','t' , 5 ),
+('أوقية','Ounce','oz' , 5 ),
+('رطل','Pound','lb' , 5 ),
+
+-- وحدات الحجم
+('ملليلتر','Milliliter','ml' , 2),
+('سنتيلتر','Centiliter','cl' , 2),
+('ديسيلتر','Deciliter','dl' , 2 ),
+('لتر','Liter','L' , 2),
+('متر مكعب','Cubic Meter','m³' , 2),
+('سنتيمتر مكعب','Cubic Centimeter','cm³' , 2 ),
+('جالون','Gallon','gal' , 2 ),
+
+-- وحدات الطول
+('مليمتر','Millimeter','mm' ,9),
+('سنتيمتر','Centimeter','cm' ,9),
+('متر','Meter','m' ,9 ),
+('كيلومتر','Kilometer','km' ,9 ),
+('بوصة','Inch','in' ,9),
+('قدم','Foot','ft' ,9 ),
+('ياردة','Yard','yd' ,9 ),
+
+-- وحدات المساحة
+('متر مربع','Square Meter','m²' ,10),
+('سنتيمتر مربع','Square Centimeter','cm²' ,10),
+('فدان','Feddan','fed' ,10),
+('هكتار','Hectare','ha' ,10),
+
+-- وحدات التعبئة
+('عبوة','Pack','PK' , 11),
+('علبة','Box','BOX' , 11),
+('صندوق','Carton','CTN' , 11),
+('كرتونة','Carton Large','CRT' , 11),
+('زجاجة','Bottle','BTL' , 11),
+('قارورة','Flask','FL' , 11 ),
+('برطمان','Jar','JAR' , 11),
+('كيس','Bag','BAG' , 11 ),
+('شنطة','Bag Large','BAGL' , 11 ),
+('جوال','Sack','SACK' , 11 ),
+('شوال','Large Sack','LSACK' , 11 ),
+('لفة','Roll','ROLL' , 11 ),
+('بكرة','Reel','REEL' , 11 ),
+('أنبوبة','Tube','TUBE' , 11 ),
+('أنبوب','Pipe','PIPE' , 11 ),
+('خرطوشة','Cartridge','CAR' , 11 ),
+('كبسولة','Capsule','CAP' , 11 ),
+('شريط','Strip','STR' , 11 ),
+('لوح','Sheet','SHEET' , 11 ),
+('لوحة','Panel','PANEL' , 11 ),
+('صفيحة','Can','CAN' , 11),
+('تنكة','Tin','TIN' , 11 ),
+('برميل','Barrel','BBL' , 11),
+('حاوية','Container','CONT' , 11 ),
+('باليت','Pallet','PLT' , 11),
+
+-- وحدات الأقمشة
+('لفة قماش','Fabric Roll','FROLL' ,12),
+('متر طولي','Linear Meter','LM' ,12),
+
+-- وحدات الأدوية
+('قرص','Tablet','TAB' ,13),
+('حقنة','Injection','INJ' ,13),
+('أمبول','Ampoule','AMP' ,13),
+('فيال','Vial','VIAL' ,13 ),
+('كيس طبي','Medical Bag','MBAG' ,13 ),
+
+-- وحدات المشروبات
+('علبة مشروب','Can','CAN' ,14),
+('عبوة مياه','Water Bottle','WBTL' ,14),
+
+
+-- وحدات التخزين
+('منصة','Platform','PLF' ,15),
+('حاوية شحن','Shipping Container','SCON' ,15)  ,
+
+-- وحدات البيع بالجملة
+('ربطة','Bundle','BDL' ,1),
+('حزمة','Pack Bundle','BND' ,1),
+('رزمة','Ream','REAM' ,1);
+
+
+
+
+

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملف المورد - نظام إدارة الموردين</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { cairo: ['Cairo','sans-serif'] } } }
+        }
+    </script>
+    <style>
+        :root { --primary:#059669; --accent:#D97706; --danger:#DC2626; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Cairo',sans-serif; background:#F1F5F9; color:#0F172A; overflow-x:hidden; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:#F1F5F9; }
+        ::-webkit-scrollbar-thumb { background:var(--primary); border-radius:3px; }
+
+        .sidebar-link {
+            display:flex; align-items:center; gap:12px; padding:10px 16px;
+            border-radius:10px; cursor:pointer; transition:all .3s;
+            color:#64748B; font-size:13px; position:relative; white-space:nowrap; overflow:hidden;
+        }
+        .sidebar-link:hover { background:#F0FDF4; color:#0F172A; }
+        .sidebar-link.active { background:#ECFDF5; color:var(--primary); font-weight:600; }
+        .sidebar-link.active::before {
+            content:''; position:absolute; right:0; top:50%; transform:translateY(-50%);
+            width:3px; height:60%; background:var(--primary); border-radius:0 3px 3px 0;
+        }
+        .sidebar-link i { width:20px; text-align:center; font-size:14px; flex-shrink:0; }
+
+        .section-card {
+            background:#fff; border:1px solid #E2E8F0; border-radius:16px;
+            overflow:hidden; transition:all .3s; margin-bottom:20px;
+            box-shadow:0 1px 3px rgba(0,0,0,.04);
+        }
+        .section-card:hover { box-shadow:0 4px 12px rgba(0,0,0,.07); }
+        .section-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:16px 24px; cursor:pointer; user-select:none;
+            background:#F8FAFC; border-bottom:1px solid #E2E8F0; transition:background .3s;
+        }
+        .section-header:hover { background:#F0FDF4; }
+        .section-header .chevron { transition:transform .3s; color:#94A3B8; }
+        .section-header.collapsed .chevron { transform:rotate(-90deg); }
+        .section-body { padding:24px; }
+        .section-body.hidden { display:none; }
+
+        .data-field { margin-bottom:16px; }
+        .data-label { font-size:11px; color:#64748B; margin-bottom:4px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+        .data-value { font-size:14px; color:#0F172A; font-weight:500; line-height:1.7; }
+
+        .custom-input {
+            width:100%; padding:10px 14px; background:#fff; border:1px solid #CBD5E1;
+            border-radius:10px; color:#0F172A; font-family:'Cairo'; font-size:14px;
+            transition:border-color .3s, box-shadow .3s; outline:none;
+        }
+        .custom-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(5,150,105,.1); }
+        textarea.custom-input { resize:vertical; min-height:80px; }
+        select.custom-input { cursor:pointer; }
+
+        .btn-primary {
+            padding:8px 20px; background:linear-gradient(135deg,#059669,#10B981);
+            color:#fff; border:none; border-radius:10px; font-family:'Cairo';
+            font-weight:700; font-size:13px; cursor:pointer; transition:all .3s;
+        }
+        .btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(5,150,105,.3); }
+        .btn-secondary {
+            padding:8px 20px; background:#fff; color:#64748B;
+            border:1px solid #E2E8F0; border-radius:10px; font-family:'Cairo';
+            font-weight:600; font-size:13px; cursor:pointer; transition:all .3s;
+        }
+        .btn-secondary:hover { border-color:#94A3B8; color:#0F172A; }
+
+        .badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700; }
+        .badge-success { background:#ECFDF5; color:#059669; }
+        .badge-warning { background:#FFFBEB; color:#D97706; }
+        .badge-danger { background:#FEF2F2; color:#DC2626; }
+        .badge-info { background:#EFF6FF; color:#2563EB; }
+
+        .img-card {
+            position:relative; border-radius:12px; overflow:hidden;
+            border:1px solid #E2E8F0; cursor:pointer; transition:all .3s; aspect-ratio:4/3;
+            background:#F8FAFC;
+        }
+        .img-card:hover { transform:translateY(-3px); border-color:var(--primary); box-shadow:0 8px 24px rgba(0,0,0,.08); }
+        .img-card img { width:100%; height:100%; object-fit:cover; transition:transform .5s; }
+        .img-card:hover img { transform:scale(1.05); }
+        .img-card .overlay {
+            position:absolute; inset:0;
+            background:linear-gradient(to top,rgba(0,0,0,.8),transparent 60%);
+            display:flex; align-items:flex-end; padding:10px;
+        }
+        .img-card .overlay span { font-size:10px; color:#fff; font-weight:600; }
+        .img-card .upload-overlay {
+            position:absolute; inset:0; background:rgba(5,150,105,.85);
+            display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+            opacity:0; transition:opacity .3s;
+        }
+        .img-card:hover .upload-overlay { opacity:1; }
+
+        .social-link {
+            display:flex; align-items:center; gap:12px; padding:12px 16px;
+            background:#F8FAFC; border-radius:10px; border:1px solid #E2E8F0;
+            transition:all .3s; text-decoration:none; color:#0F172A;
+        }
+        .social-link:hover { border-color:var(--primary); transform:translateX(-4px); box-shadow:0 2px 8px rgba(0,0,0,.05); }
+
+        .toast {
+            position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
+            padding:14px 28px; border-radius:12px; font-size:14px; font-weight:600;
+            z-index:9999; transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+            box-shadow:0 8px 30px rgba(0,0,0,.15); color:#fff;
+        }
+        .toast.show { transform:translateX(-50%) translateY(0); }
+        .toast.success { background:linear-gradient(135deg,#059669,#10B981); }
+        .toast.error { background:linear-gradient(135deg,#DC2626,#EF4444); }
+
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(6px);
+            z-index:1000; display:none; align-items:center; justify-content:center; padding:20px;
+        }
+        .modal-overlay.active { display:flex; }
+        .modal-content {
+            background:#fff; border:1px solid #E2E8F0; border-radius:20px;
+            max-width:600px; width:100%; max-height:90vh; overflow-y:auto;
+            animation:modalIn .3s ease; box-shadow:0 20px 60px rgba(0,0,0,.15);
+        }
+        .img-modal-content {
+            background:rgba(0,0,0,.95); border-radius:20px; max-width:900px; width:100%;
+            animation:modalIn .3s ease; position:relative;
+        }
+        .img-modal-content img { width:100%; max-height:80vh; object-fit:contain; border-radius:16px; }
+        @keyframes modalIn { from{opacity:0;transform:scale(.9) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .fade-in { animation:fadeInUp .5s ease forwards; opacity:0; }
+
+        .top-bar {
+            position:fixed; top:0; left:0; right:0; z-index:100;
+            background:rgba(255,255,255,.88); backdrop-filter:blur(20px);
+            border-bottom:1px solid #E2E8F0; height:64px;
+        }
+        .check-label {
+            display:flex; align-items:center; gap:10px; padding:10px 14px;
+            background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px;
+            cursor:pointer; transition:all .3s;
+        }
+        .check-label:hover { border-color:var(--primary); background:#F0FDF4; }
+        .check-label input[type="checkbox"] { width:18px; height:18px; accent-color:var(--primary); cursor:pointer; }
+
+        @media print {
+            .top-bar,.sidebar,.no-print{display:none!important}
+            .main-content{margin:0!important;padding:20px!important}
+            .section-card{break-inside:avoid;border:1px solid #ddd!important;box-shadow:none!important}
+            body{background:#fff!important;color:#000!important}
+            .data-label{color:#666!important}.data-value{color:#000!important}
+        }
+        @media(max-width:1024px){.sidebar-desktop{display:none!important}.main-content{margin-right:0!important}}
+    </style>
+</head>
+<body>
+
+<header class="top-bar no-print">
+    <div class="flex items-center justify-between h-full px-6 max-w-[1920px] mx-auto">
+        <div class="flex items-center gap-4">
+            <button onclick="goBack()" class="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors text-sm font-semibold">
+                <i class="fas fa-arrow-right"></i><span data-t="backToDashboard">الرجوع للوحة التحكم</span>
+            </button>
+            <div class="w-px h-8 bg-gray-200"></div>
+            <h1 class="text-lg font-bold text-gray-800" data-t="supplierProfile">ملف المورد</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="toggleLanguage()" class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-amber-600 hover:border-amber-400 transition-all" title="ترجمة">
+                <i class="fas fa-language text-lg"></i>
+            </button>
+            <button onclick="toggleAllSections()" class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all" title="تغيير العرض">
+                <i class="fas fa-th-large"></i>
+            </button>
+            <button onclick="printProfile()" class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-amber-600 hover:border-amber-400 transition-all" title="طباعة">
+                <i class="fas fa-print text-lg"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="pt-[64px] relative z-10 min-h-screen" id="mainContent"></main>
+
+<!-- مودال تعديل الدخول -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-content p-8">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-800" data-t="editCredentials">تعديل بيانات الدخول</h3>
+            <button onclick="closeModal('editModal')" class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="space-y-5">
+            <div><label class="data-label" data-t="newPassword">كلمة المرور الجديدة</label>
+                <div class="relative"><input type="password" id="newPassword" class="custom-input pl-10" placeholder="••••••••">
+                    <button onclick="togglePV('newPassword',this)" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"><i class="fas fa-eye"></i></button>
+                </div>
+            </div>
+            <div><label class="data-label" data-t="confirmPassword">تأكيد كلمة المرور</label><input type="password" id="confirmPassword" class="custom-input" placeholder="••••••••"></div>
+            <div><label class="data-label" data-t="email">البريد الإلكتروني</label><input type="email" id="editEmail" class="custom-input"></div>
+            <div><label class="data-label" data-t="securityQuestion">سؤال الأمان</label><input type="text" id="editSecQ" class="custom-input"></div>
+            <div><label class="data-label" data-t="securityAnswer">إجابة الأمان</label><input type="text" id="editSecA" class="custom-input"></div>
+            <div id="editError" class="text-red-600 text-sm font-semibold hidden"></div>
+            <div class="flex gap-3 pt-2">
+                <button onclick="saveCredentials()" class="btn-primary flex-1" data-t="save">حفظ التغييرات</button>
+                <button onclick="closeModal('editModal')" class="btn-secondary" data-t="cancel">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال الصور -->
+<div class="modal-overlay" id="imageModal">
+    <div class="img-modal-content p-4">
+        <button onclick="closeModal('imageModal')" class="absolute top-6 left-6 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"><i class="fas fa-times text-lg"></i></button>
+        <img id="modalImage" src="" alt="">
+        <p id="modalImageTitle" class="text-center text-white mt-4 font-semibold text-sm"></p>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== بيانات المورد =====================
+const S = {
+    username:'alnoor_supplier', password:'********',
+    email:'info@alnoor-trade.com',
+    securityQuestion:'ما هي مدينتك المفضلة؟', securityAnswer:'القاهرة',
+    companyName:'شركة النور للتجارة والتوريدات', tradeName:'النور تريد',
+    ownerName:'أحمد محمد علي حسن', activityType:'تجارة الجملة - مواد غذائية',
+    foundingYear:2015, employeeCount:45, capital:'5,000,000 جنيه مصري',
+    description:'شركة النور للتجارة والتوريدات هي شركة رائدة في مجال توريد المواد الغذائية بالجملة في مصر والمنطقة العربية. تأسست عام 2015 وتضم فريقاً من 45 متخصصاً يعملون على توفير أفضل المنتجات بأعلى جودة وأسعار تنافسية.',
+    logo:'https://picsum.photos/seed/noorlogo/200/200',
+    contactPerson:'محمد أحمد علي', contactPosition:'مدير المبيعات',
+    phone:'01012345678', altPhone:'01198765432',
+    emailContact:'sales@alnoor-trade.com', website:'www.alnoor-trade.com',
+    facebook:'facebook.com/alnoor.trade', twitter:'twitter.com/alnoor_trade',
+    instagram:'instagram.com/alnoor_trade', linkedin:'linkedin.com/company/alnoor-trade',
+    companyAddress:'15 شارع الجمهورية، وسط البلد', area:'وسط البلد', governorate:'القاهرة',
+    warehouseAddress:'المنطقة الصناعية الثانية، العاشر من رمضان، الشرقية',
+    returnAddress:'15 شارع الجمهورية، وسط البلد، القاهرة',
+    commercialRegNo:'CR-2015-12345', commercialRegIssue:'2015-03-15', commercialRegExpiry:'2026-03-14',
+    taxCardNo:'TC-67890-2025', taxRegNo:'TR-54321-2025', activityLicenseNo:'LIC-11111-2015',
+    commercialChamber:'غرفة تجارة القاهرة', legalStatus:'شركة ذات مسؤولية محدودة',
+    attachments:{
+        commercialReg:'https://picsum.photos/seed/crdoc/800/600', taxCard:'https://picsum.photos/seed/tcdoc/800/600',
+        vatCert:'https://picsum.photos/seed/vatdoc/800/600', activityLicense:'https://picsum.photos/seed/licdoc/800/600',
+        idPassport:'https://picsum.photos/seed/iddoc/800/600', bankCert:'https://picsum.photos/seed/bnkdoc/800/600',
+        authorization:'https://picsum.photos/seed/authdoc/800/600', companyLogo:'https://picsum.photos/seed/noorlogo/800/600',
+        productCatalog:'https://picsum.photos/seed/catdoc/800/600'
+    },
+    bankAccount:{ subAccount:'الحساب الجاري الرئيسي', accountOwner:'شركة النور للتجارة والتوريدات',
+        accountNumber:'1234-5678-9012-3456', iban:'EG38123456789012345678901234',
+        swiftCode:'NBEGEGCX123', currency:'جنيه مصري (EGP)', bankCountry:'مصر' },
+    taxInfo:{ isRegistered:true, taxNumber:'300-123-456-789', taxRate:14, taxType:'ضريبة القيمة المضافة', taxCountry:'مصر' },
+    shipping:{ company:'أرامكس - FedEx', method:'شحن بري + جوي', deliveryLocations:'جميع محافظات مصر + دول الخليج',
+        deliveryTime:'3-5 أيام عمل (داخلي) / 7-10 أيام (دولي)', shippingCost:'حسب الوزن والمسافة - يحدد عند الطلب', internationalShipping:true },
+    payment:{ methods:['تحويل بنكي','محفظة إلكترونية','نقداً عند الاستلام'],
+        deliveryTime:'بعد تأكيد الدفع بيوم عمل واحد', minInvoice:'10,000 جنيه', commissionRate:5, currency:'جنيه مصري (EGP)' }
+};
+
+// ===================== الترجمات =====================
+const TR = {
+    ar:{ backToDashboard:'الرجوع للوحة التحكم', supplierProfile:'ملف المورد', editCredentials:'تعديل بيانات الدخول',
+        newPassword:'كلمة المرور الجديدة', confirmPassword:'تأكيد كلمة المرور', email:'البريد الإلكتروني',
+        securityQuestion:'سؤال الأمان', securityAnswer:'إجابة الأمان', save:'حفظ التغييرات', cancel:'إلغاء',
+        loginData:'بيانات الدخول', username:'اسم المستخدم', password:'كلمة السر', edit:'تعديل',
+        basicData:'البيانات الأساسية للمورد', companyName:'اسم الشركة', tradeName:'الاسم التجاري',
+        ownerName:'اسم صاحب الشركة', activityType:'نوع النشاط', foundingYear:'سنة التأسيس',
+        employeeCount:'عدد الموظفين', capital:'رأس المال', aboutCompany:'نبذة عن الشركة',
+        contactData:'بيانات التواصل', contactPerson:'اسم مسؤول التواصل', contactPosition:'الوظيفة',
+        phone:'رقم الهاتف', altPhone:'رقم الهاتف البديل', website:'الموقع الإلكتروني',
+        socialMedia:'وسائل التواصل الاجتماعي', addresses:'العناوين', companyAddress:'عنوان الشركة',
+        area:'المنطقة', governorate:'المحافظة', warehouseAddress:'عنوان المستودع',
+        returnAddress:'عنوان إرجاع البضاعة', legalData:'البيانات القانونية',
+        commercialRegNo:'رقم السجل التجاري', commercialRegIssue:'تاريخ إصدار السجل',
+        commercialRegExpiry:'تاريخ انتهاء السجل', taxCardNo:'رقم البطاقة الضريبية',
+        taxRegNo:'رقم التسجيل الضريبي', activityLicenseNo:'رقم رخصة النشاط',
+        commercialChamber:'الغرفة التجارية', legalStatus:'الحالة القانونية',
+        attachments:'المرفقات والصور', commercialRegImg:'صورة السجل التجاري',
+        taxCardImg:'البطاقة الضريبية', vatCertImg:'شهادة ضريبة القيمة المضافة',
+        activityLicenseImg:'رخصة النشاط', idPassportImg:'صورة الهوية / جواز السفر',
+        bankCertImg:'شهادة الحساب البنكي', authorizationImg:'التفويض الرسمي',
+        companyLogoImg:'شعار الشركة', productCatalogImg:'كتالوج المنتجات',
+        bankAccount:'الحساب البنكي', subAccount:'اسم البند التابع', accountOwner:'اسم صاحب الحساب',
+        accountNumber:'رقم الحساب', iban:'IBAN', swiftCode:'SWIFT Code', currency:'العملة',
+        bankCountry:'الدولة', taxInfo:'البيانات الضريبية', isTaxRegistered:'مسجل ضريبياً',
+        taxNumber:'رقم التسجيل الضريبي', taxRate:'نسبة الضريبة', taxType:'نوع الضريبة',
+        taxCountry:'دولة التسجيل', shippingData:'بيانات الشحن', shippingCompany:'شركة الشحن',
+        shippingMethod:'طريقة الشحن', deliveryLocations:'أماكن التوصيل', deliveryTime:'مدة الاستلام',
+        shippingCost:'تكلفة الشحن', internationalShipping:'الشحن الدولي', yes:'نعم', no:'لا',
+        paymentMethods:'طرق الدفع', methods:'طرق الدفع المتاحة',
+        paymentDeliveryTime:'مدة الاستلام بعد الدفع', minInvoice:'الحد الأدنى للفاتورة',
+        commissionRate:'نسبة العمولة', paymentCurrency:'العملة', employees:'موظف',
+        passwordMismatch:'كلمتا المرور غير متطابقتين', savedSuccessfully:'تم الحفظ بنجاح',
+        llc:'ذات مسؤولية محدودة', soleProprietor:'شركة شخص واحد', partnership:'شركة تضامن',
+        clickToUpload:'اضغط لرفع صورة جديدة', facebook:'فيس بوك', twitter:'تويتر',
+        instagram:'انستجرام', linkedin:'لينكد إن' },
+    en:{ backToDashboard:'Back to Dashboard', supplierProfile:'Supplier Profile', editCredentials:'Edit Login Credentials',
+        newPassword:'New Password', confirmPassword:'Confirm Password', email:'Email Address',
+        securityQuestion:'Security Question', securityAnswer:'Security Answer', save:'Save Changes', cancel:'Cancel',
+        loginData:'Login Information', username:'Username', password:'Password', edit:'Edit',
+        basicData:'Supplier Basic Data', companyName:'Company Name', tradeName:'Trade Name',
+        ownerName:'Owner Name', activityType:'Activity Type', foundingYear:'Founding Year',
+        employeeCount:'Employee Count', capital:'Capital', aboutCompany:'About Company',
+        contactData:'Contact Information', contactPerson:'Contact Person', contactPosition:'Position',
+        phone:'Phone Number', altPhone:'Alternate Phone', website:'Website',
+        socialMedia:'Social Media', addresses:'Addresses', companyAddress:'Company Address',
+        area:'Area', governorate:'Governorate', warehouseAddress:'Warehouse Address',
+        returnAddress:'Return Address', legalData:'Legal Data',
+        commercialRegNo:'Commercial Reg. No.', commercialRegIssue:'Issue Date',
+        commercialRegExpiry:'Expiry Date', taxCardNo:'Tax Card No.',
+        taxRegNo:'Tax Reg. No.', activityLicenseNo:'Activity License No.',
+        commercialChamber:'Commercial Chamber', legalStatus:'Legal Status',
+        attachments:'Attachments & Documents', commercialRegImg:'Commercial Registration',
+        taxCardImg:'Tax Card', vatCertImg:'VAT Certificate',
+        activityLicenseImg:'Activity License', idPassportImg:'ID / Passport',
+        bankCertImg:'Bank Certificate', authorizationImg:'Official Authorization',
+        companyLogoImg:'Company Logo', productCatalogImg:'Product Catalog',
+        bankAccount:'Bank Account', subAccount:'Sub-Account Name', accountOwner:'Account Owner',
+        accountNumber:'Account Number', iban:'IBAN', swiftCode:'SWIFT Code', currency:'Currency',
+        bankCountry:'Country', taxInfo:'Tax Information', isTaxRegistered:'Tax Registered',
+        taxNumber:'Tax Number', taxRate:'Tax Rate', taxType:'Tax Type',
+        taxCountry:'Registration Country', shippingData:'Shipping Information', shippingCompany:'Shipping Company',
+        shippingMethod:'Shipping Method', deliveryLocations:'Delivery Locations', deliveryTime:'Delivery Time',
+        shippingCost:'Shipping Cost', internationalShipping:'International Shipping', yes:'Yes', no:'No',
+        paymentMethods:'Payment Methods', methods:'Available Methods',
+        paymentDeliveryTime:'Delivery Time After Payment', minInvoice:'Minimum Invoice',
+        commissionRate:'Commission Rate', paymentCurrency:'Currency', employees:'employees',
+        passwordMismatch:'Passwords do not match', savedSuccessfully:'Saved successfully',
+        llc:'LLC', soleProprietor:'Sole Proprietorship', partnership:'Partnership',
+        clickToUpload:'Click to upload new image', facebook:'Facebook', twitter:'Twitter',
+        instagram:'Instagram', linkedin:'LinkedIn' }
+};
+
+// ===================== الحالة =====================
+let lang = 'ar';
+let expanded = new Set([0,1,2]);
+let allExp = false;
+let editStates = {};
+let tempImages = {};
+const allPayMethods = ['تحويل بنكي','محفظة إلكترونية','نقداً عند الاستلام'];
+const secKeys = ['login','basic','contact','social','addr','legal','attach','bank','tax','ship','pay'];
+const payIcons = {'تحويل بنكي':'fa-building-columns','محفظة إلكترونية':'fa-wallet','نقداً عند الاستلام':'fa-money-bill-wave',
+    'bank transfer':'fa-building-columns','e-wallet':'fa-wallet','cash on delivery':'fa-money-bill-wave'};
+
+function t(k){ return TR[lang][k]||k; }
+function showToast(m,tp='success'){ const el=document.getElementById('toast');el.textContent=m;el.className=`toast ${tp} show`;setTimeout(()=>el.classList.remove('show'),3000); }
+function openModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+function togglePV(id,btn){const i=document.getElementById(id),ic=btn.querySelector('i');if(i.type==='password'){i.type='text';ic.className='fas fa-eye-slash'}else{i.type='password';ic.className='fas fa-eye'}}
+function statusCls(st){if(st.includes('محدودة')||st.includes('LLC'))return'badge-success';if(st.includes('شخص واحد')||st.includes('Sole'))return'badge-warning';if(st.includes('تضامن')||st.includes('Partnership'))return'badge-info';return'badge-success'}
+function statusTxt(st){if(st.includes('محدودة'))return t('llc');if(st.includes('شخص واحد'))return t('soleProprietor');if(st.includes('تضامن'))return t('partnership');return st}
+
+// ===================== مساعدات العرض =====================
+function vF(label,val,cls=''){return`<div class="data-field"><div class="data-label">${label}</div><div class="data-value ${cls}">${val}</div></div>`}
+function eF(label,id,val,type='text',opts=''){
+    if(type==='textarea')return`<div class="data-field"><label class="data-label">${label}</label><textarea class="custom-input" rows="4" id="${id}">${val}</textarea></div>`;
+    if(type==='select')return`<div class="data-field"><label class="data-label">${label}</label><select class="custom-input" id="${id}">${opts}</select></div>`;
+    return`<div class="data-field"><label class="data-label">${label}</label><input type="${type}" class="custom-input" id="${id}" value="${val}"></div>`;
+}
+function cF(sec,label,field,val,type='text',opts=''){return editStates[sec]?eF(label,`e_${sec}_${field}`,val,type,opts):vF(label,val)}
+function gv(sec,field){const el=document.getElementById(`e_${sec}_${field}`);return el?el.value:''}
+function gn(sec,field){return parseInt(gv(sec,field))||0}
+function gf(sec,field){return parseFloat(gv(sec,field))||0}
+
+// رأس القسم
+function sH(idx,icon,iconCls,title,sec){
+    const ed=editStates[sec], col=expanded.has(idx)?'':'collapsed', exp=expanded.has(idx)?'':'hidden';
+    const btns=ed?`<div class="flex items-center gap-2" onclick="event.stopPropagation()">
+        <button onclick="saveSec('${sec}')" class="btn-primary text-xs py-1.5 px-4 no-print"><i class="fas fa-check ml-1"></i>${t('save')}</button>
+        <button onclick="cancelSec('${sec}')" class="btn-secondary text-xs py-1.5 px-4 no-print">${t('cancel')}</button>
+    </div>`:`<div class="flex items-center gap-3">
+        <button onclick="event.stopPropagation();startEd('${sec}',${idx})" class="text-xs text-primary hover:text-amber-600 transition-colors font-bold no-print"><i class="fas fa-pen ml-1"></i>${t('edit')}</button>
+        <i class="fas fa-chevron-down chevron no-print"></i>
+    </div>`;
+    return`<div class="section-card fade-in" style="animation-delay:${idx*0.05}s"><div class="section-header ${col}" onclick="toggleSection(${idx})">
+        <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg ${iconCls} flex items-center justify-center"><i class="fas ${icon} text-sm"></i></div>
+        <h3 class="font-bold text-gray-800 text-base">${title}</h3></div>${btns}</div><div class="section-body ${exp}">`;
+}
+const sF='</div></div>';
+
+// ===================== أحداث التعديل =====================
+function startEd(sec,idx){editStates[sec]=true;if(!expanded.has(idx))toggleSection(idx);render()}
+function cancelSec(sec){if(sec==='attach')tempImages={};editStates[sec]=false;render()}
+
+function saveSec(sec){
+    switch(sec){
+        case'basic':
+            S.companyName=gv('basic','companyName');S.tradeName=gv('basic','tradeName');
+            S.ownerName=gv('basic','ownerName');S.activityType=gv('basic','activityType');
+            S.foundingYear=gn('basic','foundingYear');S.employeeCount=gn('basic','employeeCount');
+            S.capital=gv('basic','capital');S.description=gv('basic','description');break;
+        case'contact':
+            S.contactPerson=gv('contact','contactPerson');S.contactPosition=gv('contact','contactPosition');
+            S.phone=gv('contact','phone');S.altPhone=gv('contact','altPhone');
+            S.emailContact=gv('contact','emailContact');S.website=gv('contact','website');break;
+        case'social':
+            S.facebook=gv('social','facebook');S.twitter=gv('social','twitter');
+            S.instagram=gv('social','instagram');S.linkedin=gv('social','linkedin');break;
+        case'addr':
+            S.companyAddress=gv('addr','companyAddress');S.area=gv('addr','area');
+            S.governorate=gv('addr','governorate');S.warehouseAddress=gv('addr','warehouseAddress');
+            S.returnAddress=gv('addr','returnAddress');break;
+        case'legal':
+            S.commercialRegNo=gv('legal','commercialRegNo');S.commercialRegIssue=gv('legal','commercialRegIssue');
+            S.commercialRegExpiry=gv('legal','commercialRegExpiry');S.taxCardNo=gv('legal','taxCardNo');
+            S.taxRegNo=gv('legal','taxRegNo');S.activityLicenseNo=gv('legal','activityLicenseNo');
+            S.commercialChamber=gv('legal','commercialChamber');S.legalStatus=gv('legal','legalStatus');break;
+        case'attach':
+            Object.keys(tempImages).forEach(k=>S.attachments[k]=tempImages[k]);tempImages={};break;
+        case'bank':
+            S.bankAccount.subAccount=gv('bank','subAccount');S.bankAccount.accountOwner=gv('bank','accountOwner');
+            S.bankAccount.accountNumber=gv('bank','accountNumber');S.bankAccount.iban=gv('bank','iban');
+            S.bankAccount.swiftCode=gv('bank','swiftCode');S.bankAccount.currency=gv('bank','currency');
+            S.bankAccount.bankCountry=gv('bank','bankCountry');break;
+        case'tax':
+            S.taxInfo.isRegistered=document.getElementById('e_tax_isRegistered').checked;
+            if(S.taxInfo.isRegistered){
+                S.taxInfo.taxNumber=gv('tax','taxNumber');S.taxInfo.taxRate=gf('tax','taxRate');
+                S.taxInfo.taxType=gv('tax','taxType');S.taxInfo.taxCountry=gv('tax','taxCountry');}break;
+        case'ship':
+            S.shipping.company=gv('ship','company');S.shipping.method=gv('ship','method');
+            S.shipping.deliveryLocations=gv('ship','deliveryLocations');S.shipping.deliveryTime=gv('ship','deliveryTime');
+            S.shipping.shippingCost=gv('ship','shippingCost');
+            S.shipping.internationalShipping=document.getElementById('e_ship_internationalShipping').checked;break;
+        case'pay':
+            S.payment.methods=[];allPayMethods.forEach((m,i)=>{const cb=document.getElementById(`e_pay_m${i}`);if(cb&&cb.checked)S.payment.methods.push(m)});
+            S.payment.deliveryTime=gv('pay','deliveryTime');S.payment.minInvoice=gv('pay','minInvoice');
+            S.payment.commissionRate=gf('pay','commissionRate');S.payment.currency=gv('pay','currency');break;
+    }
+    editStates[sec]=false;render();showToast(t('savedSuccessfully'));
+}
+
+function saveCredentials(){
+    const np=document.getElementById('newPassword').value,cp=document.getElementById('confirmPassword').value,err=document.getElementById('editError');
+    if(np&&np!==cp){err.textContent=t('passwordMismatch');err.classList.remove('hidden');return}
+    if(np)S.password='********';
+    S.email=document.getElementById('editEmail').value;S.securityQuestion=document.getElementById('editSecQ').value;
+    S.securityAnswer=document.getElementById('editSecA').value;closeModal('editModal');showToast(t('savedSuccessfully'));render();
+}
+
+function previewImg(key,input){
+    if(input.files&&input.files[0]){const r=new FileReader();r.onload=e=>{tempImages[key]=e.target.result;render()};r.readAsDataURL(input.files[0])}
+}
+function viewImage(src,title){document.getElementById('modalImage').src=src;document.getElementById('modalImageTitle').textContent=title;openModal('imageModal')}
+
+function toggleLanguage(){lang=lang==='ar'?'en':'ar';document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';render()}
+function toggleSection(i){const bs=document.querySelectorAll('.section-body'),hs=document.querySelectorAll('.section-header');if(expanded.has(i)){expanded.delete(i);bs[i].classList.add('hidden');hs[i].classList.add('collapsed')}else{expanded.add(i);bs[i].classList.remove('hidden');hs[i].classList.remove('collapsed')}allExp=expanded.size===11}
+function toggleAllSections(){const bs=document.querySelectorAll('.section-body'),hs=document.querySelectorAll('.section-header');if(!allExp){expanded=new Set([0,1,2,3,4,5,6,7,8,9,10]);bs.forEach(b=>b.classList.remove('hidden'));hs.forEach(h=>h.classList.remove('collapsed'));allExp=true}else{expanded=new Set();bs.forEach(b=>b.classList.add('hidden'));hs.forEach(h=>h.classList.add('collapsed'));allExp=false}}
+function scrollToSection(i){const s=document.querySelectorAll('.section-card');if(s[i]){s[i].scrollIntoView({behavior:'smooth',block:'start'});if(!expanded.has(i))toggleSection(i);document.querySelectorAll('.sidebar-link').forEach((l,idx)=>l.classList.toggle('active',idx===i))}}
+function goBack(){showToast(lang==='ar'?'سيتم العودة للوحة التحكم':'Returning to dashboard...')}
+
+// ===================== الطباعة =====================
+function printProfile(){
+    const d=lang==='ar'?'rtl':'ltr';
+    let h=`<!DOCTYPE html><html lang="${lang}" dir="${d}"><head><meta charset="UTF-8"><title>${t('supplierProfile')}</title>
+    <style>*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',Arial,sans-serif}body{padding:30px;color:#111;font-size:13px}
+    h1{text-align:center;font-size:20px;margin-bottom:5px}h2{font-size:14px;background:#f5f5f5;padding:8px 14px;margin:14px 0 8px;${lang==='ar'?'border-right':'border-left'}:4px solid #059669}
+    .g{display:grid;grid-template-columns:1fr 1fr;gap:5px 28px}.f{margin-bottom:3px}.l{font-size:10px;color:#777;font-weight:700}.v{font-size:13px}.hr{border:none;border-top:1px solid #eee;margin:16px 0}</style></head><body>`;
+    h+=`<h1>${S.companyName}</h1><p style="text-align:center;color:#777;margin-bottom:12px">${S.tradeName} - ${S.ownerName}</p>`;
+    const row=(a,b,c,d)=>`<div class="f"><div class="l">${a}</div><div class="v">${b}</div></div><div class="f"><div class="l">${c}</div><div class="v">${d}</div></div>`;
+    h+=`<h2>${t('basicData')}</h2><div class="g">${row(t('activityType'),S.activityType,t('foundingYear'),S.foundingYear)}${row(t('employeeCount'),S.employeeCount+' '+t('employees'),t('capital'),S.capital)}${row(t('legalStatus'),S.legalStatus,'','')}</div>`;
+    h+=`<h2>${t('contactData')}</h2><div class="g">${row(t('contactPerson'),S.contactPerson+' - '+S.contactPosition,t('phone'),S.phone+' / '+S.altPhone)}${row(t('email'),S.emailContact,t('website'),S.website)}</div>`;
+    h+=`<h2>${t('addresses')}</h2><div class="g">${row(t('companyAddress'),S.companyAddress+', '+S.area+', '+S.governorate,t('warehouseAddress'),S.warehouseAddress)}</div>`;
+    h+=`<h2>${t('legalData')}</h2><div class="g">${row(t('commercialRegNo'),S.commercialRegNo,t('taxCardNo'),S.taxCardNo)}${row(t('taxRegNo'),S.taxRegNo,t('activityLicenseNo'),S.activityLicenseNo)}${row(t('commercialChamber'),S.commercialChamber,t('commercialRegExpiry'),S.commercialRegExpiry)}</div>`;
+    h+=`<h2>${t('bankAccount')}</h2><div class="g">${row(t('accountOwner'),S.bankAccount.accountOwner,t('accountNumber'),S.bankAccount.accountNumber)}${row(t('iban'),S.bankAccount.iban,t('swiftCode'),S.bankAccount.swiftCode)}${row(t('currency'),S.bankAccount.currency,t('bankCountry'),S.bankAccount.bankCountry)}</div>`;
+    if(S.taxInfo.isRegistered)h+=`<h2>${t('taxInfo')}</h2><div class="g">${row(t('taxNumber'),S.taxInfo.taxNumber,t('taxRate'),S.taxInfo.taxRate+'%')}${row(t('taxType'),S.taxInfo.taxType,t('taxCountry'),S.taxInfo.taxCountry)}</div>`;
+    h+=`<h2>${t('shippingData')}</h2><div class="g">${row(t('shippingCompany'),S.shipping.company,t('shippingMethod'),S.shipping.method)}${row(t('deliveryTime'),S.shipping.deliveryTime,t('internationalShipping'),S.shipping.internationalShipping?t('yes'):t('no'))}</div>`;
+    h+=`<h2>${t('paymentMethods')}</h2><div class="g">${row(t('methods'),S.payment.methods.join(' | '),t('minInvoice'),S.payment.minInvoice)}${row(t('commissionRate'),S.payment.commissionRate+'%',t('paymentCurrency'),S.payment.currency)}</div>`;
+    h+='</body></html>';const w=window.open('','_blank');w.document.write(h);w.document.close();setTimeout(()=>w.print(),500)
+}
+
+// ===================== العرض الرئيسي =====================
+function render(){
+    const legalOpts=[t('llc'),t('soleProprietor'),t('partnership')].map(o=>`<option value="${o}" ${S.legalStatus===o?'selected':''}>${o}</option>`).join('');
+    const attItems=[
+        {k:'commercialReg',l:t('commercialRegImg')},{k:'taxCard',l:t('taxCardImg')},{k:'vatCert',l:t('vatCertImg')},
+        {k:'activityLicense',l:t('activityLicenseImg')},{k:'idPassport',l:t('idPassportImg')},{k:'bankCert',l:t('bankCertImg')},
+        {k:'authorization',l:t('authorizationImg')},{k:'companyLogo',l:t('companyLogoImg')},{k:'productCatalog',l:t('productCatalogImg')}
+    ];
+    const socialArr=[{k:'facebook',l:t('facebook'),i:'fa-facebook-f',c:'#1877F2'},{k:'twitter',l:t('twitter'),i:'fa-twitter',c:'#1DA1F2'},
+        {k:'instagram',l:t('instagram'),i:'fa-instagram',c:'#E4405F'},{k:'linkedin',l:t('linkedin'),i:'fa-linkedin-in',c:'#0A66C2'}];
+
+    // معرض المرفقات
+    const attHTML=attItems.map(a=>{
+        const src=tempImages[a.k]||S.attachments[a.k];
+        if(editStates.attach)return`<div class="img-card"><img src="${src}" alt="${a.l}">
+            <div class="upload-overlay"><i class="fas fa-camera text-white text-2xl"></i><span class="text-white text-xs font-semibold">${t('clickToUpload')}</span>
+            <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewImg('${a.k}',this)"></div>
+            <div class="overlay"><span>${a.l}</span></div></div>`;
+        return`<div class="img-card" onclick="viewImage('${S.attachments[a.k]}','${a.l}')"><img src="${S.attachments[a.k]}" alt="${a.l}" loading="lazy">
+            <div class="overlay"><div class="flex items-center gap-2"><i class="fas fa-search-plus text-emerald-400 text-xs"></i><span>${a.l}</span></div></div></div>`;
+    }).join('');
+
+    // وسائل التواصل
+    const socialHTML=socialArr.map(soc=>{
+        if(editStates.social)return`<div class="data-field"><label class="data-label">${soc.l}</label><div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${soc.c}15"><i class="fab ${soc.i}" style="color:${soc.c}"></i></div>
+            <input type="text" class="custom-input" id="e_social_${soc.k}" value="${S[soc.k]}"></div></div>`;
+        return`<a href="https://${S[soc.k]}" target="_blank" class="social-link group">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${soc.c}15"><i class="fab ${soc.i}" style="color:${soc.c}"></i></div>
+            <div class="min-w-0 flex-1"><p class="text-sm font-semibold text-gray-800">${soc.l}</p><p class="text-xs text-gray-500 truncate">${S[soc.k]}</p></div>
+            <i class="fas fa-external-link-alt text-xs text-gray-400"></i></a>`;
+    }).join('');
+
+    // طرق الدفع
+    const payHTML=editStates.pay?allPayMethods.map((m,i)=>{
+        const ic=payIcons[m.toLowerCase()]||'fa-circle-check';
+        return`<label class="check-label"><input type="checkbox" id="e_pay_m${i}" value="${m}" ${S.payment.methods.includes(m)?'checked':''}>
+            <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center"><i class="fas ${ic} text-emerald-600 text-sm"></i></div>
+            <span class="font-semibold text-sm text-gray-700">${m}</span></label>`;
+    }).join(''):S.payment.methods.map(m=>{
+        const ic=payIcons[m.toLowerCase()]||'fa-circle-check';
+        return`<div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center"><i class="fas ${ic} text-emerald-600"></i></div>
+            <span class="font-semibold text-sm">${m}</span></div>`;
+    }).join('');
+
+    const sidebarItems=[
+        {icon:'fa-key',l:t('loginData')},{icon:'fa-building',l:t('basicData')},{icon:'fa-address-book',l:t('contactData')},
+        {icon:'fa-share-alt',l:t('socialMedia')},{icon:'fa-map-marker-alt',l:t('addresses')},{icon:'fa-gavel',l:t('legalData')},
+        {icon:'fa-images',l:t('attachments')},{icon:'fa-university',l:t('bankAccount')},{icon:'fa-receipt',l:t('taxInfo')},
+        {icon:'fa-truck',l:t('shippingData')},{icon:'fa-credit-card',l:t('paymentMethods')}
+    ];
+    const sideHTML=sidebarItems.map((s,i)=>`<div class="sidebar-link ${expanded.has(i)?'active':''}" onclick="scrollToSection(${i})"><i class="fas ${s.icon}"></i><span class="hidden xl:inline">${s.l}</span></div>`).join('');
+
+    const expiryDate=new Date(S.commercialRegExpiry);
+    const isExp=expiryDate<new Date();
+    const isNear=!isExp&&(expiryDate-new Date())<90*24*60*60*1000;
+
+    document.getElementById('mainContent').innerHTML=`
+    <aside class="sidebar-desktop fixed top-[64px] right-0 w-[220px] xl:w-[250px] h-[calc(100vh-64px)] bg-white border-l border-gray-200 overflow-y-auto no-print z-50 py-6 px-3 shadow-sm">
+        <div class="mb-6 px-2">
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200 mb-2">
+                <img src="${S.logo}" class="w-11 h-11 rounded-lg object-cover" alt="">
+                <div class="min-w-0"><p class="text-xs font-bold text-gray-800 truncate">${S.tradeName}</p>
+                <span class="badge ${statusCls(S.legalStatus)} text-[10px] py-0.5 px-2">${statusTxt(S.legalStatus)}</span></div>
+            </div>
+            <div class="flex items-center gap-2 px-1 text-xs text-gray-500"><i class="fas fa-circle text-emerald-500 text-[6px]"></i><span>${S.governorate} - ${S.area}</span></div>
+        </div>
+        <nav class="space-y-1">${sideHTML}</nav>
+    </aside>
+
+    <div class="mr-0 xl:mr-[250px] p-4 lg:p-8 main-content">
+        <!-- رأس الملف -->
+        <div class="section-card mb-8 fade-in" style="animation-delay:0s">
+            <div class="p-6 lg:p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-64 h-64 bg-emerald-50 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none"></div>
+                <div class="absolute bottom-0 right-0 w-48 h-48 bg-amber-50 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none"></div>
+                <div class="flex flex-col md:flex-row items-start gap-6 relative z-10">
+                    <div class="relative group flex-shrink-0">
+                        <img src="${S.logo}" class="w-24 h-24 lg:w-32 lg:h-32 rounded-2xl object-cover border-2 border-gray-200 group-hover:border-emerald-400 transition-all duration-500 shadow-lg">
+                        <div class="absolute -bottom-2 -left-2 w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-200"><i class="fas fa-check text-white text-xs"></i></div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-3 mb-2">
+                            <h2 class="text-2xl lg:text-3xl font-black text-gray-800">${S.companyName}</h2>
+                            <span class="badge ${statusCls(S.legalStatus)}">${statusTxt(S.legalStatus)}</span>
+                        </div>
+                        <p class="text-amber-600 font-bold text-lg mb-3">${S.tradeName}</p>
+                        <p class="text-gray-500 text-sm leading-relaxed max-w-3xl">${S.description}</p>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2 mt-5 text-sm">
+                            <div class="flex items-center gap-2 text-gray-500"><i class="fas fa-calendar-alt text-emerald-600"></i><span>${t('foundingYear')}: <strong class="text-gray-800">${S.foundingYear}</strong></span></div>
+                            <div class="flex items-center gap-2 text-gray-500"><i class="fas fa-users text-emerald-600"></i><span>${S.employeeCount} ${t('employees')}</span></div>
+                            <div class="flex items-center gap-2 text-gray-500"><i class="fas fa-coins text-amber-500"></i><span>${t('capital')}: <strong class="text-gray-800">${S.capital}</strong></span></div>
+                            <div class="flex items-center gap-2 text-gray-500"><i class="fas fa-map-marker-alt text-red-500"></i><span>${S.governorate}</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1- بيانات الدخول -->
+        ${sH(0,'fa-key','bg-emerald-50 text-emerald-600',t('loginData'),'login')}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8">
+                ${vF(t('username'),'<i class="fas fa-at text-emerald-600 text-xs ml-1"></i>'+S.username)}
+                ${vF(t('password'),'<i class="fas fa-lock text-emerald-600 text-xs ml-1"></i>'+S.password)}
+                ${vF(t('email'),'<i class="fas fa-envelope text-emerald-600 text-xs ml-1"></i>'+S.email)}
+                ${vF(t('securityQuestion'),'<i class="fas fa-shield-halved text-emerald-600 text-xs ml-1"></i>'+S.securityQuestion)}
+                ${vF(t('securityAnswer'),'<i class="fas fa-key text-emerald-600 text-xs ml-1"></i>'+S.securityAnswer)}
+            </div>
+            <div class="mt-2"><button onclick="openEditModal();document.getElementById('editEmail').value=S.email;document.getElementById('editSecQ').value=S.securityQuestion;document.getElementById('editSecA').value=S.securityAnswer;document.getElementById('newPassword').value='';document.getElementById('confirmPassword').value='';document.getElementById('editError').classList.add('hidden')" class="btn-primary text-xs no-print"><i class="fas fa-pen ml-1"></i>${t('edit')}</button></div>
+        ${sF}
+
+        <!-- 2- البيانات الأساسية -->
+        ${sH(1,'fa-building','bg-amber-50 text-amber-600',t('basicData'),'basic')}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8">
+                ${cF('basic',t('companyName'),'companyName',S.companyName)}
+                ${cF('basic',t('tradeName'),'tradeName',S.tradeName)}
+                ${cF('basic',t('ownerName'),'ownerName',S.ownerName)}
+                ${cF('basic',t('activityType'),'activityType',S.activityType)}
+                ${cF('basic',t('foundingYear'),'foundingYear',S.foundingYear,'number')}
+                ${cF('basic',t('employeeCount'),'employeeCount',S.employeeCount,'number')}
+                ${cF('basic',t('capital'),'capital',S.capital)}
+            </div>
+            ${cF('basic',t('aboutCompany'),'description',S.description,'textarea')}
+        ${sF}
+
+        <!-- 3- بيانات التواصل -->
+        ${sH(2,'fa-address-book','bg-blue-50 text-blue-600',t('contactData'),'contact')}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8">
+                ${cF('contact',t('contactPerson'),'contactPerson',S.contactPerson)}
+                ${cF('contact',t('contactPosition'),'contactPosition',S.contactPosition)}
+                ${cF('contact',t('phone'),'phone',S.phone,'tel')}
+                ${cF('contact',t('altPhone'),'altPhone',S.altPhone,'tel')}
+                ${cF('contact',t('email'),'emailContact',S.emailContact,'email')}
+                ${cF('contact',t('website'),'website',S.website)}
+            </div>
+        ${sF}
+
+        <!-- 4- وسائل التواصل الاجتماعي -->
+        ${sH(3,'fa-share-alt','bg-pink-50 text-pink-600',t('socialMedia'),'social')}
+            <div class="${editStates.social?'space-y-0':'grid grid-cols-1 md:grid-cols-2 gap-3'}">${socialHTML}</div>
+        ${sF}
+
+        <!-- 5- العناوين -->
+        ${sH(4,'fa-map-marker-alt','bg-red-50 text-red-500',t('addresses'),'addr')}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                ${cF('addr',t('companyAddress'),'companyAddress',S.companyAddress)}
+                ${cF('addr',t('area'),'area',S.area)}
+                ${cF('addr',t('governorate'),'governorate',S.governorate)}
+                ${cF('addr',t('warehouseAddress'),'warehouseAddress',S.warehouseAddress)}
+                <div class="data-field md:col-span-2">${editStates.addr?eF(t('returnAddress'),'e_addr_returnAddress',S.returnAddress):vF(t('returnAddress'),S.returnAddress)}</div>
+            </div>
+        ${sF}
+
+        <!-- 6- البيانات القانونية -->
+        ${sH(5,'fa-gavel','bg-yellow-50 text-yellow-600',t('legalData'),'legal')}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8">
+                ${cF('legal',t('commercialRegNo'),'commercialRegNo',S.commercialRegNo)}
+                ${cF('legal',t('commercialRegIssue'),'commercialRegIssue',S.commercialRegIssue,'date')}
+                ${cF('legal',t('commercialRegExpiry'),'commercialRegExpiry',S.commercialRegExpiry,'date')}
+                ${cF('legal',t('taxCardNo'),'taxCardNo',S.taxCardNo)}
+                ${cF('legal',t('taxRegNo'),'taxRegNo',S.taxRegNo)}
+                ${cF('legal',t('activityLicenseNo'),'activityLicenseNo',S.activityLicenseNo)}
+                ${cF('legal',t('commercialChamber'),'commercialChamber',S.commercialChamber)}
+                ${editStates.legal?eF(t('legalStatus'),'e_legal_legalStatus',S.legalStatus,'select',legalOpts):vF(t('legalStatus'),`<span class="badge ${statusCls(S.legalStatus)}">${statusTxt(S.legalStatus)}</span>`)}
+            </div>
+        ${sF}
+
+        <!-- 7- المرفقات -->
+        ${sH(6,'fa-images','bg-purple-50 text-purple-600',t('attachments'),'attach')}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">${attHTML}</div>
+        ${sF}
+
+        <!-- 8- الحساب البنكي -->
+        ${sH(7,'fa-university','bg-emerald-50 text-emerald-600',t('bankAccount'),'bank')}
+            <div class="p-5 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="flex items-center gap-4 mb-5 pb-4 border-b border-gray-200">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-100 to-amber-50 flex items-center justify-center"><i class="fas fa-landmark text-emerald-600 text-2xl"></i></div>
+                    <div>${editStates.bank?`<input type="text" class="custom-input text-lg font-bold mb-1" id="e_bank_subAccount" value="${S.bankAccount.subAccount}">`:`<p class="font-bold text-gray-800 text-lg">${S.bankAccount.subAccount}</p>`}
+                    <p class="text-xs text-gray-500">${S.bankAccount.bankCountry} - ${S.bankAccount.currency}</p></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                    ${cF('bank',t('accountOwner'),'accountOwner',S.bankAccount.accountOwner)}
+                    ${cF('bank',t('accountNumber'),'accountNumber',S.bankAccount.accountNumber)}
+                    ${cF('bank',t('iban'),'iban',S.bankAccount.iban)}
+                    ${cF('bank',t('swiftCode'),'swiftCode',S.bankAccount.swiftCode)}
+                    ${cF('bank',t('currency'),'currency',S.bankAccount.currency)}
+                    ${cF('bank',t('bankCountry'),'bankCountry',S.bankAccount.bankCountry)}
+                </div>
+            </div>
+        ${sF}
+
+        <!-- 9- البيانات الضريبية -->
+        ${sH(8,'fa-receipt','bg-orange-50 text-orange-600',t('taxInfo'),'tax')}
+            ${editStates.tax?`
+                <div class="data-field flex items-center gap-3">
+                    <input type="checkbox" id="e_tax_isRegistered" ${S.taxInfo.isRegistered?'checked':''} class="w-5 h-5 accent-emerald-600 cursor-pointer" onchange="render()">
+                    <label for="e_tax_isRegistered" class="data-label mb-0 cursor-pointer">${t('isTaxRegistered')}</label>
+                </div>
+                ${S.taxInfo.isRegistered?`<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 mt-4">
+                    ${cF('tax',t('taxNumber'),'taxNumber',S.taxInfo.taxNumber)}
+                    ${cF('tax',t('taxRate'),'taxRate',S.taxInfo.taxRate,'number')}
+                    ${cF('tax',t('taxType'),'taxType',S.taxInfo.taxType)}
+                    ${cF('tax',t('taxCountry'),'taxCountry',S.taxInfo.taxCountry)}
+                </div>`:'<div class="p-3 bg-red-50 rounded-xl text-red-600 text-sm mt-2">'+t('no')+'</div>'}
+            `:S.taxInfo.isRegistered?`
+                <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 mb-5 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center"><i class="fas fa-check text-emerald-600"></i></div>
+                    <span class="text-emerald-700 font-bold">${t('isTaxRegistered')}</span><span class="text-gray-500 text-sm mr-2">- ${S.taxInfo.taxType}</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8">
+                    ${vF(t('taxNumber'),`<span class="font-mono text-emerald-700">${S.taxInfo.taxNumber}</span>`)}
+                    <div class="data-field"><div class="data-label">${t('taxRate')}</div>
+                        <div class="flex items-center gap-3"><div class="data-value font-bold text-amber-600 text-3xl">${S.taxInfo.taxRate}%</div>
+                        <div class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden max-w-[140px]"><div class="h-full bg-gradient-to-l from-amber-400 to-emerald-500 rounded-full" style="width:${S.taxInfo.taxRate*4}%"></div></div></div>
+                    </div>
+                    ${vF(t('taxType'),S.taxInfo.taxType)}
+                    ${vF(t('taxCountry'),S.taxInfo.taxCountry)}
+                </div>
+            `:`<div class="p-4 bg-red-50 rounded-xl border border-red-200 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center"><i class="fas fa-times text-red-500"></i></div>
+                <span class="text-red-600 font-bold">${t('isTaxRegistered')}: ${t('no')}</span>
+            </div>`}
+        ${sF}
+
+        <!-- 10- بيانات الشحن -->
+        ${sH(9,'fa-truck','bg-cyan-50 text-cyan-600',t('shippingData'),'ship')}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                ${cF('ship',t('shippingCompany'),'company',S.shipping.company)}
+                ${cF('ship',t('shippingMethod'),'method',S.shipping.method)}
+                ${cF('ship',t('deliveryLocations'),'deliveryLocations',S.shipping.deliveryLocations)}
+                ${cF('ship',t('deliveryTime'),'deliveryTime',S.shipping.deliveryTime)}
+                ${cF('ship',t('shippingCost'),'shippingCost',S.shipping.shippingCost)}
+                <div class="data-field pt-5">${editStates.ship?`
+                    <label class="flex items-center gap-3 cursor-pointer p-3 bg-gray-50 rounded-xl border border-gray-200">
+                        <input type="checkbox" id="e_ship_internationalShipping" ${S.shipping.internationalShipping?'checked':''} class="w-5 h-5 accent-emerald-600">
+                        <span class="font-semibold text-sm text-gray-700">${t('internationalShipping')}</span>
+                    </label>`:vF(t('internationalShipping'),`<span class="badge ${S.shipping.internationalShipping?'badge-success':'badge-danger'}">${S.shipping.internationalShipping?'<i class="fas fa-check-circle mr-1"></i>'+t('yes'):'<i class="fas fa-times-circle mr-1"></i>'+t('no')}</span>`)}</div>
+            </div>
+        ${sF}
+
+        <!-- 11- طرق الدفع -->
+        ${sH(10,'fa-credit-card','bg-green-50 text-green-600',t('paymentMethods'),'pay')}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">${payHTML}</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8">
+                ${cF('pay',t('paymentDeliveryTime'),'deliveryTime',S.payment.deliveryTime)}
+                ${cF('pay',t('minInvoice'),'minInvoice',S.payment.minInvoice)}
+                ${cF('pay',t('commissionRate'),'commissionRate',S.payment.commissionRate,'number')}
+                ${cF('pay',t('paymentCurrency'),'currency',S.payment.currency)}
+            </div>
+        ${sF}
+
+        <div class="h-24"></div>
+    </div>`;
+
+    document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=t(el.getAttribute('data-t'))});
+}
+
+// ===================== أحداث عامة =====================
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('active')})});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));if(e.ctrlKey&&e.key==='p'){e.preventDefault();printProfile()}});
+let sTimer;window.addEventListener('scroll',()=>{clearTimeout(sTimer);sTimer=setTimeout(()=>{const ss=document.querySelectorAll('.section-card'),st=window.scrollY+150;let a=0;ss.forEach((s,i)=>{if(s.offsetTop<=st)a=i});document.querySelectorAll('.sidebar-link').forEach((l,i)=>l.classList.toggle('active',i===a))},50)});
+
+// تعبئة مودال الدخول
+function openEditModal(){
+    document.getElementById('editEmail').value=S.email;
+    document.getElementById('editSecQ').value=S.securityQuestion;
+    document.getElementById('editSecA').value=S.securityAnswer;
+    document.getElementById('newPassword').value='';
+    document.getElementById('confirmPassword').value='';
+    document.getElementById('editError').classList.add('hidden');
+    openModal('editModal');
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض وتعديل بيانات المورد - نظام إدارة المشتريات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root{--pri:#0f766e;--pri-dk:#0a5c56;--pri-lt:#ccfbf1;--pri-gl:rgba(15,118,110,.06);--gold:#b45309;--gold-lt:#fef3c7;--red:#dc2626;--red-lt:#fee2e2;--blue:#1d4ed8;--blue-lt:#dbeafe;--txt:#1a1a2e;--txt2:#475569;--mt:#94a3b8;--bd:#e2e8f0;--bd2:#cbd5e1;--bg:#f1f5f9;--card:#ffffff;--sh:0 1px 3px rgba(0,0,0,.04);--sh2:0 4px 20px rgba(0,0,0,.06);--sh3:0 8px 30px rgba(0,0,0,.08);--radius:14px}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+        .top-bar{background:linear-gradient(135deg,#0a5c56 0%,#0f766e 50%,#14897e 100%);position:sticky;top:0;z-index:60;box-shadow:0 4px 20px rgba(15,118,110,.25)}
+        .top-bar-inner{max-width:1440px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+        .sidebar{width:280px;flex-shrink:0;background:var(--card);border-left:1px solid var(--bd);height:calc(100vh - 60px);position:sticky;top:60px;overflow-y:auto;transition:transform .3s ease}
+        .sidebar-head{padding:20px 18px 14px;border-bottom:1px solid var(--bd)}
+        .nav-item{display:flex;align-items:center;gap:10px;padding:11px 18px;cursor:pointer;transition:all .2s;border-right:3px solid transparent;font-size:12.5px;font-weight:600;color:var(--txt2)}
+        .nav-item:hover{background:var(--pri-gl);color:var(--pri)}
+        .nav-item.active{background:var(--pri-gl);color:var(--pri);border-right-color:var(--pri);font-weight:700}
+        .nav-item .ni-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;background:#f1f5f9;color:var(--mt);transition:all .2s}
+        .nav-item.active .ni-icon,.nav-item:hover .ni-icon{background:var(--pri-lt);color:var(--pri)}
+        .main-content{flex:1;min-width:0;padding:28px 32px 90px}
+        .sec-card{background:var(--card);border:1px solid var(--bd);border-radius:var(--radius);margin-bottom:24px;box-shadow:var(--sh);overflow:hidden;transition:box-shadow .3s}
+        .sec-card:hover{box-shadow:var(--sh2)}
+        .sec-head{padding:18px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--bd);background:linear-gradient(135deg,#fafbfc,#f8fafc)}
+        .sec-head-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px}
+        .sec-body{padding:24px;transition:opacity .2s}
+        .fg{margin-bottom:18px}
+        .fl{display:block;font-size:12px;font-weight:700;color:var(--txt2);margin-bottom:6px}
+        .fl .req{color:var(--red);margin-right:2px}
+        .fl .opt{color:var(--mt);font-weight:400;font-size:10px}
+        .fi{width:100%;background:#fff;border:1.5px solid var(--bd);border-radius:10px;padding:9px 13px;color:var(--txt);font-family:'Cairo',sans-serif;font-size:13px;transition:all .2s;outline:none}
+        .fi:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
+        .fi::placeholder{color:var(--mt)}
+        textarea.fi{resize:vertical;min-height:70px}
+        select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;padding-left:30px}
+        .fi-group{display:grid;gap:16px}
+        .fg2{grid-template-columns:1fr 1fr}.fg3{grid-template-columns:1fr 1fr 1fr}.fg4{grid-template-columns:1fr 1fr 1fr 1fr}
+
+        /* وضع العرض */
+        .view-mode .fi{background:#f8fafc;border-color:transparent;cursor:default;color:var(--txt);font-weight:600}
+        .view-mode .fi:focus{box-shadow:none;border-color:transparent}
+        .view-mode .file-zone{border-color:var(--bd);background:#f8fafc;cursor:default;pointer-events:none}
+        .view-mode .status-chip{cursor:default;pointer-events:none}
+        .view-mode .toggle{cursor:default;pointer-events:none;opacity:.7}
+        .view-mode .logo-preview{cursor:default;pointer-events:none}
+        .view-mode .logo-preview input{display:none}
+        .view-mode select.fi{background-image:none;padding-left:13px}
+
+        /* مفتاح التبديل */
+        .toggle-wrap{display:flex;align-items:center;gap:10px}
+        .toggle{width:44px;height:24px;border-radius:12px;background:var(--bd2);cursor:pointer;position:relative;transition:background .25s;flex-shrink:0}
+        .toggle.on{background:var(--pri)}
+        .toggle::after{content:'';width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px;transition:transform .25s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+        .toggle.on::after{transform:translateX(-20px)}
+
+        /* الأزرار */
+        .btn-pri{background:linear-gradient(135deg,var(--pri),var(--pri-dk));color:#fff;border:none;padding:10px 24px;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:7px}
+        .btn-pri:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,118,110,.3)}
+        .btn-sec{background:#fff;color:var(--txt);border:1.5px solid var(--bd);padding:10px 24px;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:7px}
+        .btn-sec:hover{border-color:var(--pri);color:var(--pri);background:var(--pri-gl)}
+        .btn-gold{background:linear-gradient(135deg,#b45309,#92400e);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:7px}
+        .btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(180,83,9,.3)}
+        .btn-sm{padding:6px 14px;font-size:11px;border-radius:8px}
+        .btn-edit-sec{background:var(--pri-gl);color:var(--pri);border:1px solid rgba(15,118,110,.2);padding:6px 14px;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:700;font-size:11px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px;margin-right:auto}
+        .btn-edit-sec:hover{background:var(--pri);color:#fff}
+
+        /* التوست */
+        .toast-wrap{position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px}
+        .toast-msg{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;box-shadow:var(--sh3);animation:toastIn .35s cubic-bezier(.175,.885,.32,1.275);min-width:300px}
+        .toast-msg.out{animation:toastOut .25s ease forwards}
+        @keyframes toastIn{from{opacity:0;transform:translateY(-16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes toastOut{to{opacity:0;transform:translateY(-12px) scale(.95)}}
+
+        /* شريط التقدم */
+        .progress-bar{height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden}
+        .progress-fill{height:100%;background:#5eead4;border-radius:2px;transition:width .5s ease}
+
+        /* الشعار */
+        .logo-preview{width:90px;height:90px;border:2px dashed var(--bd);border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;background:#fafbfc;overflow:hidden;position:relative}
+        .logo-preview:hover{border-color:var(--pri);background:var(--pri-gl)}
+        .logo-preview img{width:100%;height:100%;object-fit:cover}
+        .logo-preview input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+        /* الحالة القانونية */
+        .status-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;border:1.5px solid var(--bd);background:#fff;color:var(--txt2)}
+        .status-chip:hover{border-color:var(--pri)}
+        .status-chip.on{border-color:var(--pri);background:var(--pri-lt);color:var(--pri)}
+
+        /* رفع الملفات */
+        .file-zone{border:2px dashed var(--bd);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .25s;background:#fafbfc;position:relative}
+        .file-zone:hover{border-color:var(--pri);background:var(--pri-gl)}
+        .file-zone.has-file{border-color:var(--pri);border-style:solid;background:var(--pri-gl)}
+        .file-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .file-thumb{width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:6px}
+
+        /* شريط الإجراءات السفلي */
+        .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--bd);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;z-index:55;box-shadow:0 -4px 20px rgba(0,0,0,.05)}
+
+        /* مفتاح الوضع */
+        .mode-switch{display:flex;align-items:center;background:var(--bg);border-radius:10px;padding:3px;gap:2px}
+        .mode-btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;border:none;font-family:'Cairo';display:flex;align-items:center;gap:5px;background:transparent;color:var(--mt)}
+        .mode-btn.active{background:#fff;color:var(--pri);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+        .mobile-menu-btn{display:none;background:var(--pri);color:#fff;border:none;width:38px;height:38px;border-radius:10px;font-size:16px;cursor:pointer;align-items:center;justify-content:center}
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:49}
+        .supplier-sel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-family:'Cairo';font-weight:600;min-width:180px}
+        .supplier-sel option{color:#333;background:#fff}
+        html{scroll-behavior:smooth}
+
+        .sec-editing{border-color:var(--pri);box-shadow:0 0 0 3px rgba(15,118,110,.08)}
+        .sec-editing .sec-head{background:linear-gradient(135deg,var(--pri-gl),rgba(15,118,110,.03))}
+
+        @media(max-width:1024px){.sidebar{position:fixed;top:60px;right:0;z-index:50;transform:translateX(100%);box-shadow:var(--sh3)}.sidebar.open{transform:translateX(0)}.sidebar-overlay.show{display:block}.mobile-menu-btn{display:flex}.main-content{padding:20px 16px 90px}.fg2,.fg3,.fg4{grid-template-columns:1fr}.bottom-bar{padding:12px 16px}}
+        @media(max-width:640px){.top-bar-inner{padding:10px 14px}.sec-body{padding:16px}.bottom-bar{flex-direction:column;gap:10px}.bottom-bar .btn-row{width:100%;display:flex;gap:8px}.bottom-bar .btn-row button{flex:1;justify-content:center}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    </style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- الهيدر -->
+<header class="top-bar">
+    <div class="top-bar-inner">
+        <div style="display:flex;align-items:center;gap:12px">
+            <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="القائمة"><i class="fas fa-bars"></i></button>
+            <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center"><i class="fas fa-truck-loading text-white" style="font-size:14px"></i></div>
+                <div>
+                    <h1 style="color:#fff;font-size:14px;font-weight:900;line-height:1.3">عرض وتعديل بيانات المورد</h1>
+                    <p style="color:rgba(255,255,255,.6);font-size:10px;font-weight:600">نظام إدارة المشتريات والموردين</p>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+            <select class="supplier-sel" id="supplierSel" onchange="loadSupplier(this.value)"></select>
+            <div class="mode-switch">
+                <button class="mode-btn active" id="modeViewBtn" onclick="setGlobalMode('view')"><i class="fas fa-eye"></i> عرض</button>
+                <button class="mode-btn" id="modeEditBtn" onclick="setGlobalMode('edit')"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div style="text-align:left">
+                <p style="color:rgba(255,255,255,.7);font-size:10px;font-weight:600">الأقسام</p>
+                <p style="color:#5eead4;font-size:13px;font-weight:900" id="progressText">0 من 12</p>
+            </div>
+            <div class="progress-bar" style="width:100px"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+    </div>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div style="display:flex;max-width:1440px;margin:0 auto">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-head">
+            <p style="font-size:11px;font-weight:700;color:var(--mt);margin-bottom:6px">أقسام بيانات المورد</p>
+            <p style="font-size:10px;color:var(--mt)">اضغط للانتقال أو تعديل القسم</p>
+        </div>
+        <nav id="sideNav"></nav>
+    </aside>
+
+    <main class="main-content view-mode" id="mainContent">
+
+        <!-- 1 - البيانات الأساسية -->
+        <section class="sec-card" id="sec-0">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:var(--pri-lt);color:var(--pri)"><i class="fas fa-building"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">البيانات الأساسية للمورد</h3><p style="font-size:10px;color:var(--mt)">المعلومات العامة عن الشركة</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(0)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم الشركة <span class="req">*</span></label><input type="text" class="fi" id="f_companyName" data-req="1" placeholder="اسم الشركة"></div>
+                    <div class="fg"><label class="fl">الاسم التجاري <span class="req">*</span></label><input type="text" class="fi" id="f_tradeName" data-req="1" placeholder="الاسم التجاري"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم صاحب الشركة <span class="req">*</span></label><input type="text" class="fi" id="f_ownerName" data-req="1" placeholder="الاسم رباعي"></div>
+                    <div class="fg"><label class="fl">نوع النشاط <span class="req">*</span></label><select class="fi" id="f_activityType" data-req="1"><option value="">اختر نوع النشاط</option><option>تجارة عامة</option><option>تجارة مقاولات</option><option>استيراد وتصدير</option><option>صناعة وتحويل</option><option>خدمات فنية</option><option>خدمات استشارية</option><option>توريد معدات</option><option>أخرى</option></select></div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">سنة التأسيس <span class="req">*</span></label><input type="number" class="fi" id="f_foundingYear" data-req="1" placeholder="2020" min="1950" max="2025"></div>
+                    <div class="fg"><label class="fl">عدد الموظفين <span class="req">*</span></label><select class="fi" id="f_employees" data-req="1"><option value="">اختر</option><option>أقل من 10</option><option>10 - 50</option><option>51 - 200</option><option>201 - 500</option><option>أكثر من 500</option></select></div>
+                    <div class="fg"><label class="fl">رأس المال <span class="opt">(اختياري)</span></label><input type="text" class="fi" id="f_capital" placeholder="مثال: 500,000 ريال"></div>
+                </div>
+                <div class="fg"><label class="fl">نبذة عن الشركة <span class="req">*</span></label><textarea class="fi" id="f_overview" data-req="1" rows="3" placeholder="نبذة مختصرة عن نشاط الشركة"></textarea></div>
+                <div class="fg">
+                    <label class="fl">شعار الشركة <span class="opt">(اختياري)</span></label>
+                    <div style="display:flex;align-items:center;gap:14px">
+                        <div class="logo-preview" id="logoZone"><input type="file" accept="image/*" onchange="handleLogo(this)"><div id="logoPlaceholder" style="text-align:center"><i class="fas fa-cloud-upload-alt" style="font-size:20px;color:var(--mt)"></i><p style="font-size:9px;color:var(--mt);margin-top:4px">PNG, JPG</p></div></div>
+                        <div style="font-size:11px;color:var(--mt)">اضغط لرفع الشعار<br>الحجم الأقصى 2MB</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2 - بيانات التواصل -->
+        <section class="sec-card" id="sec-1">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:var(--blue-lt);color:var(--blue)"><i class="fas fa-address-book"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات التواصل</h3><p style="font-size:10px;color:var(--mt)">معلومات الاتصال بالشركة</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(1)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم مسؤول التواصل <span class="req">*</span></label><input type="text" class="fi" id="f_contactPerson" data-req="1"></div>
+                    <div class="fg"><label class="fl">الوظيفة <span class="req">*</span></label><input type="text" class="fi" id="f_contactPosition" data-req="1"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">رقم الهاتف <span class="req">*</span></label><input type="tel" class="fi" id="f_phone" data-req="1" dir="ltr"></div>
+                    <div class="fg"><label class="fl">رقم الهاتف البديل</label><input type="tel" class="fi" id="f_altPhone" dir="ltr"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">البريد الإلكتروني <span class="req">*</span></label><input type="email" class="fi" id="f_email" data-req="1" dir="ltr"></div>
+                    <div class="fg"><label class="fl">الموقع الإلكتروني</label><input type="url" class="fi" id="f_website" dir="ltr"></div>
+                </div>
+                <div class="fg">
+                    <label class="fl">حسابات التواصل الاجتماعي</label>
+                    <div class="fi-group fg2" style="margin-top:6px">
+                        <div style="display:flex;align-items:center;gap:8px"><i class="fab fa-linkedin" style="color:#0077b5;font-size:16px;width:20px;text-align:center"></i><input type="text" class="fi" id="f_linkedin" placeholder="رابط LinkedIn" dir="ltr"></div>
+                        <div style="display:flex;align-items:center;gap:8px"><i class="fab fa-twitter" style="color:#1da1f2;font-size:16px;width:20px;text-align:center"></i><input type="text" class="fi" id="f_twitter" placeholder="رابط Twitter/X" dir="ltr"></div>
+                        <div style="display:flex;align-items:center;gap:8px"><i class="fab fa-facebook" style="color:#1877f2;font-size:16px;width:20px;text-align:center"></i><input type="text" class="fi" id="f_facebook" placeholder="رابط Facebook" dir="ltr"></div>
+                        <div style="display:flex;align-items:center;gap:8px"><i class="fab fa-instagram" style="color:#e4405f;font-size:16px;width:20px;text-align:center"></i><input type="text" class="fi" id="f_instagram" placeholder="رابط Instagram" dir="ltr"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3 - بيانات العنوان -->
+        <section class="sec-card" id="sec-2">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:var(--gold-lt);color:var(--gold)"><i class="fas fa-map-marker-alt"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات العنوان</h3><p style="font-size:10px;color:var(--mt)">عناوين الشركة والمستودعات</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(2)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <p style="font-size:12px;font-weight:700;color:var(--pri);margin-bottom:14px"><i class="fas fa-building" style="margin-left:4px"></i>عنوان الشركة</p>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">الدولة <span class="req">*</span></label><select class="fi" id="f_country" data-req="1"><option value="">اختر</option><option>مصر</option><option>السعودية</option><option>الإمارات</option><option>الكويت</option><option>قطر</option><option>البحرين</option><option>عمان</option><option>الأردن</option><option>أخرى</option></select></div>
+                    <div class="fg"><label class="fl">المحافظة <span class="req">*</span></label><input type="text" class="fi" id="f_governorate" data-req="1"></div>
+                    <div class="fg"><label class="fl">المدينة / المنطقة <span class="req">*</span></label><input type="text" class="fi" id="f_area" data-req="1"></div>
+                </div>
+                <div class="fg"><label class="fl">العنوان بالكامل <span class="req">*</span></label><input type="text" class="fi" id="f_address" data-req="1"></div>
+                <div style="border-top:1px solid var(--bd);margin:20px 0;padding-top:18px">
+                    <p style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:14px"><i class="fas fa-warehouse" style="margin-left:4px"></i>عنوان المستودع</p>
+                    <div class="fg"><textarea class="fi" id="f_warehouseAddr" rows="2" placeholder="عنوان المستودع التفصيلي"></textarea></div>
+                </div>
+                <div style="border-top:1px solid var(--bd);margin:20px 0;padding-top:18px">
+                    <p style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:14px"><i class="fas fa-undo-alt" style="margin-left:4px"></i>عنوان الإرجاع</p>
+                    <div class="fg"><textarea class="fi" id="f_returnAddr" rows="2" placeholder="عنوان استلام المرتجعات"></textarea></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4 - البيانات القانونية -->
+        <section class="sec-card" id="sec-3">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#fce7f3;color:#be185d"><i class="fas fa-gavel"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">البيانات القانونية</h3><p style="font-size:10px;color:var(--mt)">السجلات والتراخيص الرسمية</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(3)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">رقم السجل التجاري <span class="req">*</span></label><input type="text" class="fi" id="f_commercialReg" data-req="1" dir="ltr"></div>
+                    <div class="fg"><label class="fl">تاريخ إصدار السجل <span class="req">*</span></label><input type="date" class="fi" id="f_regIssue" data-req="1"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">تاريخ انتهاء السجل <span class="req">*</span></label><input type="date" class="fi" id="f_regExpiry" data-req="1"></div>
+                    <div class="fg"><label class="fl">رقم البطاقة الضريبية <span class="req">*</span></label><input type="text" class="fi" id="f_taxCard" data-req="1" dir="ltr"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">رقم التسجيل الضريبي (VAT) <span class="req">*</span></label><input type="text" class="fi" id="f_taxReg" data-req="1" dir="ltr"></div>
+                    <div class="fg"><label class="fl">رقم رخصة النشاط <span class="req">*</span></label><input type="text" class="fi" id="f_activityLicense" data-req="1" dir="ltr"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">الغرفة التجارية</label><input type="text" class="fi" id="f_chamber"></div>
+                    <div class="fg"><label class="fl">الحالة القانونية <span class="req">*</span></label>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="legalStatus">
+                            <span class="status-chip" onclick="pickStatus(this)">ذات مسئولية محدودة</span>
+                            <span class="status-chip" onclick="pickStatus(this)">شركة تضامن</span>
+                            <span class="status-chip" onclick="pickStatus(this)">شركة مساهمة</span>
+                            <span class="status-chip" onclick="pickStatus(this)">فرد حر</span>
+                            <span class="status-chip" onclick="pickStatus(this)">أخرى</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5 - المستندات المطلوبة -->
+        <section class="sec-card" id="sec-4">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-file-alt"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">المستندات المطلوبة</h3><p style="font-size:10px;color:var(--mt)">المستندات الرسمية المرفقة</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(4)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body"><div class="fi-group fg2" id="docsGrid"></div></div>
+        </section>
+
+        <!-- 6 - بيانات الحساب البنكي -->
+        <section class="sec-card" id="sec-5">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-university"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات الحساب البنكي</h3><p style="font-size:10px;color:var(--mt)">حساب تحويل المستحقات المالية</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(5)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم البنك <span class="req">*</span></label><select class="fi" id="f_bankName" data-req="1"><option value="">اختر البنك</option><option>البنك الأهلي المصري</option><option>بنك مصر</option><option>البنك التجاري الدولي</option><option>بنك HSBC</option><option>البنك العربي</option><option>البنك السعودي الفرنسي</option><option>بنك الراجحي</option><option>بنك الأهلي السعودي</option><option>أخرى</option></select></div>
+                    <div class="fg"><label class="fl">اسم صاحب الحساب <span class="req">*</span></label><input type="text" class="fi" id="f_accountHolder" data-req="1"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">رقم الحساب <span class="req">*</span></label><input type="text" class="fi" id="f_accountNumber" data-req="1" dir="ltr"></div>
+                    <div class="fg"><label class="fl">IBAN <span class="req">*</span></label><input type="text" class="fi" id="f_iban" data-req="1" dir="ltr" style="font-family:monospace;font-size:12px"></div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">SWIFT Code</label><input type="text" class="fi" id="f_swift" dir="ltr" style="font-family:monospace;text-transform:uppercase"></div>
+                    <div class="fg"><label class="fl">العملة <span class="req">*</span></label><select class="fi" id="f_currency" data-req="1"><option value="">اختر</option><option>جنيه مصري (EGP)</option><option>ريال سعودي (SAR)</option><option>درهم إماراتي (AED)</option><option>دولار أمريكي (USD)</option><option>يورو (EUR)</option></select></div>
+                    <div class="fg"><label class="fl">دولة البنك <span class="req">*</span></label><select class="fi" id="f_bankCountry" data-req="1"><option value="">اختر</option><option>مصر</option><option>السعودية</option><option>الإمارات</option><option>أخرى</option></select></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7 - بيانات الضرائب -->
+        <section class="sec-card" id="sec-6">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#fee2e2;color:var(--red)"><i class="fas fa-percentage"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات الضرائب</h3><p style="font-size:10px;color:var(--mt)">معلومات التسجيل الضريبي</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(6)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg"><div class="toggle-wrap"><div class="toggle" id="taxToggle" onclick="toggleTax()"></div><div><p style="font-size:13px;font-weight:700">هل المورد مسجل ضريبياً؟</p><p style="font-size:10px;color:var(--mt)">تفعيل هذا الخيار يظهر حقول الضريبة</p></div></div></div>
+                <div id="taxFields" style="display:none;margin-top:16px">
+                    <div class="fg fi-group fg2">
+                        <div class="fg"><label class="fl">رقم VAT <span class="req">*</span></label><input type="text" class="fi" id="f_vatNumber" dir="ltr"></div>
+                        <div class="fg"><label class="fl">نسبة الضريبة <span class="req">*</span></label><select class="fi" id="f_taxRate"><option value="">اختر</option><option>0%</option><option>5%</option><option>10%</option><option>14%</option><option>15%</option><option>أخرى</option></select></div>
+                    </div>
+                    <div class="fg fi-group fg2">
+                        <div class="fg"><label class="fl">نوع الضريبة <span class="req">*</span></label><select class="fi" id="f_taxType"><option value="">اختر</option><option>ضريبة القيمة المضافة</option><option>ضريبة الدخل</option><option>ضريبة المبيعات</option><option>أخرى</option></select></div>
+                        <div class="fg"><label class="fl">دولة التسجيل الضريبي <span class="req">*</span></label><select class="fi" id="f_taxCountry"><option value="">اختر</option><option>مصر</option><option>السعودية</option><option>الإمارات</option><option>الكويت</option><option>أخرى</option></select></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8 - بيانات الشحن -->
+        <section class="sec-card" id="sec-7">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#fef3c7;color:#d97706"><i class="fas fa-shipping-fast"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات الشحن</h3><p style="font-size:10px;color:var(--mt)">طرق الشحن والتوصيل المتاحة</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(7)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg"><label class="fl">شركة الشحن المتعامل معها</label><input type="text" class="fi" id="f_shipCompany"></div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">طريقة الشحن <span class="req">*</span></label><input type="text" class="fi" id="f_shipMethod" data-req="1"></div>
+                    <div class="fg"><label class="fl">أماكن التوصيل</label><input type="text" class="fi" id="f_deliveryAreas"></div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">مدة الاستلام</label><input type="text" class="fi" id="f_deliveryTime"></div>
+                    <div class="fg"><label class="fl">تكلفة الشحن</label><input type="text" class="fi" id="f_shipCost"></div>
+                    <div class="fg">
+                        <div class="toggle-wrap" style="margin-top:22px"><div class="toggle" id="intlToggle" onclick="this.classList.toggle('on')"></div><p style="font-size:13px;font-weight:700">الشحن الدولي</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9 - بيانات الدفع -->
+        <section class="sec-card" id="sec-8">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#dcfce7;color:#16a34a"><i class="fas fa-credit-card"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات الدفع</h3><p style="font-size:10px;color:var(--mt)">طرق الدفع والشروط المالية</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(8)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg"><label class="fl">طرق الدفع المقبولة <span class="req">*</span></label>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="payMethods">
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-university" style="font-size:9px"></i>تحويل بنكي</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-credit-card" style="font-size:9px"></i>بطاقة ائتمان</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-mobile-alt" style="font-size:9px"></i>محفظة إلكترونية</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-hand-holding-usd" style="font-size:9px"></i>نقداً عند الاستلام</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-calendar-check" style="font-size:9px"></i>آجل (30 يوم)</span>
+                        <span class="status-chip" onclick="toggleChip(this)"><i class="fas fa-calendar-check" style="font-size:9px"></i>آجل (60 يوم)</span>
+                    </div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">مدة الاستلام بعد الدفع</label><input type="text" class="fi" id="f_payDeliveryTime"></div>
+                    <div class="fg"><label class="fl">الحد الأدنى للفاتورة</label><input type="text" class="fi" id="f_minInvoice"></div>
+                    <div class="fg"><label class="fl">نسبة العمولة</label><input type="text" class="fi" id="f_commission"></div>
+                </div>
+                <div class="fg"><label class="fl">العملة الأساسية <span class="req">*</span></label><select class="fi" id="f_payCurrency" data-req="1"><option value="">اختر</option><option>جنيه مصري (EGP)</option><option>ريال سعودي (SAR)</option><option>درهم إماراتي (AED)</option><option>دولار أمريكي (USD)</option><option>يورو (EUR)</option></select></div>
+            </div>
+        </section>
+
+        <!-- 10 - بيانات المنتجات -->
+        <section class="sec-card" id="sec-9">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#e0f2fe;color:#0284c7"><i class="fas fa-boxes-stacked"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات المنتجات</h3><p style="font-size:10px;color:var(--mt)">معلومات المنتجات والخدمات</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(9)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم البند التابع</label><input type="text" class="fi" id="f_itemName"></div>
+                    <div class="fg"><label class="fl">الفئات</label><input type="text" class="fi" id="f_categories"></div>
+                </div>
+                <div class="fg fi-group fg3">
+                    <div class="fg"><label class="fl">متوسط عدد المنتجات</label><input type="text" class="fi" id="f_avgProducts"></div>
+                    <div class="fg"><label class="fl">الحد الأدنى للطلب</label><input type="text" class="fi" id="f_moq"></div>
+                    <div class="fg"><label class="fl">مدة التجهيز</label><input type="text" class="fi" id="f_prepTime"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11 - بيانات الجودة -->
+        <section class="sec-card" id="sec-10">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#f0fdf4;color:#15803d"><i class="fas fa-award"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات الجودة والاعتماد</h3><p style="font-size:10px;color:var(--mt)">الشهادات والمواصفات</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(10)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg"><label class="fl">شهادات الجودة</label><input type="text" class="fi" id="f_qualityCerts" placeholder="مثال: ISO 9001, ISO 14001"></div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">شهادات المطابقة</label><input type="text" class="fi" id="f_complianceCerts" placeholder="مثال: CE Mark, FCC"></div>
+                    <div class="fg"><label class="fl">شهادات السلامة</label><input type="text" class="fi" id="f_safetyCerts" placeholder="مثال: OHSAS 18001"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 12 - بيانات المستخدم -->
+        <section class="sec-card" id="sec-11">
+            <div class="sec-head">
+                <div class="sec-head-icon" style="background:#f5f3ff;color:#6d28d9"><i class="fas fa-user-shield"></i></div>
+                <div style="flex:1"><h3 style="font-size:14px;font-weight:900">بيانات المستخدم داخل النظام</h3><p style="font-size:10px;color:var(--mt)">حساب الدخول للمنصة</p></div>
+                <button class="btn-edit-sec sec-edit-btn" onclick="editSection(11)"><i class="fas fa-pen"></i> تعديل</button>
+            </div>
+            <div class="sec-body">
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">اسم المستخدم <span class="req">*</span></label><input type="text" class="fi" id="f_username" data-req="1" dir="ltr"></div>
+                    <div class="fg"><label class="fl">البريد الإلكتروني <span class="req">*</span></label><input type="email" class="fi" id="f_userEmail" data-req="1" dir="ltr"></div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">كلمة المرور <span class="req">*</span></label>
+                        <div style="position:relative"><input type="password" class="fi" id="f_password" data-req="1" dir="ltr"><div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--mt)" onclick="togglePassVis('f_password',this)"><i class="fas fa-eye" style="font-size:13px"></i></div></div>
+                    </div>
+                    <div class="fg"><label class="fl">تأكيد كلمة المرور</label>
+                        <div style="position:relative"><input type="password" class="fi" id="f_password2" dir="ltr"><div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--mt)" onclick="togglePassVis('f_password2',this)"><i class="fas fa-eye" style="font-size:13px"></i></div></div>
+                    </div>
+                </div>
+                <div class="fg fi-group fg2">
+                    <div class="fg"><label class="fl">سؤال الأمان <span class="opt">(اختياري)</span></label><select class="fi" id="f_secQ"><option value="">بدون</option><option>ما هي مدينتك المفضلة؟</option><option>ما هو اسم مدرستك الابتدائية؟</option><option>ما هو اسم حيوانك الأليف؟</option><option>ما هو لونك المفضل؟</option></select></div>
+                    <div class="fg"><label class="fl">إجابة سؤال الأمان</label><input type="text" class="fi" id="f_secA"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- شريط الإجراءات السفلي -->
+<div class="bottom-bar" id="bottomBar">
+    <div style="font-size:11px;color:var(--mt)"><i class="fas fa-info-circle" style="margin-left:4px"></i> الحقول المشار إليها بـ <span style="color:var(--red);font-weight:700">*</span> مطلوبة</div>
+    <div class="btn-row" style="display:flex;gap:10px" id="bottomBtns">
+        <button class="btn-sec" onclick="printForm()"><i class="fas fa-print"></i> طباعة</button>
+    </div>
+</div>
+
+<script>
+/* ===== بيانات الموردين ===== */
+var suppliers = [
+    {
+        companyName:"شركة النور للتجارة العامة",tradeName:"النور تريد",ownerName:"أحمد محمد العلي",
+        activityType:"تجارة عامة",foundingYear:2015,employees:"10 - 50",capital:"5,000,000 ريال",
+        overview:"شركة النور للتجارة العامة متخصصة في استيراد وتوزيع مواد البناء والأدوات الصحية منذ عام 2015. نخدم أكثر من 500 عميل في المملكة العربية السعودية.",
+        logo:"https://picsum.photos/seed/alnour-logo/200/200.jpg",
+        contactPerson:"محمد أحمد العلي",contactPosition:"مدير المبيعات",
+        phone:"+966501234567",altPhone:"+966501234568",email:"sales@alnour-trading.com",website:"www.alnour-trading.com",
+        linkedin:"linkedin.com/company/alnour-trading",twitter:"twitter.com/alnour_trading",facebook:"facebook.com/alnour.trading",instagram:"instagram.com/alnour_trading",
+        country:"السعودية",governorate:"الرياض",area:"الروضة",address:"شارع الملك فهد، حي الروضة، بناء رقم 45",
+        warehouseAddr:"المنطقة الصناعية الثانية، شارع 5، مخزن رقم 12",returnAddr:"صندوق بريد 12345، الرياض 11432",
+        commercialReg:"1010234567",regIssue:"2015-03-15",regExpiry:"2026-03-14",taxCard:"300123456789",taxReg:"310012345678",activityLicense:"L-2015-7890",chamber:"عضو غرفة الرياض التجارية - رقم عضوية 45678",legalStatus:"ذات مسئولية محدودة",
+        docs:{crPhoto:"https://picsum.photos/seed/cr-alnour/600/400.jpg",tcPhoto:"https://picsum.photos/seed/tc-alnour/600/400.jpg",vatCert:"https://picsum.photos/seed/vat-alnour/600/400.jpg",alPhoto:"https://picsum.photos/seed/al-alnour/600/400.jpg",idPhoto:"https://picsum.photos/seed/id-alnour/600/400.jpg",bcPhoto:"https://picsum.photos/seed/bc-alnour/600/400.jpg",authPhoto:"https://picsum.photos/seed/auth-alnour/600/400.jpg",logoDoc:"https://picsum.photos/seed/ld-alnour/600/400.jpg",catalogPhoto:"https://picsum.photos/seed/cat-alnour/600/400.jpg"},
+        bankName:"البنك الأهلي السعودي",accountHolder:"شركة النور للتجارة العامة",accountNumber:"SA0380000000608010167519",iban:"SA0380000000608010167519",swift:"NCBKSAJE",currency:"ريال سعودي (SAR)",bankCountry:"السعودية",
+        taxRegistered:true,vatNumber:"300123456789003",taxRate:"15%",taxType:"ضريبة القيمة المضافة",taxCountry:"السعودية",
+        shipCompany:"شركة أرامكس للشحن",shipMethod:"شحن بري وجوي",deliveryAreas:"الرياض، جدة، الدمام، مكة المكرمة، المدينة المنورة",deliveryTime:"3-5 أيام عمل",shipCost:"150 ريال عن كل شحنة",intlShipping:true,
+        payMethods:["تحويل بنكي","محفظة إلكترونية"],payDeliveryTime:"بعد تأكيد الدفع مباشرة",minInvoice:"5,000 ريال",commission:"5%",payCurrency:"ريال سعودي (SAR)",
+        itemName:"موردو مواد البناء",categories:"مواد بناء، أدوات صحية، دهانات",avgProducts:"500+ منتج",moq:"100 وحدة",prepTime:"3-5 أيام عمل",
+        qualityCerts:"ISO 9001:2015",complianceCerts:"SASO, QMark",safetyCerts:"OHSAS 18001",
+        username:"supplier_alnour",userEmail:"info@alnour-trading.com",password:"Nour@2024#Sec",secQ:"ما هو اسم مدرستك الابتدائية؟",secA:"الفلاح"
+    },
+    {
+        companyName:"شركة الصفا للتقنية",tradeName:"صفا تيك",ownerName:"خالد عبدالله السعيد",
+        activityType:"خدمات فنية",foundingYear:2019,employees:"10 - 50",capital:"3,000,000 ريال",
+        overview:"شركة الصفا للتقنية متخصصة في استيراد وتوزيع أجهزة الحاسب الآلي والمستلزمات التقنية مع ضمان جودة عالية وخدمة ما بعد البيع.",
+        logo:"https://picsum.photos/seed/alsafa-logo/200/200.jpg",
+        contactPerson:"سارة خالد السعيد",contactPosition:"مديرة التسويق",
+        phone:"+966509876543",altPhone:"+966509876544",email:"marketing@alsafa-tech.com",website:"www.alsafa-tech.com",
+        linkedin:"linkedin.com/company/alsafa-tech",twitter:"twitter.com/alsafa_tech",facebook:"facebook.com/alsafa.tech",instagram:"instagram.com/alsafa_tech",
+        country:"السعودية",governorate:"جدة",area:"الحمراء",address:"طريق الملك عبدالله، حي الحمراء، برج الصفا، الطابق 8",
+        warehouseAddr:"مستودعات جدة الحرة، منطقة B، مستودع 34",returnAddr:"صندوق بريد 67890، جدة 21589",
+        commercialReg:"4020345678",regIssue:"2019-07-20",regExpiry:"2030-07-19",taxCard:"300987654321",taxReg:"310098765432",activityLicense:"L-2019-4567",chamber:"عضو غرفة جدة التجارية - رقم عضوية 78901",legalStatus:"فرد حر",
+        docs:{crPhoto:"https://picsum.photos/seed/cr-alsafa/600/400.jpg",tcPhoto:"https://picsum.photos/seed/tc-alsafa/600/400.jpg",vatCert:"https://picsum.photos/seed/vat-alsafa/600/400.jpg",alPhoto:"https://picsum.photos/seed/al-alsafa/600/400.jpg",idPhoto:"https://picsum.photos/seed/id-alsafa/600/400.jpg",bcPhoto:"https://picsum.photos/seed/bc-alsafa/600/400.jpg",authPhoto:"https://picsum.photos/seed/auth-alsafa/600/400.jpg",logoDoc:"https://picsum.photos/seed/ld-alsafa/600/400.jpg",catalogPhoto:"https://picsum.photos/seed/cat-alsafa/600/400.jpg"},
+        bankName:"البنك العربي",accountHolder:"شركة الصفا للتقنية",accountNumber:"SA6610000000000000001234",iban:"SA6610000000000000001234",swift:"RIBLSARI",currency:"ريال سعودي (SAR)",bankCountry:"السعودية",
+        taxRegistered:true,vatNumber:"300987654321003",taxRate:"15%",taxType:"ضريبة القيمة المضافة",taxCountry:"السعودية",
+        shipCompany:"شركة ديل للشحن",shipMethod:"شحن بري فقط",deliveryAreas:"جدة، الرياض، الدمام",deliveryTime:"5-7 أيام عمل",shipCost:"100 ريال عن كل شحنة",intlShipping:false,
+        payMethods:["تحويل بنكي","نقداً عند الاستلام"],payDeliveryTime:"يوم عمل واحد بعد الدفع",minInvoice:"2,000 ريال",commission:"3%",payCurrency:"ريال سعودي (SAR)",
+        itemName:"موردو الأجهزة التقنية",categories:"حاسب آلي، طابعات، شبكات",avgProducts:"300+ منتج",moq:"50 وحدة",prepTime:"2-3 أيام عمل",
+        qualityCerts:"ISO 27001",complianceCerts:"CE Mark",safetyCerts:"",
+        username:"supplier_alsafa",userEmail:"contact@alsafa-tech.com",password:"Safa@2024#Pro",secQ:"ما هي مدينتك المفضلة؟",secA:"جدة"
+    },
+    {
+        companyName:"شركة البركة للأغذية",tradeName:"بركة فودز",ownerName:"عبدالرحمن سالم المصري",
+        activityType:"استيراد وتصدير",foundingYear:2012,employees:"201 - 500",capital:"15,000,000 ريال",
+        overview:"شركة البركة للأغذية من الشركات الرائدة في استيراد وتوزيع المواد الغذائية الاستهلاكية. نمتلك شبكة توزيع واسعة تغطي جميع مناطق المملكة.",
+        logo:"https://picsum.photos/seed/albaraka-logo/200/200.jpg",
+        contactPerson:"فاطمة عبدالرحمن المصري",contactPosition:"مديرة العلاقات التجارية",
+        phone:"+966505551234",altPhone:"+966505551235",email:"relations@albaraka-food.com",website:"www.albaraka-food.com",
+        linkedin:"linkedin.com/company/albaraka-foods",twitter:"twitter.com/albaraka_foods",facebook:"facebook.com/albaraka.foods",instagram:"instagram.com/albaraka_foods",
+        country:"السعودية",governorate:"الرياض",area:"العليا",address:"طريق الأمير سلطان، حي العليا، مجمع البركة التجاري",
+        warehouseAddr:"مدينة الملك عبدالله الاقتصادية، المخازن المركزية، قطاع 7",returnAddr:"صندوق بريد 11111، الرياض 11543",
+        commercialReg:"1010567890",regIssue:"2012-01-10",regExpiry:"2024-01-09",taxCard:"300456789012",taxReg:"310045678901",activityLicense:"L-2012-1234",chamber:"عضو غرفة الرياض التجارية - رقم عضوية 23456",legalStatus:"شركة تضامن",
+        docs:{crPhoto:"https://picsum.photos/seed/cr-baraka/600/400.jpg",tcPhoto:"https://picsum.photos/seed/tc-baraka/600/400.jpg",vatCert:"https://picsum.photos/seed/vat-baraka/600/400.jpg",alPhoto:"https://picsum.photos/seed/al-baraka/600/400.jpg",idPhoto:"https://picsum.photos/seed/id-baraka/600/400.jpg",bcPhoto:"https://picsum.photos/seed/bc-baraka/600/400.jpg",authPhoto:"https://picsum.photos/seed/auth-baraka/600/400.jpg",logoDoc:"https://picsum.photos/seed/ld-baraka/600/400.jpg",catalogPhoto:"https://picsum.photos/seed/cat-baraka/600/400.jpg"},
+        bankName:"بنك الراجحي",accountHolder:"شركة البركة للأغذية (تضامن)",accountNumber:"SA0380000000608010167520",iban:"SA0380000000608010167520",swift:"RJHISARI",currency:"ريال سعودي (SAR)",bankCountry:"السعودية",
+        taxRegistered:true,vatNumber:"300456789012003",taxRate:"15%",taxType:"ضريبة القيمة المضافة",taxCountry:"السعودية",
+        shipCompany:"أسطول الشركة الخاص + شركة SMSA",shipMethod:"شحن بري بالسيارات المبردة",deliveryAreas:"جميع مناطق المملكة العربية السعودية",deliveryTime:"1-3 أيام عمل",shipCost:"مجاني فوق 10,000 ريال، otherwise 200 ريال",intlShipping:false,
+        payMethods:["تحويل بنكي","محفظة إلكترونية","نقداً عند الاستلام"],payDeliveryTime:"نفس اليوم للرياض، يوم عمل واحد لباقي المدن",minInvoice:"10,000 ريال",commission:"7%",payCurrency:"ريال سعودي (SAR)",
+        itemName:"موردو المواد الغذائية",categories:"مواد غذائية استهلاكية، مشروبات، حلويات",avgProducts:"2000+ منتج",moq:"500 وحدة",prepTime:"1-2 يوم عمل",
+        qualityCerts:"ISO 22000, HACCP",complianceCerts:"SFDA, Halal",safetyCerts:"ISO 45001",
+        username:"supplier_albaraka",userEmail:"info@albaraka-food.com",password:"Baraka@2024$X",secQ:"ما هو اسم حيوانك الأليف؟",secA:"سيلفر"
+    }
+];
+
+/* ===== المتغيرات ===== */
+var currentIdx = 0;
+var globalMode = 'view'; // view | edit
+var editingSec = -1;
+var sections = [
+    {icon:'fa-building',label:'البيانات الأساسية',color:'var(--pri)'},
+    {icon:'fa-address-book',label:'بيانات التواصل',color:'var(--blue)'},
+    {icon:'fa-map-marker-alt',label:'بيانات العنوان',color:'var(--gold)'},
+    {icon:'fa-gavel',label:'البيانات القانونية',color:'#be185d'},
+    {icon:'fa-file-alt',label:'المستندات المطلوبة',color:'#7c3aed'},
+    {icon:'fa-university',label:'الحساب البنكي',color:'#059669'},
+    {icon:'fa-percentage',label:'بيانات الضرائب',color:'var(--red)'},
+    {icon:'fa-shipping-fast',label:'بيانات الشحن',color:'#d97706'},
+    {icon:'fa-credit-card',label:'بيانات الدفع',color:'#16a34a'},
+    {icon:'fa-boxes-stacked',label:'بيانات المنتجات',color:'#0284c7'},
+    {icon:'fa-award',label:'بيانات الجودة',color:'#15803d'},
+    {icon:'fa-user-shield',label:'بيانات المستخدم',color:'#6d28d9'}
+];
+var docsList = [
+    {key:'crPhoto',label:'صورة السجل التجاري',req:true},
+    {key:'tcPhoto',label:'البطاقة الضريبية',req:true},
+    {key:'vatCert',label:'شهادة ضريبة القيمة المضافة',req:true},
+    {key:'alPhoto',label:'رخصة النشاط',req:true},
+    {key:'idPhoto',label:'الهوية / جواز السفر للممثل القانوني',req:true},
+    {key:'bcPhoto',label:'شهادة الحساب البنكي',req:true},
+    {key:'authPhoto',label:'تفويض رسمي',req:false},
+    {key:'logoDoc',label:'شعار الشركة',req:false},
+    {key:'catalogPhoto',label:'كتالوج المنتجات',req:false}
+];
+
+/* ===== بناء الشريط الجانبي ===== */
+function buildNav(){
+    var html='';
+    for(var i=0;i<sections.length;i++){
+        var s=sections[i];
+        html+='<div class="nav-item" onclick="goToSection('+i+')" id="nav-'+i+'">';
+        html+='<div class="ni-icon"><i class="fas '+s.icon+'"></i></div>';
+        html+='<span>'+s.label+'</span>';
+        html+='<div class="ni-check"><i class="fas fa-check"></i></div>';
+        html+='</div>';
+    }
+    document.getElementById('sideNav').innerHTML=html;
+}
+
+/* ===== بناء شبكة المستندات ===== */
+function buildDocs(){
+    var html='';
+    var d=suppliers[currentIdx].docs;
+    for(var i=0;i<docsList.length;i++){
+        var doc=docsList[i];
+        var hasFile=d[doc.key]?'has-file':'';
+        html+='<div class="fg">';
+        html+='<label class="fl">'+doc.label+(doc.req?' <span class="req">*</span>':' <span class="opt">(اختياري)</span>')+'</label>';
+        html+='<div class="file-zone '+hasFile+'" id="fz-'+doc.key+'">';
+        if(d[doc.key]){
+            html+='<img src="'+d[doc.key]+'" class="file-thumb" alt="'+doc.label+'">';
+            html+='<p style="font-size:10px;color:var(--pri);font-weight:600"><i class="fas fa-check-circle" style="margin-left:4px"></i>مرفق</p>';
+        } else {
+            html+='<i class="fas fa-cloud-upload-alt" style="font-size:22px;color:var(--mt);margin-bottom:6px;display:block"></i>';
+            html+='<p style="font-size:11px;color:var(--mt)">اضغط لرفع المستند</p>';
+            html+='<p style="font-size:9px;color:var(--bd2)">PDF, JPG, PNG - حد أقصى 5MB</p>';
+        }
+        html+='<input type="file" accept="image/*,.pdf" onchange="handleDocUpload(this,\''+doc.key+'\')">';
+        html+='</div></div>';
+    }
+    document.getElementById('docsGrid').innerHTML=html;
+}
+
+/* ===== تعبئة الحقول من بيانات المورد ===== */
+function populateForm(d){
+    setVal('f_companyName',d.companyName);
+    setVal('f_tradeName',d.tradeName);
+    setVal('f_ownerName',d.ownerName);
+    setSel('f_activityType',d.activityType);
+    setVal('f_foundingYear',d.foundingYear);
+    setSel('f_employees',d.employees);
+    setVal('f_capital',d.capital);
+    setVal('f_overview',d.overview);
+    // شعار
+    if(d.logo){
+        document.getElementById('logoZone').innerHTML='<input type="file" accept="image/*" onchange="handleLogo(this)"><img src="'+d.logo+'" alt="شعار">';
+    }
+    // التواصل
+    setVal('f_contactPerson',d.contactPerson);
+    setVal('f_contactPosition',d.contactPosition);
+    setVal('f_phone',d.phone);
+    setVal('f_altPhone',d.altPhone);
+    setVal('f_email',d.email);
+    setVal('f_website',d.website);
+    setVal('f_linkedin',d.linkedin||'');
+    setVal('f_twitter',d.twitter||'');
+    setVal('f_facebook',d.facebook||'');
+    setVal('f_instagram',d.instagram||'');
+    // العنوان
+    setSel('f_country',d.country);
+    setVal('f_governorate',d.governorate);
+    setVal('f_area',d.area);
+    setVal('f_address',d.address);
+    setVal('f_warehouseAddr',d.warehouseAddr);
+    setVal('f_returnAddr',d.returnAddr);
+    // القانونية
+    setVal('f_commercialReg',d.commercialReg);
+    setVal('f_regIssue',d.regIssue);
+    setVal('f_regExpiry',d.regExpiry);
+    setVal('f_taxCard',d.taxCard);
+    setVal('f_taxReg',d.taxReg);
+    setVal('f_activityLicense',d.activityLicense);
+    setVal('f_chamber',d.chamber);
+    // الحالة القانونية
+    var chips=document.querySelectorAll('#legalStatus .status-chip');
+    chips.forEach(function(c){c.classList.remove('on');if(c.textContent.trim()===d.legalStatus)c.classList.add('on');});
+    // المستندات
+    buildDocs();
+    // البنك
+    setSel('f_bankName',d.bankName);
+    setVal('f_accountHolder',d.accountHolder);
+    setVal('f_accountNumber',d.accountNumber);
+    setVal('f_iban',d.iban);
+    setVal('f_swift',d.swift);
+    setSel('f_currency',d.currency);
+    setSel('f_bankCountry',d.bankCountry);
+    // الضرائب
+    var tt=document.getElementById('taxToggle');
+    if(d.taxRegistered){tt.classList.add('on');document.getElementById('taxFields').style.display='block';}
+    else{tt.classList.remove('on');document.getElementById('taxFields').style.display='none';}
+    setVal('f_vatNumber',d.vatNumber||'');
+    setSel('f_taxRate',d.taxRate||'');
+    setSel('f_taxType',d.taxType||'');
+    setSel('f_taxCountry',d.taxCountry||'');
+    // الشحن
+    setVal('f_shipCompany',d.shipCompany);
+    setVal('f_shipMethod',d.shipMethod);
+    setVal('f_deliveryAreas',d.deliveryAreas);
+    setVal('f_deliveryTime',d.deliveryTime);
+    setVal('f_shipCost',d.shipCost);
+    var it=document.getElementById('intlToggle');
+    if(d.intlShipping)it.classList.add('on');else it.classList.remove('on');
+    // الدفع
+    var pmChips=document.querySelectorAll('#payMethods .status-chip');
+    pmChips.forEach(function(c){c.classList.remove('on');});
+    if(d.payMethods){d.payMethods.forEach(function(m){pmChips.forEach(function(c){if(c.textContent.trim().indexOf(m)!==-1)c.classList.add('on');});});}
+    setVal('f_payDeliveryTime',d.payDeliveryTime);
+    setVal('f_minInvoice',d.minInvoice);
+    setVal('f_commission',d.commission);
+    setSel('f_payCurrency',d.payCurrency);
+    // المنتجات
+    setVal('f_itemName',d.itemName);
+    setVal('f_categories',d.categories);
+    setVal('f_avgProducts',d.avgProducts);
+    setVal('f_moq',d.moq);
+    setVal('f_prepTime',d.prepTime);
+    // الجودة
+    setVal('f_qualityCerts',d.qualityCerts);
+    setVal('f_complianceCerts',d.complianceCerts);
+    setVal('f_safetyCerts',d.safetyCerts);
+    // المستخدم
+    setVal('f_username',d.username);
+    setVal('f_userEmail',d.userEmail);
+    setVal('f_password',d.password);
+    setVal('f_password2','');
+    setSel('f_secQ',d.secQ||'');
+    setVal('f_secA',d.secA||'');
+}
+
+function setVal(id,v){var el=document.getElementById(id);if(el)el.value=v!==undefined&&v!==null?v:'';}
+function setSel(id,v){var el=document.getElementById(id);if(!el)return;for(var i=0;i<el.options.length;i++){if(el.options[i].text===v||el.options[i].value===v){el.selectedIndex=i;return;}}}
+
+/* ===== جمع البيانات من النموذج ===== */
+function collectForm(){
+    var d=suppliers[currentIdx];
+    d.companyName=getV('f_companyName');d.tradeName=getV('f_tradeName');d.ownerName=getV('f_ownerName');
+    d.activityType=getV('f_activityType');d.foundingYear=getV('f_foundingYear')?parseInt(getV('f_foundingYear')):0;
+    d.employees=getV('f_employees');d.capital=getV('f_capital');d.overview=getV('f_overview');
+    d.contactPerson=getV('f_contactPerson');d.contactPosition=getV('f_contactPosition');
+    d.phone=getV('f_phone');d.altPhone=getV('f_altPhone');d.email=getV('f_email');d.website=getV('f_website');
+    d.linkedin=getV('f_linkedin');d.twitter=getV('f_twitter');d.facebook=getV('f_facebook');d.instagram=getV('f_instagram');
+    d.country=getV('f_country');d.governorate=getV('f_governorate');d.area=getV('f_area');d.address=getV('f_address');
+    d.warehouseAddr=getV('f_warehouseAddr');d.returnAddr=getV('f_returnAddr');
+    d.commercialReg=getV('f_commercialReg');d.regIssue=getV('f_regIssue');d.regExpiry=getV('f_regExpiry');
+    d.taxCard=getV('f_taxCard');d.taxReg=getV('f_taxReg');d.activityLicense=getV('f_activityLicense');d.chamber=getV('f_chamber');
+    var activeChip=document.querySelector('#legalStatus .status-chip.on');
+    d.legalStatus=activeChip?activeChip.textContent.trim():'';
+    d.bankName=getV('f_bankName');d.accountHolder=getV('f_accountHolder');d.accountNumber=getV('f_accountNumber');
+    d.iban=getV('f_iban');d.swift=getV('f_swift');d.currency=getV('f_currency');d.bankCountry=getV('f_bankCountry');
+    d.taxRegistered=document.getElementById('taxToggle').classList.contains('on');
+    d.vatNumber=getV('f_vatNumber');d.taxRate=getV('f_taxRate');d.taxType=getV('f_taxType');d.taxCountry=getV('f_taxCountry');
+    d.shipCompany=getV('f_shipCompany');d.shipMethod=getV('f_shipMethod');d.deliveryAreas=getV('f_deliveryAreas');
+    d.deliveryTime=getV('f_deliveryTime');d.shipCost=getV('f_shipCost');
+    d.intlShipping=document.getElementById('intlToggle').classList.contains('on');
+    var pm=[];document.querySelectorAll('#payMethods .status-chip.on').forEach(function(c){pm.push(c.textContent.trim());});
+    d.payMethods=pm;d.payDeliveryTime=getV('f_payDeliveryTime');d.minInvoice=getV('f_minInvoice');d.commission=getV('f_commission');d.payCurrency=getV('f_payCurrency');
+    d.itemName=getV('f_itemName');d.categories=getV('f_categories');d.avgProducts=getV('f_avgProducts');d.moq=getV('f_moq');d.prepTime=getV('f_prepTime');
+    d.qualityCerts=getV('f_qualityCerts');d.complianceCerts=getV('f_complianceCerts');d.safetyCerts=getV('f_safetyCerts');
+    d.username=getV('f_username');d.userEmail=getV('f_userEmail');d.password=getV('f_password');
+    d.secQ=getV('f_secQ');d.secA=getV('f_secA');
+    return d;
+}
+function getV(id){var el=document.getElementById(id);return el?el.value.trim():'';}
+
+/* ===== أوضاع العرض والتعديل ===== */
+function setGlobalMode(mode){
+    globalMode=mode;
+    var mc=document.getElementById('mainContent');
+    var vb=document.getElementById('modeViewBtn');
+    var eb=document.getElementById('modeEditBtn');
+    if(mode==='view'){
+        mc.classList.add('view-mode');
+        vb.classList.add('active');eb.classList.remove('active');
+        // إلغاء تعديل أي قسم
+        if(editingSec>=0){document.getElementById('sec-'+editingSec).classList.remove('sec-editing');editingSec=-1;}
+        updateBottomBar();
+    } else {
+        mc.classList.remove('view-mode');
+        eb.classList.add('active');vb.classList.remove('active');
+        if(editingSec>=0){document.getElementById('sec-'+editingSec).classList.remove('sec-editing');editingSec=-1;}
+        updateBottomBar();
+    }
+}
+
+function editSection(idx){
+    var sec=document.getElementById('sec-'+idx);
+    if(editingSec>=0&&editingSec!==idx){document.getElementById('sec-'+editingSec).classList.remove('sec-editing');}
+    if(editingSec===idx){
+        // حفظ وإغلاق
+        sec.classList.remove('sec-editing');
+        editingSec=-1;
+        if(globalMode==='view')document.getElementById('mainContent').classList.add('view-mode');
+        updateBottomBar();
+        showToast('تم حفظ القسم بنجاح','success');
+    } else {
+        // فتح للتعديل
+        editingSec=idx;
+        document.getElementById('mainContent').classList.remove('view-mode');
+        sec.classList.add('sec-editing');
+        sec.scrollIntoView({behavior:'smooth',block:'start'});
+        updateBottomBar();
+        // تحديث الشريط الجانبي
+        document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+        document.getElementById('nav-'+idx).classList.add('active');
+    }
+}
+
+function updateBottomBar(){
+    var bb=document.getElementById('bottomBtns');
+    if(globalMode==='edit'){
+        bb.innerHTML='<button class="btn-sec" onclick="cancelGlobalEdit()"><i class="fas fa-times"></i> إلغاء</button><button class="btn-gold" onclick="printForm()"><i class="fas fa-print"></i> طباعة</button><button class="btn-pri" onclick="saveAll()"><i class="fas fa-save"></i> حفظ جميع التغييرات</button>';
+    } else if(editingSec>=0){
+        bb.innerHTML='<button class="btn-sec" onclick="editSection('+editingSec+')"><i class="fas fa-times"></i> إلغاء تعديل القسم</button><button class="btn-gold" onclick="printForm()"><i class="fas fa-print"></i> طباعة</button><button class="btn-pri" onclick="editSection('+editingSec+')"><i class="fas fa-save"></i> حفظ هذا القسم</button>';
+    } else {
+        bb.innerHTML='<button class="btn-sec" onclick="printForm()"><i class="fas fa-print"></i> طباعة</button>';
+    }
+}
+
+function cancelGlobalEdit(){setGlobalMode('view');populateForm(suppliers[currentIdx]);showToast('تم إلغاء التعديلات','info');}
+
+function saveAll(){
+    collectForm();
+    setGlobalMode('view');
+    populateForm(suppliers[currentIdx]);
+    updateProgress();
+    showToast('تم حفظ جميع التغييرات بنجاح','success');
+}
+
+/* ===== تبديل المورد ===== */
+function loadSupplier(idx){
+    if(editingSec>=0){document.getElementById('sec-'+editingSec).classList.remove('sec-editing');editingSec=-1;}
+    currentIdx=parseInt(idx);
+    populateForm(suppliers[currentIdx]);
+    setGlobalMode('view');
+    updateProgress();
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== التنقل ===== */
+function goToSection(idx){
+    document.getElementById('sec-'+idx).scrollIntoView({behavior:'smooth',block:'start'});
+    document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+    document.getElementById('nav-'+idx).classList.add('active');
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('show');}
+
+/* ===== التقدم ===== */
+function updateProgress(){
+    var filled=0;
+    var reqFields=document.querySelectorAll('[data-req="1"]');
+    reqFields.forEach(function(f){if(f.value&&f.value.trim()!=='')filled++;});
+    var total=reqFields.length;
+    var pct=total>0?Math.round((filled/total)*100):0;
+    document.getElementById('progressText').textContent=filled+' من '+total;
+    document.getElementById('progressFill').style.width=pct+'%';
+    // تحديث علامات الشريط الجانبي
+    var secFilled=[true,true,true,true,true,true,true,true,true,true,true,true];
+    var secReqMap=[[0,1,2,3,4,5,6],[7,8,9,10,11],[12,13,14,15],[16,17,18,19,20,21],[22],[23,24,25,26,27,28],[29],[30,31,32,33,34],[35,36,37,38],[39],[40,41,42],[43,44,45,46,47]];
+    /* تبسيط: تحقق من كل قسم */
+    for(var i=0;i<12;i++){
+        var sec=document.getElementById('sec-'+i);
+        var inputs=sec.querySelectorAll('[data-req="1"]');
+        var allFilled=true;
+        inputs.forEach(function(inp){if(!inp.value||inp.value.trim()==='')allFilled=false;});
+        var navEl=document.getElementById('nav-'+i);
+        if(allFilled)navEl.classList.add('done');else navEl.classList.remove('done');
+    }
+}
+
+/* ===== التوست ===== */
+function showToast(msg,type){
+    var wrap=document.getElementById('toastWrap');
+    var colors={success:'var(--pri)',error:'var(--red)',info:'var(--blue)',warn:'var(--gold)'};
+    var icons={success:'fa-check-circle',error:'fa-times-circle',info:'fa-info-circle',warn:'fa-exclamation-triangle'};
+    var t=document.createElement('div');
+    t.className='toast-msg';
+    t.innerHTML='<i class="fas '+(icons[type]||icons.info)+'" style="color:'+(colors[type]||colors.info)+';font-size:16px"></i><span>'+msg+'</span>';
+    wrap.appendChild(t);
+    setTimeout(function(){t.classList.add('out');setTimeout(function(){t.remove();},250);},2500);
+}
+
+/* ===== مفاتيح التبديل ===== */
+function toggleTax(){
+    var t=document.getElementById('taxToggle');
+    t.classList.toggle('on');
+    document.getElementById('taxFields').style.display=t.classList.contains('on')?'block':'none';
+}
+
+function pickStatus(el){
+    if(document.getElementById('mainContent').classList.contains('view-mode'))return;
+    document.querySelectorAll('#legalStatus .status-chip').forEach(function(c){c.classList.remove('on');});
+    el.classList.add('on');
+}
+
+function toggleChip(el){
+    if(document.getElementById('mainContent').classList.contains('view-mode'))return;
+    el.classList.toggle('on');
+}
+
+/* ===== رفع الملفات ===== */
+function handleLogo(input){
+    if(input.files&&input.files[0]){
+        var reader=new FileReader();
+        reader.onload=function(e){
+            var zone=document.getElementById('logoZone');
+            zone.innerHTML='<input type="file" accept="image/*" onchange="handleLogo(this)"><img src="'+e.target.result+'" alt="شعار">';
+            suppliers[currentIdx].logo=e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function handleDocUpload(input,key){
+    if(input.files&&input.files[0]){
+        var reader=new FileReader();
+        reader.onload=function(e){
+            suppliers[currentIdx].docs[key]=e.target.result;
+            var zone=document.getElementById('fz-'+key);
+            zone.classList.add('has-file');
+            zone.innerHTML='<img src="'+e.target.result+'" class="file-thumb" alt=""><p style="font-size:10px;color:var(--pri);font-weight:600"><i class="fas fa-check-circle" style="margin-left:4px"></i>مرفق</p><input type="file" accept="image/*,.pdf" onchange="handleDocUpload(this,\''+key+'\')">';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+/* ===== كلمة المرور ===== */
+function togglePassVis(id,icon){
+    var inp=document.getElementById(id);
+    if(inp.type==='password'){inp.type='text';icon.innerHTML='<i class="fas fa-eye-slash" style="font-size:13px"></i>';}
+    else{inp.type='password';icon.innerHTML='<i class="fas fa-eye" style="font-size:13px"></i>';}
+}
+
+/* ===== الطباعة ===== */
+function printForm(){
+    collectForm();
+    var d=suppliers[currentIdx];
+    var w=window.open('','_blank','width=900,height=700');
+    w.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>'+d.companyName+'</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Cairo,sans-serif;padding:30px;font-size:12px;color:#222}h1{font-size:20px;margin-bottom:4px}h2{font-size:14px;margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid #0f766e;color:#0f766e}table{width:100%;border-collapse:collapse;margin-bottom:10px}td{padding:6px 10px;border:1px solid #ddd}td:first-child{font-weight:700;background:#f8f8f8;width:200px}.hdr{text-align:center;margin-bottom:20px;padding-bottom:10px;border-bottom:3px double #0f766e}@media print{body{padding:15px}}</style></head><body>');
+    w.document.write('<div class="hdr"><h1>'+d.companyName+'</h1><p style="color:#666">'+d.tradeName+' - بيانات المورد</p></div>');
+    w.document.write('<h2>البيانات الأساسية</h2><table><tr><td>اسم الشركة</td><td>'+d.companyName+'</td><td>الاسم التجاري</td><td>'+d.tradeName+'</td></tr><tr><td>صاحب الشركة</td><td>'+d.ownerName+'</td><td>نوع النشاط</td><td>'+d.activityType+'</td></tr><tr><td>سنة التأسيس</td><td>'+d.foundingYear+'</td><td>عدد الموظفين</td><td>'+d.employees+'</td></tr><tr><td>رأس المال</td><td>'+d.capital+'</td><td colspan="2">'+d.overview+'</td></tr></table>');
+    w.document.write('<h2>بيانات التواصل</h2><table><tr><td>مسؤول التواصل</td><td>'+d.contactPerson+' - '+d.contactPosition+'</td><td>الهاتف</td><td>'+d.phone+'</td></tr><tr><td>هاتف بديل</td><td>'+d.altPhone+'</td><td>البريد</td><td>'+d.email+'</td></tr><tr><td>الموقع</td><td>'+d.website+'</td><td>المحافظة</td><td>'+d.governorate+'</td></tr></table>');
+    w.document.write('<h2>البيانات القانونية</h2><table><tr><td>السجل التجاري</td><td>'+d.commercialReg+'</td><td>الإصدار</td><td>'+d.regIssue+'</td></tr><tr><td>الانتهاء</td><td>'+d.regExpiry+'</td><td>البطاقة الضريبية</td><td>'+d.taxCard+'</td></tr><tr><td>التسجيل الضريبي</td><td>'+d.taxReg+'</td><td>رخصة النشاط</td><td>'+d.activityLicense+'</td></tr><tr><td>الغرفة التجارية</td><td>'+d.chamber+'</td><td>الحالة القانونية</td><td>'+d.legalStatus+'</td></tr></table>');
+    w.document.write('<h2>الحساب البنكي</h2><table><tr><td>البنك</td><td>'+d.bankName+'</td><td>صاحب الحساب</td><td>'+d.accountHolder+'</td></tr><tr><td>رقم الحساب</td><td>'+d.accountNumber+'</td><td>IBAN</td><td>'+d.iban+'</td></tr><tr><td>SWIFT</td><td>'+d.swift+'</td><td>العملة</td><td>'+d.currency+'</td></tr></table>');
+    w.document.write('<h2>الضرائب</h2><table><tr><td>مسجل ضريبياً</td><td>'+(d.taxRegistered?'نعم':'لا')+'</td><td>رقم VAT</td><td>'+(d.vatNumber||'')+'</td></tr><tr><td>النسبة</td><td>'+d.taxRate+'</td><td>النوع</td><td>'+d.taxType+'</td></tr></table>');
+    w.document.write('<h2>الشحن</h2><table><tr><td>شركة الشحن</td><td>'+d.shipCompany+'</td><td>الطريقة</td><td>'+d.shipMethod+'</td></tr><tr><td>أماكن التوصيل</td><td>'+d.deliveryAreas+'</td><td>مدة الاستلام</td><td>'+d.deliveryTime+'</td></tr><tr><td>التكلفة</td><td>'+d.shipCost+'</td><td>شحن دولي</td><td>'+(d.intlShipping?'نعم':'لا')+'</td></tr></table>');
+    w.document.write('<h2>الدفع</h2><table><tr><td>طرق الدفع</td><td>'+(d.payMethods?d.payMethods.join('، '):'')+'</td><td>الحد الأدنى</td><td>'+d.minInvoice+'</td></tr><tr><td>نسبة العمولة</td><td>'+d.commission+'</td><td>العملة</td><td>'+d.payCurrency+'</td></tr></table>');
+    w.document.write('<h2>بيانات المستخدم</h2><table><tr><td>اسم المستخدم</td><td>'+d.username+'</td><td>البريد</td><td>'+d.userEmail+'</td></tr><tr><td>سؤال الأمان</td><td>'+d.secQ+'</td><td>الإجابة</td><td>'+d.secA+'</td></tr></table>');
+    w.document.write('</body></html>');
+    w.document.close();
+    setTimeout(function(){w.print();},500);
+}
+
+/* ===== التهيئة ===== */
+function init(){
+    // قائمة الموردين
+    var sel=document.getElementById('supplierSel');
+    for(var i=0;i<suppliers.length;i++){
+        var opt=document.createElement('option');
+        opt.value=i;opt.textContent=suppliers[i].tradeName+' - '+suppliers[i].governorate;
+        sel.appendChild(opt);
+    }
+    buildNav();
+    populateForm(suppliers[0]);
+    setGlobalMode('view');
+    setTimeout(updateProgress,300);
+}
+
+// تتبع التمرير للشريط الجانبي
+var scrollObserver=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+        if(entry.isIntersecting){
+            var id=entry.target.id.replace('sec-','');
+            document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+            var navEl=document.getElementById('nav-'+id);
+            if(navEl)navEl.classList.add('active');
+        }
+    });
+},{threshold:0.2,rootMargin:'-80px 0px -60% 0px'});
+
+function observeSections(){
+    for(var i=0;i<12;i++){
+        var sec=document.getElementById('sec-'+i);
+        if(sec)scrollObserver.observe(sec);
+    }
+}
+
+init();
+setTimeout(observeSections,200);
+</script>
+</body>
+</html>

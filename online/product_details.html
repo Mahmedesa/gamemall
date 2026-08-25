@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سوق.نت | تفاصيل المنتج</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script>
+        tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif'],inter:['Inter','sans-serif']},colors:{brand:{50:'#FFF4ED',100:'#FFE6D5',200:'#FECCAA',300:'#FDAA74',400:'#FB7C38',500:'#F96316',600:'#E84B07',700:'#C23807',800:'#9C2E0D',900:'#7F290F'},surface:{50:'#FAFAF8',100:'#F5F3F0',200:'#EDEAE5',300:'#DDD8D0',400:'#C4BDB2'},ink:{900:'#1A1A2E',700:'#374151',500:'#6B7280',300:'#9CA3AF'}}}}}
+    </script>
+    <style>
+        :root{--brand:#F96316;--ink:#1A1A2E;--border:#EDEAE5;--surface:#FAFAF8;--success:#10B981;--danger:#EF4444}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Cairo',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh}
+        body.ltr{font-family:'Inter',sans-serif}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#C4BDB2;border-radius:10px}
+
+        .top-bar{background:linear-gradient(135deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%);position:relative;overflow:hidden}
+        .top-bar::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 400px 300px at 80% 20%,rgba(249,99,22,.1) 0%,transparent 70%);pointer-events:none}
+
+        /* معرض الصور */
+        .gallery-main{background:#F5F3F0;border-radius:20px;overflow:hidden;aspect-ratio:1;position:relative;cursor:zoom-in}
+        .gallery-main img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+        .gallery-main:hover img{transform:scale(1.08)}
+        .gallery-thumb{width:80px;height:80px;border-radius:14px;overflow:hidden;border:2px solid var(--border);cursor:pointer;transition:all .25s;flex-shrink:0;position:relative}
+        .gallery-thumb.active{border-color:var(--brand);box-shadow:0 0 0 3px rgba(249,99,22,.15)}
+        .gallery-thumb:hover{border-color:#9CA3AF}
+        .gallery-thumb img{width:100%;height:100%;object-fit:cover}
+        .gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;box-shadow:0 2px 10px rgba(0,0,0,.1);z-index:2}
+        .gallery-nav:hover{background:white;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+        .gallery-nav.prev{right:12px}
+        .gallery-nav.next{left:12px}
+        body.ltr .gallery-nav.prev{right:auto;left:12px}
+        body.ltr .gallery-nav.next{left:auto;right:12px}
+
+        /* شارة التخفيض */
+        .discount-badge{position:absolute;top:16px;left:16px;background:var(--danger);color:white;font-size:13px;font-weight:800;padding:6px 14px;border-radius:12px;z-index:3;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+
+        /* أزرار */
+        .btn-primary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:linear-gradient(135deg,#F96316,#E84B07);color:white;border:none;border-radius:16px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .3s}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,99,22,.35)}
+        .btn-primary:active{transform:translateY(0)}
+        .btn-secondary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:white;color:var(--ink);border:2px solid var(--border);border-radius:16px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .3s}
+        .btn-secondary:hover{border-color:#9CA3AF;background:#FAFAF8}
+        .btn-icon{width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:14px;border:2px solid var(--border);background:white;cursor:pointer;transition:all .25s;color:#6B7280}
+        .btn-icon:hover{border-color:var(--brand);color:var(--brand);background:#FFF4ED}
+
+        /* كميات */
+        .qty-btn{width:40px;height:40px;border-radius:12px;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:14px;color:var(--ink);font-weight:700}
+        .qty-btn:hover{border-color:var(--brand);color:var(--brand);background:#FFF4ED}
+        .qty-btn:active{transform:scale(.92)}
+
+        /* تاب الوصف */
+        .tab-btn{padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;transition:all .25s;color:#6B7280;background:transparent;border:none;font-family:inherit;white-space:nowrap}
+        .tab-btn:hover{color:var(--ink);background:#F5F3F0}
+        .tab-btn.active{color:white;background:var(--brand);box-shadow:0 4px 12px rgba(249,99,22,.25)}
+        .tab-content{display:none}.tab-content.active{display:block}
+
+        /* نجوم */
+        .star-fill{color:#F59E0B}.star-empty{color:#E5E7EB}
+
+        /* مراجعة */
+        .review-card{border:1px solid var(--border);border-radius:16px;padding:20px;transition:box-shadow .3s}
+        .review-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.04)}
+        .review-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+
+        /* بطاقة منتج مشابه */
+        .similar-card{background:white;border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);cursor:pointer}
+        .similar-card:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(0,0,0,.08);border-color:transparent}
+        .similar-card:hover img{transform:scale(1.06)}
+        .similar-card img{transition:transform .5s cubic-bezier(.4,0,.2,1)}
+
+        /* مخزون */
+        .stock-bar{height:6px;background:#EDEAE5;border-radius:6px;overflow:hidden}
+        .stock-fill{height:100%;border-radius:6px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+        /* أنيميشن */
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .fade-up{animation:fadeUp .5s ease both}
+        @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+        .slide-in{animation:slideIn .4s ease both}
+        @keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(20px)}}
+        .toast-in{animation:toastIn .35s ease}.toast-out{animation:toastOut .3s ease forwards}
+        @keyframes flyToCart{0%{opacity:1;transform:translate(0,0) scale(1)}50%{opacity:.7}100%{opacity:0;transform:translate(var(--ex),var(--ey)) scale(.15)}}
+        .fly-dot{position:fixed;width:14px;height:14px;border-radius:50%;background:var(--brand);z-index:9999;pointer-events:none;box-shadow:0 4px 12px rgba(249,99,22,.5);animation:flyToCart .6s cubic-bezier(.4,0,.2,1) forwards}
+        @keyframes cartBounce{0%{transform:scale(1)}30%{transform:scale(1.4)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+        .cart-bounce{animation:cartBounce .5s ease}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        .stock-pulse{animation:pulse 2s ease-in-out infinite}
+
+        /* لوحة الصور المكبّرة */
+        .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;cursor:zoom-out}
+        .lightbox.open{display:flex}
+        .lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+
+        /* شريط المعلومات */
+        .info-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#F5F3F0;border-radius:10px;font-size:12px;font-weight:600;color:#374151}
+
+        @media(max-width:1023px){
+            .gallery-thumb{width:60px;height:60px;border-radius:10px}
+        }
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    </style>
+</head>
+<body>
+
+<!-- الشريط العلوي -->
+<div class="top-bar text-white py-4">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+        <a href="#" class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center"><i class="fas fa-store text-white"></i></div>
+            <span class="text-xl font-extrabold" data-t="logo">سوق</span><span class="text-xl font-extrabold text-brand-400">.نت</span>
+        </a>
+        <!-- مسار التنقل -->
+        <nav class="hidden sm:flex items-center gap-2 text-xs text-white/50" id="breadcrumb">
+            <a href="#" class="hover:text-white transition-colors" data-t="nav_home">الرئيسية</a>
+            <i class="fas fa-chevron-left text-[8px]"></i>
+            <a href="#" class="hover:text-white transition-colors" data-t="nav_elec">إلكترونيات</a>
+            <i class="fas fa-chevron-left text-[8px]"></i>
+            <span class="text-white/80" id="breadcrumbProduct"></span>
+        </nav>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center bg-white/10 border border-white/15 rounded-full p-0.5 cursor-pointer" onclick="toggleLang()">
+                <span class="px-3 py-1 rounded-full text-xs font-bold transition-all" id="lAr" style="background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)">عربي</span>
+                <span class="px-3 py-1 rounded-full text-xs font-bold text-white/50 transition-all" id="lEn">EN</span>
+            </div>
+            <button class="relative w-10 h-10 bg-white/10 border border-white/15 rounded-xl flex items-center justify-center hover:bg-white/20 transition-all" id="cartTrigger">
+                <i class="fas fa-shopping-bag text-sm"></i>
+                <span id="cartBadge" class="absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] bg-brand-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center px-1 hidden">0</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- المحتوى الرئيسي -->
+<main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- المنتج -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16" id="productSection"></div>
+
+    <!-- التابز والوصف والمراجعات -->
+    <div id="tabsSection" class="mb-16"></div>
+
+    <!-- منتجات مشابهة -->
+    <div id="similarSection"></div>
+</main>
+
+<!-- لوحة الصور المكبّرة -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()"><img id="lightboxImg" src="" alt=""></div>
+
+<!-- حاوية التوست -->
+<div id="toastBox" class="fixed bottom-6 left-6 z-[600] flex flex-col gap-3"></div>
+
+<script>
+// ========== الترجمة ==========
+let lang='ar';
+const D={
+    ar:{
+        logo:'سوق',nav_home:'الرئيسية',nav_elec:'إلكترونيات',
+        add_cart:'أضف للسلة',added:'تمت الإضافة',buy_now:'اشتري الآن',in_stock:'متوفر في المخزون',
+        stock_left:'متبقي فقط',stock_pieces:'قطعة',out_of_stock:'نفذ المخزون',few_left:'متبقي عدد قليل!',
+        qty_label:'الكمية',description:'الوصف',specifications:'المواصفات',reviews_label:'التقييمات',reviews_count:'تقييم',
+        write_review:'كتابة تقييم',rating_dist:'توزيع التقييمات',verified:'مشتري موثّق',helpful:'مفيد',
+        similar:'منتجات مشابهة',view_all:'عرض الكل',currency:'جنيه',
+        old_price:'السعر قبل الخصم',discount:'خصم',brand_label:'العلامة التجارية',sku:'رمز المنتج',
+        color:'اللون',storage:'التخزين',ships_in:'يتم الشحن خلال',days:'أيام',
+        add_wish:'أضف للمفضلة',remove_wish:'إزالة من المفضلة',wish_added:'تمت الإضافة للمفضلة',wish_removed:'تمت الإزالة',
+        free_ship:'شحن مجاني',return_policy:'إرجاع مجاني 14 يوم',authentic:'منتج أصلي 100%',warranty:'ضمان سنة',
+        spec_name:'المواصفة',spec_value:'القيمة',
+        // مواصفات المنتج
+        sp_screen:'حجم الشاشة',sp_processor:'المعالج',sp_ram:'الذاكرة العشوائية',sp_storage:'التخزين',sp_camera:'الكاميرا',sp_battery:'البطارية',sp_os:'نظام التشغيل',sp_weight:'الوزن',sp_dim:'الأبعاد',
+        sp_screen_v:'6.7 بوصة Super Retina XDR',sp_processor_v:'شريحة A17 Pro',sp_ram_v:'8 جيجابايت',sp_storage_v:'256 جيجابايت',sp_camera_v:'48MP + 12MP + 12MP',sp_battery_v:'4422 مللي أمبير',sp_os_v:'iOS 17',sp_weight_v:'221 جرام',sp_dim_v:'170.1 × 77.6 × 8.25 مم',
+    },
+    en:{
+        logo:'Souq',nav_home:'Home',nav_elec:'Electronics',
+        add_cart:'Add to Cart',added:'Added',buy_now:'Buy Now',in_stock:'In Stock',
+        stock_left:'Only',stock_pieces:'left',out_of_stock:'Out of Stock',few_left:'Only a few left!',
+        qty_label:'Quantity',description:'Description',specifications:'Specifications',reviews_label:'Reviews',reviews_count:'reviews',
+        write_review:'Write a Review',rating_dist:'Rating Distribution',verified:'Verified Purchase',helpful:'Helpful',
+        similar:'Similar Products',view_all:'View All',currency:'EGP',
+        old_price:'Before Discount',discount:'OFF',brand_label:'Brand',sku:'SKU',
+        color:'Color',storage:'Storage',ships_in:'Ships within',days:'days',
+        add_wish:'Add to Wishlist',remove_wish:'Remove from Wishlist',wish_added:'Added to Wishlist',wish_removed:'Removed from Wishlist',
+        free_ship:'Free Shipping',return_policy:'Free Returns 14 Days',authentic:'100% Authentic',warranty:'1 Year Warranty',
+        spec_name:'Specification',spec_value:'Value',
+        sp_screen:'Screen Size',sp_processor:'Processor',sp_ram:'RAM',sp_storage:'Storage',sp_camera:'Camera',sp_battery:'Battery',sp_os:'Operating System',sp_weight:'Weight',sp_dim:'Dimensions',
+        sp_screen_v:'6.7" Super Retina XDR',sp_processor_v:'A17 Pro Chip',sp_ram_v:'8 GB',sp_storage_v:'256 GB',sp_camera_v:'48MP + 12MP + 12MP',sp_battery_v:'4422 mAh',sp_os_v:'iOS 17',sp_weight_v:'221g',sp_dim_v:'170.1 × 77.6 × 8.25 mm',
+    }
+};
+function t(k){return D[lang][k]||k}
+
+function toggleLang(){
+    lang=lang==='ar'?'en':'ar';const en=lang==='en';
+    document.documentElement.lang=lang;document.documentElement.dir=en?'ltr':'rtl';document.body.classList.toggle('ltr',en);
+    document.getElementById('lAr').style.cssText=en?'':'background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)';
+    document.getElementById('lEn').style.cssText=en?'background:var(--brand);color:white;box-shadow:0 2px 6px rgba(249,99,22,.3)':'';
+    document.getElementById('lAr').className='px-3 py-1 rounded-full text-xs font-bold transition-all '+(en?'text-white/50':'');
+    document.getElementById('lEn').className='px-3 py-1 rounded-full text-xs font-bold transition-all '+(en?'':'text-white/50');
+    document.querySelectorAll('[data-t]').forEach(el=>{if(D[lang][el.dataset.t])el.textContent=D[lang][el.dataset.t];});
+    renderAll();
+}
+
+// ========== بيانات المنتج ==========
+const product={
+    id:1,
+    name:'هاتف Apple iPhone 15 Pro Max 256GB',nameEn:'Apple iPhone 15 Pro Max 256GB',
+    brand:'Apple',price:5499,oldPrice:6399,
+    stock:12,maxStock:50,
+    images:[
+        'https://picsum.photos/seed/iphone15a/800/800',
+        'https://picsum.photos/seed/iphone15b/800/800',
+        'https://picsum.photos/seed/iphone15c/800/800',
+        'https://picsum.photos/seed/iphone15d/800/800',
+        'https://picsum.photos/seed/iphone15e/800/800',
+    ],
+    colors:[
+        {name:'تيتانيوم الطبيعي',nameEn:'Natural Titanium',hex:'#8A8D8F'},
+        {name:'تيتانيوم الأزرق',nameEn:'Blue Titanium',hex:'#394E5F'},
+        {name:'تيتانيوم الأبيض',nameEn:'White Titanium',hex:'#F2F1EB'},
+        {name:'تيتانيوم الأسود',nameEn:'Black Titanium',hex:'#3C3C3C'},
+    ],
+    storageOpts:[{label:'128GB',price:4999},{label:'256GB',price:5499},{label:'512GB',price:6499},{label:'1TB',price:7999}],
+    selectedColor:0,selectedStorage:1,qty:1,
+    rating:4.8,reviewCount:2847,
+    desc_ar:'يتميز هاتف iPhone 15 Pro Max بتصميم أنيق من التيتانيوم وشاشة Super Retina XDR مقاس 6.7 بوصة مع ProMotion. يأتي بمعالج A17 Pro الأقوى من Apple مع كاميرا رئيسية 48 ميجابكسل تدعم تكبير بصري 5x. بطارية تدوم طوال اليوم مع شحن سريع وسلكي ومغناطيسي.',
+    desc_en:'iPhone 15 Pro Max features a stunning titanium design and a 6.7-inch Super Retina XDR display with ProMotion. Powered by the A17 Pro chip — Apple\'s most powerful ever — with a 48MP main camera supporting 5x optical zoom. All-day battery life with fast wired and MagSafe charging.',
+    specs:[
+        {k:'sp_screen',v:'sp_screen_v'},{k:'sp_processor',v:'sp_processor_v'},{k:'sp_ram',v:'sp_ram_v'},
+        {k:'sp_storage',v:'sp_storage_v'},{k:'sp_camera',v:'sp_camera_v'},{k:'sp_battery',v:'sp_battery_v'},
+        {k:'sp_os',v:'sp_os_v'},{k:'sp_weight',v:'sp_weight_v'},{k:'sp_dim',v:'sp_dim_v'},
+    ],
+    reviews:[
+        {id:1,name:'محمد أحمد',nameEn:'Mohammed Ahmed',rating:5,date:'2025-01-20',verified:true,helpful:42,
+         text_ar:'هاتف رائع جداً، الأداء ممتاز والكاميرا غير عادية. البطارية تصمد يوم كامل باستخدام مكثف. تصميم التيتانيوم يعطي إحساس فاخر وخفيف.',
+         text_en:'Amazing phone, excellent performance and incredible camera. Battery lasts a full day with heavy use. Titanium design gives a premium and light feel.'},
+        {id:2,name:'سارة خالد',nameEn:'EGPa Khaled',rating:4,date:'2025-01-15',verified:true,helpful:28,
+         text_ar:'منتج ممتاز بشكل عام. الصور من الكاميرا واضحة جداً حتى في الإضاءة المنخفضة. نقطة سلبية وحيدة هي السعر المرتفع مقارنة بالمنافسين.',
+         text_en:'Excellent product overall. Camera photos are very clear even in low light. Only downside is the high price compared to competitors.'},
+        {id:3,name:'عبدالله سعيد',nameEn:'Abdullah Saeed',rating:5,date:'2025-01-10',verified:false,helpful:15,
+         text_ar:'أفضل هاتف استخدمته. انتقلت من Android واستغربت من سرعة وسلاسة النظام. التكبير البصري 5x ميزة تغير طريقة استخدامي للكاميرا تماماً.',
+         text_en:'Best phone I\'ve ever used. Switched from Android and was amazed by the speed and smoothness. The 5x optical zoom changed how I use the camera completely.'},
+        {id:4,name:'نورة محمد',nameEn:'Noura Mohammed',rating:4,date:'2025-01-05',verified:true,helpful:9,
+         text_ar:'جودة التصنيع عالية جداً والشاشة من أجمل ما رأيت. الخلفية زجاجية لكنها تتحمل الصدمات بشكل جيد مع الغطاء.',
+         text_en:'Build quality is very high and the display is one of the most beautiful I\'ve seen. Glass back but handles drops well with a case.'},
+    ],
+    ratingDist:[{stars:5,pct:68},{stars:4,pct:22},{stars:3,pct:6},{stars:2,pct:3},{stars:1,pct:1}],
+};
+
+const similarProducts=[
+    {id:2,name:'هاتف Galaxy S24 Ultra',nameEn:'Galaxy S24 Ultra',price:4499,oldPrice:5199,brand:'Samsung',img:'https://picsum.photos/seed/galaxys24u/400/400',rating:4.9},
+    {id:3,name:'هاتف Pixel 8 Pro',nameEn:'Pixel 8 Pro',price:3999,oldPrice:4499,brand:'Google',img:'https://picsum.photos/seed/pixel8p/400/400',rating:4.7},
+    {id:4,name:'سماعات AirPods Pro 2',nameEn:'AirPods Pro 2',price:899,oldPrice:1099,brand:'Apple',img:'https://picsum.photos/seed/airpods2/400/400',rating:4.8},
+    {id:5,name:'ساعة Apple Watch Ultra 2',nameEn:'Watch Ultra 2',price:3199,oldPrice:3699,brand:'Apple',img:'https://picsum.photos/seed/watchultra2/400/400',rating:4.7},
+    {id:6,name:'لابتوب MacBook Air M3',nameEn:'MacBook Air M3',price:5299,oldPrice:5999,brand:'Apple',img:'https://picsum.photos/seed/macbookm3a/400/400',rating:4.9},
+    {id:7,name:'مكبر صوت HomePod mini',nameEn:'HomePod mini',price:349,oldPrice:449,brand:'Apple',img:'https://picsum.photos/seed/homepod/400/400',rating:4.5},
+];
+
+let currentImg=0;let cartCount=0;let inWishlist=false;let activeTab='desc';
+
+// ========== العرض ==========
+function renderAll(){
+    const nm=lang==='en'?product.nameEn:product.name;
+    document.getElementById('breadcrumbProduct').textContent=nm;
+    renderProduct();renderTabs();renderSimilar();
+}
+
+function renderProduct(){
+    const nm=lang==='en'?product.nameEn:product.name;
+    const desc=lang==='en'?product.desc_en:product.desc_ar;
+    const disc=product.oldPrice?Math.round(((product.oldPrice-product.price)/product.oldPrice)*100):0;
+    const stockPct=Math.round((product.stock/product.maxStock)*100);
+    const stockColor=stockPct>40?'#10B981':stockPct>15?'#F59E0B':'#EF4444';
+    const fewStock=product.stock<=15&&product.stock>0;
+
+    document.getElementById('productSection').innerHTML=`
+    <!-- معرض الصور -->
+    <div class="fade-up">
+        <div class="gallery-main" id="mainGallery" onclick="openLightbox()">
+            ${disc?`<span class="discount-badge">-${disc}%</span>`:''}
+            <button class="gallery-nav prev" onclick="event.stopPropagation();changeImg(-1)"><i class="fas fa-chevron-right text-sm text-ink-700"></i></button>
+            <img src="${product.images[currentImg]}" alt="${nm}" id="mainImg">
+            <button class="gallery-nav next" onclick="event.stopPropagation();changeImg(1)"><i class="fas fa-chevron-left text-sm text-ink-700"></i></button>
+        </div>
+        <div class="flex gap-3 mt-4 overflow-x-auto pb-1" id="thumbBar">
+            ${product.images.map((img,i)=>`<div class="gallery-thumb ${i===currentImg?'active':''}" onclick="setImg(${i})"><img src="${img}" alt=""></div>`).join('')}
+        </div>
+    </div>
+
+    <!-- تفاصيل المنتج -->
+    <div class="slide-in">
+        <span class="text-xs font-bold text-brand-500 bg-brand-50 px-3 py-1 rounded-lg inline-block mb-3">${product.brand}</span>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-ink-900 leading-tight mb-4">${nm}</h1>
+
+        <!-- التقييم -->
+        <div class="flex items-center gap-3 mb-5">
+            <div class="flex items-center gap-1">${rStars(product.rating)}</div>
+            <span class="text-sm font-bold text-ink-900">${product.rating}</span>
+            <span class="text-sm text-ink-400">(${product.reviewCount.toLocaleString()} ${t('reviews_count')})</span>
+        </div>
+
+        <!-- السعر -->
+        <div class="flex items-end gap-3 mb-5">
+            <span class="text-3xl font-extrabold text-ink-900">${product.storageOpts[product.selectedStorage].price.toLocaleString()} <span class="text-sm font-normal text-ink-500">${t('currency')}</span></span>
+            ${product.oldPrice?`<span class="text-lg text-ink-300 line-through">${product.oldPrice.toLocaleString()} ${t('currency')}</span>`:''}
+            ${disc?`<span class="bg-red-50 text-red-600 text-xs font-bold px-2.5 py-1 rounded-lg">${disc}% ${t('discount')}</span>`:''}
+        </div>
+
+        <!-- المخزون -->
+        <div class="mb-5 p-4 ${fewStock?'bg-amber-50 border border-amber-200':'bg-emerald-50 border border-emerald-200'} rounded-xl">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold ${fewStock?'text-amber-700':'text-emerald-700'} flex items-center gap-2">
+                    <i class="fas ${fewStock?'fa-exclamation-triangle stock-pulse':'fa-check-circle'} text-xs"></i>
+                    ${fewStock?t('few_left'):t('in_stock')}
+                </span>
+                ${fewStock?`<span class="text-xs font-bold text-amber-600">${t('stock_left')} ${product.stock} ${t('stock_pieces')}</span>`:''}
+            </div>
+            <div class="stock-bar"><div class="stock-fill" style="width:${stockPct}%;background:${stockColor}"></div></div>
+        </div>
+
+        <!-- الألوان -->
+        <div class="mb-5">
+            <span class="text-sm font-bold text-ink-900 mb-3 block">${t('color')}: <span class="text-brand-500" id="colorName">${lang==='en'?product.colors[product.selectedColor].nameEn:product.colors[product.selectedColor].name}</span></span>
+            <div class="flex gap-3">
+                ${product.colors.map((c,i)=>`<button onclick="selectColor(${i})" class="w-10 h-10 rounded-full border-2 transition-all ${i===product.selectedColor?'border-brand-500 ring-2 ring-brand-200 scale-110':'border-surface-300 hover:border-ink-400'}" style="background:${c.hex}" title="${lang==='en'?c.nameEn:c.name}"></button>`).join('')}
+            </div>
+        </div>
+
+        <!-- التخزين -->
+        <div class="mb-6">
+            <span class="text-sm font-bold text-ink-900 mb-3 block">${t('storage')}</span>
+            <div class="flex flex-wrap gap-2">
+                ${product.storageOpts.map((s,i)=>`<button onclick="selectStorage(${i})" class="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${i===product.selectedStorage?'bg-ink-900 text-white shadow-lg':'bg-white border-2 border-surface-200 text-ink-700 hover:border-ink-400'}">${s.label} - ${s.price.toLocaleString()} ${t('currency')}</button>`).join('')}
+            </div>
+        </div>
+
+        <!-- الكمية والأزرار -->
+        <div class="flex items-center gap-3 mb-5">
+            <div class="flex items-center gap-2 bg-surface-100 rounded-xl p-1">
+                <button class="qty-btn" onclick="changeQty(-1)"><i class="fas fa-minus" style="font-size:10px"></i></button>
+                <span class="w-10 text-center text-base font-bold" id="qtyDisplay">${product.qty}</span>
+                <button class="qty-btn" onclick="changeQty(1)"><i class="fas fa-plus" style="font-size:10px"></i></button>
+            </div>
+            <span class="text-xs text-ink-400">${t('stock_left')} ${product.stock} ${t('stock_pieces')}</span>
+        </div>
+
+        <div class="flex gap-3 mb-6">
+            <button onclick="addToCart(event)" class="btn-primary flex-1 justify-center"><i class="fas fa-cart-plus text-sm"></i>${t('add_cart')}</button>
+            <button onclick="buyNow()" class="btn-secondary flex-1 justify-center"><i class="fas fa-bolt text-sm"></i>${t('buy_now')}</button>
+            <button onclick="toggleWish()" class="btn-icon" id="wishBtn" title="${t('add_wish')}"><i class="${inWishlist?'fas':'far'} fa-heart ${inWishlist?'text-red-500':''} text-lg"></i></button>
+        </div>
+
+        <!-- مميزات إضافية -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="info-chip justify-center"><i class="fas fa-truck text-brand-500 text-xs"></i>${t('free_ship')}</div>
+            <div class="info-chip justify-center"><i class="fas fa-undo-alt text-emerald-500 text-xs"></i>${t('return_policy')}</div>
+            <div class="info-chip justify-center"><i class="fas fa-shield-alt text-sky-500 text-xs"></i>${t('authentic')}</div>
+            <div class="info-chip justify-center"><i class="fas fa-certificate text-amber-500 text-xs"></i>${t('warranty')}</div>
+        </div>
+
+        <!-- معلومات الشحن -->
+        <div class="mt-5 flex items-center gap-3 text-xs text-ink-500">
+            <i class="fas fa-shipping-fast text-brand-400"></i>
+            <span>${t('ships_in')} <strong class="text-ink-900">2-3</strong> ${t('days')}</span>
+            <span class="text-surface-300">|</span>
+            <span>${t('sku')}: <strong class="text-ink-900 font-mono">APL-15PM-256</strong></span>
+        </div>
+    </div>`;
+}
+
+function changeImg(d){currentImg=(currentImg+d+product.images.length)%product.images.length;updateGallery();}
+function setImg(i){currentImg=i;updateGallery();}
+function updateGallery(){
+    document.getElementById('mainImg').src=product.images[currentImg];
+    document.querySelectorAll('.gallery-thumb').forEach((t,i)=>t.classList.toggle('active',i===currentImg));
+    const bar=document.getElementById('thumbBar');
+    const active=bar.children[currentImg];
+    if(active)active.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+
+function selectColor(i){product.selectedColor=i;renderProduct();}
+function selectStorage(i){product.selectedStorage=i;renderProduct();}
+function changeQty(d){product.qty=Math.max(1,Math.min(product.stock,product.qty+d));document.getElementById('qtyDisplay').textContent=product.qty;}
+
+function addToCart(event){
+    if(event)flyEffect(event);
+    cartCount+=product.qty;
+    const badge=document.getElementById('cartBadge');badge.textContent=cartCount;badge.classList.remove('hidden');badge.classList.remove('cart-bounce');void badge.offsetWidth;badge.classList.add('cart-bounce');
+    toast(t('added'),'success');
+}
+function buyNow(){addToCart(null);toast(t('buy_now'),'success');}
+function toggleWish(){
+    inWishlist=!inWishlist;
+    const btn=document.getElementById('wishBtn');
+    btn.innerHTML=`<i class="${inWishlist?'fas':'far'} fa-heart ${inWishlist?'text-red-500':''} text-lg"></i>`;
+    btn.title=inWishlist?t('remove_wish'):t('add_wish');
+    toast(inWishlist?t('wish_added'):t('wish_removed'),inWishlist?'success':'info');
+}
+
+function flyEffect(event){
+    const btn=event.currentTarget||event.target;const rect=btn.getBoundingClientRect();
+    const cartEl=document.getElementById('cartTrigger');const cr=cartEl.getBoundingClientRect();
+    const dot=document.createElement('div');dot.className='fly-dot';
+    const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+    dot.style.left=cx+'px';dot.style.top=cy+'px';
+    dot.style.setProperty('--ex',(cr.left+cr.width/2-cx)+'px');dot.style.setProperty('--ey',(cr.top+cr.height/2-cy)+'px');
+    document.body.appendChild(dot);setTimeout(()=>dot.remove(),650);
+    const badge=document.getElementById('cartBadge');badge.classList.remove('cart-bounce');void badge.offsetWidth;badge.classList.add('cart-bounce');
+}
+
+// ========== التابز ==========
+function renderTabs(){
+    const nm=lang==='en'?product.nameEn:product.name;
+    const desc=lang==='en'?product.desc_en:product.desc_ar;
+    document.getElementById('tabsSection').innerHTML=`
+    <div class="bg-white border border-surface-200 rounded-2xl p-6 sm:p-8">
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-1" style="scrollbar-width:none">
+            <button class="tab-btn ${activeTab==='desc'?'active':''}" onclick="activeTab='desc';renderTabs()">${t('description')}</button>
+            <button class="tab-btn ${activeTab==='specs'?'active':''}" onclick="activeTab='specs';renderTabs()">${t('specifications')}</button>
+            <button class="tab-btn ${activeTab==='reviews'?'active':''}" onclick="activeTab='reviews';renderTabs()">${t('reviews_label')} (${product.reviewCount.toLocaleString()})</button>
+        </div>
+
+        <!-- الوصف -->
+        <div class="tab-content ${activeTab==='desc'?'active':''} fade-up">
+            <p class="text-sm text-ink-700 leading-[1.9]">${desc}</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                <div class="bg-surface-50 rounded-xl p-4 text-center"><i class="fas fa-truck text-brand-500 text-xl mb-2"></i><p class="text-xs font-bold text-ink-900">${t('free_ship')}</p></div>
+                <div class="bg-surface-50 rounded-xl p-4 text-center"><i class="fas fa-undo-alt text-emerald-500 text-xl mb-2"></i><p class="text-xs font-bold text-ink-900">${t('return_policy')}</p></div>
+                <div class="bg-surface-50 rounded-xl p-4 text-center"><i class="fas fa-shield-alt text-sky-500 text-xl mb-2"></i><p class="text-xs font-bold text-ink-900">${t('authentic')}</p></div>
+                <div class="bg-surface-50 rounded-xl p-4 text-center"><i class="fas fa-certificate text-amber-500 text-xl mb-2"></i><p class="text-xs font-bold text-ink-900">${t('warranty')}</p></div>
+            </div>
+        </div>
+
+        <!-- المواصفات -->
+        <div class="tab-content ${activeTab==='specs'?'active':''} fade-up">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <tbody>${product.specs.map((s,i)=>`<tr class="${i%2===0?'bg-surface-50':''}"><td class="px-5 py-3.5 font-semibold text-ink-900 w-1/3 border-l-2 border-brand-500">${t(s.k)}</td><td class="px-5 py-3.5 text-ink-700">${t(s.v)}</td></tr>`).join('')}</tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- التقييمات -->
+        <div class="tab-content ${activeTab==='reviews'?'active':''} fade-up">
+            <!-- ملخص التقييم -->
+            <div class="flex flex-col sm:flex-row gap-6 mb-8 p-5 bg-surface-50 rounded-2xl">
+                <div class="text-center sm:text-right flex-shrink-0">
+                    <div class="text-5xl font-extrabold text-ink-900">${product.rating}</div>
+                    <div class="flex items-center justify-center sm:justify-start gap-1 mt-2">${rStars(product.rating)}</div>
+                    <p class="text-xs text-ink-400 mt-1">${product.reviewCount.toLocaleString()} ${t('reviews_count')}</p>
+                </div>
+                <div class="flex-1 space-y-2">
+                    ${product.ratingDist.map(d=>`<div class="flex items-center gap-3">
+                        <span class="text-xs font-semibold text-ink-700 w-6 text-left">${d.stars}</span>
+                        <i class="fas fa-star text-amber-400 text-[10px]"></i>
+                        <div class="flex-1 h-2.5 bg-surface-200 rounded-full overflow-hidden"><div class="h-full bg-amber-400 rounded-full transition-all" style="width:${d.pct}%"></div></div>
+                        <span class="text-xs font-semibold text-ink-500 w-10 text-left">${d.pct}%</span>
+                    </div>`).join('')}
+                </div>
+            </div>
+            <button class="btn-secondary btn-sm mb-6"><i class="fas fa-pen text-xs"></i>${t('write_review')}</button>
+
+            <!-- المراجعات -->
+            <div class="space-y-4">
+                ${product.reviews.map(r=>{
+                    const nm=lang==='en'?r.nameEn:r.name;
+                    const txt=lang==='en'?r.text_en:r.text_ar;
+                    const colors=['bg-brand-500','bg-emerald-500','bg-sky-500','bg-amber-500','bg-purple-500'];
+                    const color=colors[r.id%colors.length];
+                    return `<div class="review-card">
+                        <div class="flex items-start gap-3 mb-3">
+                            <div class="review-avatar ${color} text-white">${nm.charAt(0)}</div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-sm font-bold text-ink-900">${nm}</span>
+                                    ${r.verified?`<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full"><i class="fas fa-check-circle text-[8px] ml-0.5"></i>${t('verified')}</span>`:''}
+                                </div>
+                                <div class="flex items-center gap-2 mt-1">${rStars(r.rating)}<span class="text-[10px] text-ink-400">${r.date}</span></div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-ink-700 leading-relaxed mb-3">${txt}</p>
+                        <div class="flex items-center gap-4 text-xs text-ink-400">
+                            <button class="flex items-center gap-1 hover:text-ink-700 transition-colors"><i class="far fa-thumbs-up"></i>${t('helpful')} (${r.helpful})</button>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>
+    </div>`;
+}
+
+// ========== منتجات مشابهة ==========
+function renderSimilar(){
+    document.getElementById('similarSection').innerHTML=`
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-extrabold text-ink-900">${t('similar')}</h2>
+        <a href="#" class="text-sm font-semibold text-brand-500 hover:text-brand-600 transition-colors">${t('view_all')} <i class="fas fa-arrow-left text-xs mr-1"></i></a>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        ${similarProducts.map((p,i)=>{
+            const nm=lang==='en'&&p.nameEn?p.nameEn:p.name;
+            const disc=p.oldPrice?Math.round(((p.oldPrice-p.price)/p.oldPrice)*100):0;
+            return `<div class="similar-card fade-up" style="animation-delay:${i*0.07}s">
+                <div class="aspect-square bg-surface-100 overflow-hidden relative">
+                    <img src="${p.img}" alt="${nm}" class="w-full h-full object-cover">
+                    ${disc?`<span class="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-lg">-${disc}%</span>`:''}
+                </div>
+                <div class="p-3">
+                    <span class="text-[9px] font-bold text-brand-500 bg-brand-50 px-1.5 py-0.5 rounded">${p.brand}</span>
+                    <h4 class="text-xs font-semibold text-ink-900 mt-1.5 leading-relaxed line-clamp-2 min-h-[2rem]">${nm}</h4>
+                    <div class="flex items-center gap-1 mt-1.5">${rStars(p.rating)}<span class="text-[9px] text-ink-400">${p.rating}</span></div>
+                    <div class="flex items-end gap-1.5 mt-2">
+                        <span class="text-sm font-extrabold text-ink-900">${p.price.toLocaleString()}</span>
+                        ${p.oldPrice?`<span class="text-[10px] text-ink-300 line-through">${p.oldPrice.toLocaleString()}</span>`:''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('')}
+    </div>`;
+}
+
+// ========== أدوات ==========
+function rStars(r){
+    let s='';for(let i=1;i<=5;i++){
+        if(i<=Math.floor(r))s+='<i class="fas fa-star star-fill text-xs"></i>';
+        else if(i-r<1&&i-r>0)s+='<i class="fas fa-star-half-alt star-fill text-xs"></i>';
+        else s+='<i class="fas fa-star star-empty text-xs"></i>';
+    }return s;
+}
+
+// ========== لوحة الصور المكبّرة ==========
+function openLightbox(){document.getElementById('lightboxImg').src=product.images[currentImg];document.getElementById('lightbox').classList.add('open');document.body.style.overflow='hidden';}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();if(document.getElementById('lightbox').classList.contains('open')){if(e.key==='ArrowRight')changeImg(1);if(e.key==='ArrowLeft')changeImg(-1);}});
+
+// ========== التوست ==========
+function toast(msg,type){
+    const box=document.getElementById('toastBox');
+    const icons={success:'fa-check-circle text-emerald-500',error:'fa-times-circle text-red-500',info:'fa-info-circle text-sky-500'};
+    const d=document.createElement('div');
+    d.className='toast-in flex items-center gap-3 bg-white border border-surface-200 rounded-xl px-5 py-3.5 shadow-lg min-w-[260px] max-w-[380px]';
+    d.innerHTML=`<i class="fas ${icons[type]||icons.info} text-lg flex-shrink-0"></i><p class="text-sm text-ink-900 flex-1 font-medium">${msg}</p><button onclick="this.parentElement.remove()" class="text-ink-300 hover:text-ink-500 flex-shrink-0"><i class="fas fa-times text-xs"></i></button>`;
+    box.appendChild(d);
+    setTimeout(()=>{d.classList.remove('toast-in');d.classList.add('toast-out');setTimeout(()=>d.remove(),300);},3000);
+}
+
+// ========== التهيئة ==========
+renderAll();
+</script>
+</body>
+</html>

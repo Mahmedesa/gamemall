@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم - أنواع الضرائب</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']}}}}
+</script>
+<style>
+:root{
+  --bg:#080a10;--bg2:#0e1118;--bg3:#151921;
+  --card:#171c28;--card2:#1d2335;--cardH:#232a3c;
+  --bd:#1f2737;--bd2:#2a3350;--bd3:#354163;
+  --acc:#10b981;--acc2:#059669;--accDk:#047857;
+  --accGlow:rgba(16,185,129,.12);--accGlow2:rgba(16,185,129,.06);
+  --red:#ef4444;--redGlow:rgba(239,68,68,.1);
+  --amber:#f59e0b;--amberGlow:rgba(245,158,11,.1);
+  --sky:#38bdf8;--skyGlow:rgba(56,189,248,.1);
+  --violet:#8b5cf6;--violetGlow:rgba(139,92,246,.1);
+  --tx:#eaf0f6;--tx2:#8b95a8;--tx3:#556078;
+  --w:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+
+/* === خلفية مزخرفة === */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 600px 400px at 15% 10%,rgba(16,185,129,.04),transparent),
+             radial-gradient(ellipse 500px 500px at 85% 80%,rgba(139,92,246,.03),transparent),
+             radial-gradient(ellipse 400px 300px at 50% 50%,rgba(56,189,248,.02),transparent)}
+
+/* === الشريط العلوي === */
+.topbar{background:rgba(14,17,24,.85);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;backdrop-filter:blur(16px)}
+.topbar-inner{max-width:1360px;margin:0 auto;padding:0 24px;height:68px;display:flex;align-items:center;gap:16px}
+.back-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:11px;border:1px solid var(--bd);background:var(--card);color:var(--tx2);font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;text-decoration:none;white-space:nowrap}
+.back-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accGlow)}
+.title-area{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+.title-icon{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0;box-shadow:0 4px 20px rgba(16,185,129,.3);position:relative;overflow:hidden}
+.title-icon::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 50%)}
+.title-icon i{position:relative;z-index:1}
+.title-text h1{font-size:19px;font-weight:900;letter-spacing:-.3px;line-height:1.2}
+.title-text p{font-size:11px;color:var(--tx3);font-weight:500;margin-top:2px}
+.top-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.lang-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:11px;border:1px solid var(--bd);background:var(--card);color:var(--tx2);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .25s}
+.lang-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accGlow)}
+
+/* === المحتوى === */
+.content{max-width:1360px;margin:0 auto;padding:28px 24px;position:relative;z-index:1}
+
+/* === الإحصائيات === */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+@media(max-width:960px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.stats{grid-template-columns:1fr}}
+.st-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:22px 20px;position:relative;overflow:hidden;transition:all .3s}
+.st-card:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.st-card::before{content:'';position:absolute;top:0;right:0;left:0;height:3px}
+.st-card.s1::before{background:var(--acc)}.st-card.s2::before{background:var(--amber)}.st-card.s3::before{background:var(--sky)}.st-card.s4::before{background:var(--violet)}
+.st-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.st-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.st-ico.i1{background:var(--accGlow);color:var(--acc)}.st-ico.i2{background:var(--amberGlow);color:var(--amber)}.st-ico.i3{background:var(--skyGlow);color:var(--sky)}.st-ico.i4{background:var(--violetGlow);color:var(--violet)}
+.st-pct{font-size:11px;font-weight:800;padding:3px 9px;border-radius:7px}
+.st-pct.up{background:var(--accGlow);color:var(--acc)}.st-pct.down{background:var(--redGlow);color:var(--red)}.st-pct.neut{background:rgba(85,96,120,.15);color:var(--tx3)}
+.st-val{font-size:34px;font-weight:900;line-height:1;margin-bottom:4px;letter-spacing:-.5px}
+.st-lbl{font-size:12px;color:var(--tx3);font-weight:600}
+
+/* === شريط الأدوات === */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:240px;max-width:420px}
+.search-wrap input{width:100%;padding:11px 14px 11px 42px;background:var(--card);border:1.5px solid var(--bd);border-radius:12px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:all .25s}
+.search-wrap input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.search-wrap input::placeholder{color:var(--tx3)}
+.search-wrap > i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:14px;pointer-events:none}
+[dir="ltr"] .search-wrap input{padding:11px 42px 11px 14px}
+[dir="ltr"] .search-wrap > i{left:auto;right:14px}
+.filter-sel{padding:11px 38px 11px 14px;background:var(--card);border:1.5px solid var(--bd);border-radius:12px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:13px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23556078' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;transition:all .25s}
+[dir="ltr"] .filter-sel{background-position:right 12px center}
+.filter-sel:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.add-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 18px rgba(16,185,129,.28);white-space:nowrap}
+.add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(16,185,129,.38)}
+.add-btn:active{transform:scale(.97)}
+
+/* === بطاقة النوع (عرض البطاقات بدل الجدول) === */
+.types-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
+@media(max-width:500px){.types-grid{grid-template-columns:1fr}}
+.type-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:0;overflow:hidden;transition:all .3s;position:relative}
+.type-card:hover{border-color:var(--bd2);box-shadow:0 8px 30px rgba(0,0,0,.2);transform:translateY(-2px)}
+.type-card.disabled{opacity:.55}
+.type-card.disabled:hover{opacity:.7}
+.type-card-top{display:flex;align-items:center;gap:14px;padding:20px 20px 0}
+.type-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;position:relative;overflow:hidden}
+.type-icon::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent 50%)}
+.type-icon i{position:relative;z-index:1}
+.type-icon.c1{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.type-icon.c2{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+.type-icon.c3{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff}
+.type-icon.c4{background:linear-gradient(135deg,#38bdf8,#0284c7);color:#fff}
+.type-icon.c5{background:linear-gradient(135deg,#f87171,#dc2626);color:#fff}
+.type-icon.c6{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff}
+.type-icon.c7{background:linear-gradient(135deg,#a78bfa,#6d28d9);color:#fff}
+.type-icon.c8{background:linear-gradient(135deg,#34d399,#059669);color:#fff}
+.type-info{flex:1;min-width:0}
+.type-name{font-size:16px;font-weight:800;color:var(--tx);line-height:1.4;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.type-sub{font-size:12px;color:var(--tx3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;font-size:11px;font-weight:800;flex-shrink:0;letter-spacing:.3px}
+.status-badge.active{background:var(--accGlow);color:var(--acc)}
+.status-badge.inactive{background:rgba(85,96,120,.12);color:var(--tx3)}
+.status-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.status-badge.active .dot{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.type-card-body{padding:16px 20px}
+.type-desc{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:16px}
+.type-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 20px;border-top:1px solid var(--bd);background:var(--bg3)}
+.type-actions{display:flex;align-items:center;gap:6px}
+
+/* === مفتاح التبديل === */
+.toggle{position:relative;width:46px;height:26px;flex-shrink:0;cursor:pointer}
+.toggle input{display:none}
+.toggle .slider{position:absolute;inset:0;background:var(--bd2);border-radius:13px;transition:all .3s}
+.toggle .slider::before{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:var(--tx3);top:3px;right:3px;transition:all .3s}
+[dir="ltr"] .toggle .slider::before{right:auto;left:3px}
+.toggle input:checked+.slider{background:var(--acc)}
+.toggle input:checked+.slider::before{transform:translateX(-20px);background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+[dir="ltr"] .toggle input:checked+.slider::before{transform:translateX(20px)}
+.toggle:hover .slider{box-shadow:0 0 0 3px var(--accGlow)}
+
+/* === أزرار الإجراءات === */
+.act{width:36px;height:36px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s}
+.act:hover{transform:scale(1.08)}
+.act.a-edit:hover{border-color:var(--sky);color:var(--sky);background:var(--skyGlow)}
+.act.a-del:hover{border-color:var(--red);color:var(--red);background:var(--redGlow)}
+
+/* === المودال === */
+.modal-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal-ov.active{display:flex;animation:mfIn .2s ease}
+.modal-box{background:var(--card);border:1px solid var(--bd);border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.45);animation:msIn .3s ease}
+@keyframes mfIn{from{opacity:0}}@keyframes msIn{from{opacity:0;transform:scale(.92)}}
+.m-head{padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px}
+.m-head h3{font-size:17px;font-weight:800;flex:1;display:flex;align-items:center;gap:10px}
+.m-head h3 i{color:var(--acc)}
+.m-close{width:36px;height:36px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx3);transition:all .2s;font-size:15px;flex-shrink:0}
+.m-close:hover{background:var(--redGlow);border-color:var(--red);color:var(--red)}
+.m-body{padding:24px}
+.fg{margin-bottom:18px}
+.fg:last-child{margin-bottom:0}
+.f-label{display:block;font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:7px}
+.f-label .req{color:var(--red);font-size:14px}
+.f-input{width:100%;padding:11px 15px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:12px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:14px;outline:none;transition:all .25s}
+.f-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.f-input::placeholder{color:var(--tx3)}
+.f-input.err{border-color:var(--red);box-shadow:0 0 0 3px var(--redGlow)}
+.f-err{font-size:11px;color:var(--red);font-weight:600;margin-top:5px;display:none}
+.f-err.show{display:block}
+.f-colors{display:flex;gap:10px;flex-wrap:wrap}
+.f-color-opt{width:38px;height:38px;border-radius:11px;cursor:pointer;border:3px solid transparent;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.f-color-opt:hover,.f-color-opt.sel{border-color:var(--tx);transform:scale(1.1)}
+.f-color-opt.sel::after{content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;color:#fff;font-size:13px}
+.m-foot{padding:16px 24px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.btn{padding:10px 22px;border-radius:12px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:8px;transition:all .25s;outline:none}
+.btn:active{transform:scale(.96)}
+.btn-p{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 4px 16px rgba(16,185,129,.25)}.btn-p:hover{box-shadow:0 6px 24px rgba(16,185,129,.35);transform:translateY(-1px)}
+.btn-w{background:var(--bg2);color:var(--tx2);border:1px solid var(--bd)}.btn-w:hover{border-color:var(--bd2);color:var(--tx)}
+.btn-d{background:var(--redGlow);color:var(--red);border:1px solid rgba(239,68,68,.2)}.btn-d:hover{background:rgba(239,68,68,.2)}
+
+/* === تأكيد الحذف === */
+.del-body{text-align:center;padding:36px 24px}
+.del-ico{width:68px;height:68px;border-radius:50%;background:var(--redGlow);display:inline-flex;align-items:center;justify-content:center;font-size:30px;color:var(--red);margin-bottom:18px;animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.del-title{font-size:18px;font-weight:900;margin-bottom:8px}
+.del-text{font-size:13px;color:var(--tx3);line-height:1.8;margin-bottom:6px}
+.del-name{font-size:15px;font-weight:800;color:var(--amber);margin-bottom:24px;padding:8px 16px;background:var(--amberGlow);border-radius:10px;display:inline-block}
+.del-acts{display:flex;gap:10px;justify-content:center}
+
+/* === الحالة الفارغة === */
+.empty{text-align:center;padding:60px 20px;color:var(--tx3)}
+.empty i{font-size:52px;margin-bottom:16px;opacity:.2;display:block}
+.empty p{font-size:14px;font-weight:600}
+
+/* === التوست === */
+.toast-c{position:fixed;top:84px;left:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+[dir="ltr"] .toast-c{left:auto;right:24px}
+.toast{padding:14px 20px;border-radius:14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;animation:tIn .35s ease;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.35);backdrop-filter:blur(10px)}
+.toast.ok{background:rgba(16,185,129,.12);color:var(--acc);border:1px solid rgba(16,185,129,.2)}
+.toast.err{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.toast.inf{background:rgba(56,189,248,.12);color:var(--sky);border:1px solid rgba(56,189,248,.2)}
+.toast.warn{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.toast.out{animation:tOut .3s ease forwards}
+@keyframes tIn{from{opacity:0;transform:translateX(-30px)}}@keyframes tOut{to{opacity:0;transform:translateX(-30px)}}
+
+/* === حركات === */
+.fade-up{opacity:0;transform:translateY(16px);animation:fUp .5s ease forwards}
+@keyframes fUp{to{opacity:1;transform:translateY(0)}}
+.d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}.d5{animation-delay:.2s}
+
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--tx3)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="toast-c" id="toastC"></div>
+
+<!-- مودال إضافة/تعديل -->
+<div class="modal-ov" id="formModal">
+<div class="modal-box">
+<div class="m-head">
+  <h3><i class="fas fa-receipt"></i> <span id="formTitle">إضافة نوع ضريبة</span></h3>
+  <button class="m-close" onclick="closeM('formModal')"><i class="fas fa-times"></i></button>
+</div>
+<div class="m-body">
+  <input type="hidden" id="editId">
+  <div class="fg">
+    <label class="f-label" id="lblAr">اسم الضريبة بالعربية <span class="req">*</span></label>
+    <input type="text" id="f_ar" class="f-input" placeholder="مثال: ضريبة القيمة المضافة">
+    <span class="f-err" id="err_ar">هذا الحقل مطلوب</span>
+  </div>
+  <div class="fg">
+    <label class="f-label" id="lblEn">اسم الضريبة بالإنجليزية <span class="req">*</span></label>
+    <input type="text" id="f_en" class="f-input" placeholder="مثال: Value Added Tax">
+    <span class="f-err" id="err_en">This field is required</span>
+  </div>
+  <div class="fg">
+    <label class="f-label" id="lblDesc">وصف مختصر</label>
+    <textarea id="f_desc" class="f-input" rows="3" placeholder="وصف بسيط لنوع الضريبة..." style="resize:vertical;min-height:60px"></textarea>
+  </div>
+  <div class="fg">
+    <label class="f-label" id="lblColor">اللون</label>
+    <div class="f-colors" id="colorPicker"></div>
+  </div>
+</div>
+<div class="m-foot">
+  <button class="btn btn-p" onclick="saveType()"><i class="fas fa-save"></i> <span id="saveBtn">حفظ</span></button>
+  <button class="btn btn-w" onclick="closeM('formModal')"><span id="cancelBtn">إلغاء</span></button>
+</div>
+</div>
+</div>
+
+<!-- مودال تأكيد الحذف -->
+<div class="modal-ov" id="delModal">
+<div class="modal-box" style="max-width:460px">
+<div class="del-body">
+  <div class="del-ico"><i class="fas fa-trash-can"></i></div>
+  <h3 class="del-title" id="delTitle">تأكيد الحذف</h3>
+  <p class="del-text" id="delText">سيتم حذف نوع الضريبة التالي نهائياً:</p>
+  <div class="del-name" id="delName"></div>
+  <div class="del-acts">
+    <button class="btn btn-d" id="confirmDel"><i class="fas fa-trash"></i> <span id="delBtnText">حذف نهائياً</span></button>
+    <button class="btn btn-w" onclick="closeM('delModal')"><span id="delCancelBtn">إلغاء</span></button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- الشريط العلوي -->
+<header class="topbar">
+<div class="topbar-inner">
+  <a href="#" class="back-btn" onclick="event.preventDefault();toast('Dashboard','inf')">
+    <i class="fas fa-arrow-right"></i>
+    <span id="backBtn">الرجوع للوحة التحكم</span>
+  </a>
+  <div class="title-area">
+    <div class="title-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+    <div class="title-text">
+      <h1 id="pageTitle">أنواع الضرائب</h1>
+      <p id="pageSub">إدارة أنواع الضرائب وتفعيلها وإيقافها</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button class="lang-btn" onclick="toggleLang()">
+      <i class="fas fa-globe"></i>
+      <span id="langBtn">English</span>
+    </button>
+  </div>
+</div>
+</header>
+
+<!-- المحتوى -->
+<main class="content">
+  <div class="stats" id="statsArea"></div>
+  <div class="toolbar fade-up d2">
+    <div class="search-wrap">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="ابحث عن نوع ضريبة..." oninput="onFilter()">
+    </div>
+    <select class="filter-sel" id="filterStatus" onchange="onFilter()">
+      <option value="" id="filterAll">الكل</option>
+      <option value="active" id="filterActive">مفعّل</option>
+      <option value="inactive" id="filterInactive">موقوف</option>
+    </select>
+    <button class="add-btn" onclick="openAdd()">
+      <i class="fas fa-plus"></i>
+      <span id="addBtn">إضافة نوع ضريبة</span>
+    </button>
+  </div>
+  <div class="types-grid" id="typesGrid"></div>
+  <div class="empty" id="emptyState" style="display:none">
+    <i class="fas fa-inbox"></i>
+    <p id="emptyText">لا توجد أنواع ضرائب</p>
+  </div>
+</main>
+
+<script>
+/* ===== البيانات ===== */
+var taxColors=['#10b981','#f59e0b','#8b5cf6','#38bdf8','#f87171','#fb923c','#a78bfa','#34d399','#ec4899','#06b6d4'];
+var taxIcons=['fa-percent','fa-coins','fa-building-columns','fa-landmark','fa-hand-holding-dollar','fa-receipt','fa-calculator','fa-money-bill-trend-up','fa-scale-balanced','fa-chart-pie'];
+var selColor=taxColors[0];
+
+var taxTypes=[
+  {id:1,name_ar:'ضريبة القيمة المضافة',name_en:'Value Added Tax (VAT)',desc_ar:'ضريبة تُفرض على القيمة المضافة في كل مرحلة من مراحل الإنتاج والتوزيع',desc_en:'A tax on the value added at each stage of production and distribution',color:'#10b981',icon:'fa-percent',active:true},
+  {id:2,name_ar:'ضريبة الدخل',name_en:'Income Tax',desc_ar:'ضريبة تُحصل على دخل الأفراد والشركات وفقاً لشرائح متدرجة',desc_en:'A tax levied on individual and corporate income based on graduated brackets',color:'#f59e0b',icon:'fa-coins',active:true},
+  {id:3,name_ar:'ضريبة الشركات',name_en:'Corporate Tax',desc_ar:'ضريبة تُفرض على أرباح الشركات والمؤسسات التجارية',desc_en:'A tax imposed on profits of companies and commercial entities',color:'#8b5cf6',icon:'fa-building-columns',active:true},
+  {id:4,name_ar:'الضريبة الجمركية',name_en:'Customs Duty',desc_ar:'ضريبة تُفرض على البضائع المستوردة عبر الحدود الدولية',desc_en:'A tax imposed on goods imported across international borders',color:'#38bdf8',icon:'fa-landmark',active:true},
+  {id:5,name_ar:'ضريبة المبيعات',name_en:'Sales Tax',desc_ar:'ضريبة تُحصل عند نقطة البيع على السلع والخدمات',desc_en:'A tax collected at the point of sale on goods and services',color:'#f87171',icon:'fa-receipt',active:false},
+  {id:6,name_ar:'ضريبة الرواتب',name_en:'Payroll Tax',desc_ar:'ضريبة تُفرض على الرواتب والأجور المدفوعة للموظفين',desc_en:'A tax levied on salaries and wages paid to employees',color:'#fb923c',icon:'fa-hand-holding-dollar',active:true},
+  {id:7,name_ar:'ضريبة العقارات',name_en:'Property Tax',desc_ar:'ضريبة سنوية تُفرض على الممتلكات العقارية حسب قيمتها',desc_en:'An annual tax levied on real estate properties based on their value',color:'#a78bfa',icon:'fa-building-columns',active:false},
+  {id:8,name_ar:'ضريبة الأرباح الرأسمالية',name_en:'Capital Gains Tax',desc_ar:'ضريبة تُفرض على الأرباح الناتجة عن بيع الأصول الرأسمالية',desc_en:'A tax on profits from the sale of capital assets',color:'#34d399',icon:'fa-chart-pie',active:true}
+];
+
+var nextId=9, lang='ar', delTargetId=null;
+
+/* ===== الترجمة ===== */
+var L={
+  backBtn:{ar:'الرجوع للوحة التحكم',en:'Back to Dashboard'},
+  pageTitle:{ar:'أنواع الضرائب',en:'Tax Types'},
+  pageSub:{ar:'إدارة أنواع الضرائب وتفعيلها وإيقافها',en:'Manage tax types, enable and disable them'},
+  langBtn:{ar:'English',en:'العربية'},
+  searchPh:{ar:'ابحث عن نوع ضريبة...',en:'Search tax type...'},
+  filterAll:{ar:'الكل',en:'All'},
+  filterActive:{ar:'مفعّل',en:'Active'},
+  filterInactive:{ar:'موقوف',en:'Inactive'},
+  addBtn:{ar:'إضافة نوع ضريبة',en:'Add Tax Type'},
+  emptyText:{ar:'لا توجد أنواع ضرائب مطابقة',en:'No matching tax types found'},
+  totalTypes:{ar:'إجمالي الأنواع',en:'Total Types'},
+  activeTypes:{ar:'الأنواع المفعّلة',en:'Active Types'},
+  inactiveTypes:{ar:'الأنواع الموقوفة',en:'Inactive Types'},
+  thisYear:{ar:'تمت الإضافة هذا العام',en:'Added This Year'},
+  addTitle:{ar:'إضافة نوع ضريبة جديد',en:'Add New Tax Type'},
+  editTitle:{ar:'تعديل نوع الضريبة',en:'Edit Tax Type'},
+  lblAr:{ar:'اسم الضريبة بالعربية',en:'Tax Name (Arabic)'},
+  lblEn:{ar:'اسم الضريبة بالإنجليزية',en:'Tax Name (English)'},
+  lblDesc:{ar:'وصف مختصر',en:'Short Description'},
+  lblColor:{ar:'اللون',en:'Color'},
+  save:{ar:'حفظ',en:'Save'},
+  cancel:{ar:'إلغاء',en:'Cancel'},
+  phAr:{ar:'مثال: ضريبة القيمة المضافة',en:'e.g. Value Added Tax'},
+  phEn:{ar:'مثال: Value Added Tax',en:'e.g. Value Added Tax'},
+  phDesc:{ar:'وصف بسيط لنوع الضريبة...',en:'Brief description of the tax type...'},
+  delTitle:{ar:'تأكيد الحذف',en:'Confirm Deletion'},
+  delText:{ar:'سيتم حذف نوع الضريبة التالي نهائياً:',en:'The following tax type will be permanently deleted:'},
+  delBtnText:{ar:'حذف نهائياً',en:'Delete Permanently'},
+  editTip:{ar:'تعديل',en:'Edit'},
+  delTip:{ar:'حذف',en:'Delete'},
+  statusOn:{ar:'مفعّل',en:'Active'},
+  statusOff:{ar:'موقوف',en:'Inactive'},
+  toastAdded:{ar:'تمت إضافة نوع الضريبة بنجاح',en:'Tax type added successfully'},
+  toastUpdated:{ar:'تم تعديل نوع الضريبة بنجاح',en:'Tax type updated successfully'},
+  toastDeleted:{ar:'تم حذف نوع الضريبة بنجاح',en:'Tax type deleted successfully'},
+  toastEnabled:{ar:'تم تفعيل نوع الضريبة',en:'Tax type enabled'},
+  toastDisabled:{ar:'تم إيقاف نوع الضريبة',en:'Tax type disabled'},
+  toastErrReq:{ar:'يرجى ملء الحقول المطلوبة',en:'Please fill required fields'},
+  errRequired:{ar:'هذا الحقل مطلوب',en:'This field is required'},
+  total:{ar:'الإجمالي',en:'Total'}
+};
+function lt(k){return L[k]?L[k][lang]:k}
+
+/* ===== التوست ===== */
+function toast(msg,type){
+  var ic={ok:'fa-circle-check',err:'fa-circle-xmark',inf:'fa-circle-info',warn:'fa-triangle-exclamation'};
+  var c=document.getElementById('toastC');
+  var d=document.createElement('div');d.className='toast '+type;
+  d.innerHTML='<i class="fas '+(ic[type]||ic.inf)+'"></i><span>'+msg+'</span>';
+  c.appendChild(d);setTimeout(function(){d.classList.add('out');setTimeout(function(){d.remove()},300)},3000);
+}
+
+/* ===== المودالات ===== */
+function openM(id){document.getElementById(id).classList.add('active')}
+function closeM(id){document.getElementById(id).classList.remove('active')}
+
+/* ===== ألوان المودال ===== */
+function buildColors(){
+  document.getElementById('colorPicker').innerHTML=taxColors.map(function(c){
+    return '<div class="f-color-opt'+(c===selColor?' sel':'')+'" style="background:'+c+'" onclick="pickColor(\''+c+'\',this)"></div>';
+  }).join('');
+}
+function pickColor(c,el){selColor=c;document.querySelectorAll('.f-color-opt').forEach(function(x){x.classList.remove('sel')});el.classList.add('sel')}
+
+/* ===== الترجمة ===== */
+function toggleLang(){
+  lang=lang==='ar'?'en':'ar';
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  applyLang();renderAll();
+}
+function applyLang(){
+  document.getElementById('backBtn').textContent=lt('backBtn');
+  document.getElementById('pageTitle').textContent=lt('pageTitle');
+  document.getElementById('pageSub').textContent=lt('pageSub');
+  document.getElementById('langBtn').textContent=lt('langBtn');
+  document.getElementById('searchInput').placeholder=lt('searchPh');
+  document.getElementById('filterAll').textContent=lt('filterAll');
+  document.getElementById('filterActive').textContent=lt('filterActive');
+  document.getElementById('filterInactive').textContent=lt('filterInactive');
+  document.getElementById('addBtn').textContent=lt('addBtn');
+  document.getElementById('emptyText').textContent=lt('emptyText');
+  document.getElementById('saveBtn').textContent=lt('save');
+  document.getElementById('cancelBtn').textContent=lt('cancel');
+  document.getElementById('delTitle').textContent=lt('delTitle');
+  document.getElementById('delText').textContent=lt('delText');
+  document.getElementById('delBtnText').textContent=lt('delBtnText');
+  document.getElementById('lblAr').innerHTML=lt('lblAr')+' <span class="req">*</span>';
+  document.getElementById('lblEn').innerHTML=lt('lblEn')+' <span class="req">*</span>';
+  document.getElementById('lblDesc').textContent=lt('lblDesc');
+  document.getElementById('lblColor').textContent=lt('lblColor');
+  document.getElementById('f_ar').placeholder=lt('phAr');
+  document.getElementById('f_en').placeholder=lt('phEn');
+  document.getElementById('f_desc').placeholder=lt('phDesc');
+}
+
+/* ===== الفلترة ===== */
+function getFiltered(){
+  var q=document.getElementById('searchInput').value.trim().toLowerCase();
+  var st=document.getElementById('filterStatus').value;
+  return taxTypes.filter(function(t){
+    var mq=!q||t.name_ar.toLowerCase().indexOf(q)!==-1||t.name_en.toLowerCase().indexOf(q)!==-1;
+    var ms=!st||(st==='active'&&t.active)||(st==='inactive'&&!t.active);
+    return mq&&ms;
+  });
+}
+function onFilter(){renderGrid();renderStats()}
+
+/* ===== الإحصائيات ===== */
+function renderStats(){
+  var all=getFiltered();
+  var activeC=all.filter(function(t){return t.active}).length;
+  var inactC=all.length-activeC;
+  var now=new Date().getFullYear();
+  var thisYear=all.filter(function(t){return t.id>=1}).length; /* محاكاة */
+  document.getElementById('statsArea').innerHTML=
+    '<div class="st-card s1 fade-up d1"><div class="st-top"><div class="st-ico i1"><i class="fas fa-layer-group"></i></div><span class="st-pct neut">'+lt('total')+'</span></div><div class="st-val">'+all.length+'</div><div class="st-lbl">'+lt('totalTypes')+'</div></div>'+
+    '<div class="st-card s2 fade-up d2"><div class="st-top"><div class="st-ico i2"><i class="fas fa-circle-check"></i></div><span class="st-pct up">'+Math.round(all.length?activeC/all.length*100:0)+'%</span></div><div class="st-val">'+activeC+'</div><div class="st-lbl">'+lt('activeTypes')+'</div></div>'+
+    '<div class="st-card s3 fade-up d3"><div class="st-top"><div class="st-ico i3"><i class="fas fa-circle-pause"></i></div><span class="st-pct down">'+(inactC?inactC:0)+'</span></div><div class="st-val">'+inactC+'</div><div class="st-lbl">'+lt('inactiveTypes')+'</div></div>'+
+    '<div class="st-card s4 fade-up d4"><div class="st-top"><div class="st-ico i4"><i class="fas fa-calendar-plus"></i></div><span class="st-pct neut">'+now+'</span></div><div class="st-val">'+taxTypes.length+'</div><div class="st-lbl">'+lt('thisYear')+'</div></div>';
+}
+
+/* ===== الشبكة ===== */
+function renderGrid(){
+  var filtered=getFiltered();
+  var grid=document.getElementById('typesGrid');
+  var empty=document.getElementById('emptyState');
+  if(!filtered.length){grid.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+
+  grid.innerHTML=filtered.map(function(t,i){
+    var name=lang==='ar'?t.name_ar:t.name_en;
+    var desc=lang==='ar'?(t.desc_ar||''):(t.desc_en||'');
+    var ci=taxColors.indexOf(t.color);if(ci<0)ci=0;
+    var delay=Math.min(i+1,8);
+    return '<div class="type-card fade-up d'+delay+' '+(t.active?'':'disabled')+'">'+
+      '<div class="type-card-top">'+
+        '<div class="type-icon c'+((ci%8)+1)+'"><i class="fas '+(t.icon||taxIcons[ci])+'"></i></div>'+
+        '<div class="type-info">'+
+          '<div class="type-name" title="'+name+'">'+name+'</div>'+
+          '<div class="type-sub">'+t.name_en+'</div>'+
+        '</div>'+
+        '<span class="status-badge '+(t.active?'active':'inactive')+'"><span class="dot"></span> '+(t.active?lt('statusOn'):lt('statusOff'))+'</span>'+
+      '</div>'+
+      (desc?'<div class="type-card-body"><p class="type-desc">'+desc+'</p></div>':'')+
+      '<div class="type-card-foot">'+
+        '<div class="type-actions">'+
+          '<button class="act a-edit" title="'+lt('editTip')+'" onclick="openEdit('+t.id+')"><i class="fas fa-pen-to-square"></i></button>'+
+          '<button class="act a-del" title="'+lt('delTip')+'" onclick="openDel('+t.id+')"><i class="fas fa-trash-can"></i></button>'+
+        '</div>'+
+        '<label class="toggle" title="'+(t.active?lt('statusOff'):lt('statusOn'))+'">'+
+          '<input type="checkbox" '+(t.active?'checked':'')+' onchange="toggleStatus('+t.id+')">'+
+          '<span class="slider"></span>'+
+        '</label>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ===== إضافة ===== */
+function openAdd(){
+  document.getElementById('editId').value='';
+  document.getElementById('f_ar').value='';
+  document.getElementById('f_en').value='';
+  document.getElementById('f_desc').value='';
+  selColor=taxColors[0];buildColors();clearErrs();
+  document.getElementById('formTitle').textContent=lt('addTitle');
+  openM('formModal');
+}
+
+/* ===== تعديل ===== */
+function openEdit(id){
+  var t=taxTypes.find(function(x){return x.id===id});if(!t)return;
+  document.getElementById('editId').value=id;
+  document.getElementById('f_ar').value=t.name_ar;
+  document.getElementById('f_en').value=t.name_en;
+  document.getElementById('f_desc').value=lang==='ar'?(t.desc_ar||''):(t.desc_en||'');
+  selColor=t.color;buildColors();clearErrs();
+  document.getElementById('formTitle').textContent=lt('editTitle');
+  openM('formModal');
+}
+
+/* ===== حفظ ===== */
+function saveType(){
+  clearErrs();
+  var ar=document.getElementById('f_ar').value.trim();
+  var en=document.getElementById('f_en').value.trim();
+  var desc=document.getElementById('f_desc').value.trim();
+  var ok=true;
+  if(!ar){document.getElementById('f_ar').classList.add('err');document.getElementById('err_ar').classList.add('show');ok=false}
+  if(!en){document.getElementById('f_en').classList.add('err');document.getElementById('err_en').classList.add('show');ok=false}
+  if(!ok){toast(lt('toastErrReq'),'err');return}
+
+  var eid=document.getElementById('editId').value;
+  var ci=taxColors.indexOf(selColor);if(ci<0)ci=0;
+  if(eid){
+    var t=taxTypes.find(function(x){return x.id===+eid});
+    if(t){
+      t.name_ar=ar;t.name_en=en;
+      if(desc){if(lang==='ar')t.desc_ar=desc;else t.desc_en=desc}
+      t.color=selColor;t.icon=taxIcons[ci];
+    }
+    toast(lt('toastUpdated'),'ok');
+  }else{
+    taxTypes.unshift({
+      id:nextId++,name_ar:ar,name_en:en,
+      desc_ar:lang==='ar'?desc:'',desc_en:lang==='en'?desc:'',
+      color:selColor,icon:taxIcons[ci],active:true
+    });
+    toast(lt('toastAdded'),'ok');
+  }
+  closeM('formModal');renderAll();
+}
+function clearErrs(){
+  document.querySelectorAll('.f-input').forEach(function(el){el.classList.remove('err')});
+  document.querySelectorAll('.f-err').forEach(function(el){el.classList.remove('show')});
+}
+
+/* ===== تفعيل/إيقاف ===== */
+function toggleStatus(id){
+  var t=taxTypes.find(function(x){return x.id===id});if(!t)return;
+  t.active=!t.active;
+  toast(t.active?lt('toastEnabled'):lt('toastDisabled'),t.active?'ok':'warn');
+  renderAll();
+}
+
+/* ===== حذف ===== */
+function openDel(id){
+  delTargetId=id;
+  var t=taxTypes.find(function(x){return x.id===id});if(!t)return;
+  document.getElementById('delName').textContent=lang==='ar'?t.name_ar:t.name_en;
+  openM('delModal');
+}
+document.getElementById('confirmDel').addEventListener('click',function(){
+  if(delTargetId!==null){
+    taxTypes=taxTypes.filter(function(t){return t.id!==delTargetId});
+    delTargetId=null;closeM('delModal');
+    toast(lt('toastDeleted'),'err');renderAll();
+  }
+});
+
+/* ===== رسم الكل ===== */
+function renderAll(){renderStats();renderGrid()}
+
+/* ===== إغلاق المودال ===== */
+document.querySelectorAll('.modal-ov').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('active')});
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')document.querySelectorAll('.modal-ov.active').forEach(function(m){m.classList.remove('active')});
+});
+
+/* ===== تشغيل ===== */
+applyLang();buildColors();renderAll();
+</script>
+</body>
+</html>

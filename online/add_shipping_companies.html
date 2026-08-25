@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPanel - شركات الشحن</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']}}}}
+</script>
+<style>
+:root{
+  --bg:#0a0c11;--bg2:#0f1219;--bg3:#151922;--bg4:#1b2030;
+  --card:rgba(15,18,25,.85);--card2:#1a1f2e;
+  --bd:#1c2333;--bd2:#283044;--bd3:#3a4868;
+  --acc:#d4a017;--acc2:#c49315;--accLt:#e8b82a;
+  --accG:rgba(212,160,23,.1);--accG2:rgba(212,160,23,.05);
+  --red:#e84040;--redG:rgba(232,64,64,.08);
+  --green:#27ae60;--greenG:rgba(39,174,96,.08);
+  --cyan:#00bcd4;--cyanG:rgba(0,188,212,.08);
+  --purple:#9b7bea;--purpleG:rgba(155,123,234,.08);
+  --teal:#26a69a;--tealG:rgba(38,166,154,.08);
+  --tx:#ecf0f6;--tx2:#8892a8;--tx3:#4d5770;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 900px 500px at 10% 0%,rgba(212,160,23,.025),transparent),
+    radial-gradient(ellipse 600px 600px at 90% 90%,rgba(0,188,212,.015),transparent),
+    repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(28,35,51,.15) 60px,rgba(28,35,51,.15) 61px),
+    repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(28,35,51,.15) 60px,rgba(28,35,51,.15) 61px)}
+
+/* === الهيدر === */
+.cpanel-hdr{background:rgba(10,12,17,.97);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;backdrop-filter:blur(20px)}
+.cpanel-hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 5%,var(--acc) 50%,transparent 95%);opacity:.25}
+.hdr-in{max-width:1420px;margin:0 auto;padding:0 24px;height:62px;display:flex;align-items:center;gap:14px}
+.back-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:9px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);font-family:'Cairo';font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.back-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accG)}
+.pg-ico{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;box-shadow:0 4px 18px rgba(212,160,23,.22);position:relative;overflow:hidden}
+.pg-ico::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 55%)}
+.pg-ico i{position:relative;z-index:1}
+.pg-info{min-width:0}
+.pg-info h1{font-size:15px;font-weight:900;line-height:1.2;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg-info p{font-size:9.5px;color:var(--tx3);font-weight:500;margin-top:1px}
+.hdr-r{margin-right:auto;display:flex;align-items:center;gap:7px}
+.lang-btn{padding:7px 13px;border-radius:9px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx2);font-family:'Cairo';font-size:10.5px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.lang-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accG)}
+.add-btn{padding:8px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:'Cairo';font-size:11.5px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(212,160,23,.2);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(212,160,23,.3)}
+.add-btn:active{transform:scale(.97)}
+
+/* === المحتوى === */
+.cnt-wrap{max-width:1420px;margin:0 auto;padding:22px 24px;position:relative;z-index:1}
+
+/* === الإحصائيات === */
+.st-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:22px}
+@media(max-width:960px){.st-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.st-grid{grid-template-columns:1fr}}
+.st-card{background:var(--card);border:1px solid var(--bd);border-radius:13px;padding:18px;position:relative;overflow:hidden;transition:all .3s;backdrop-filter:blur(6px)}
+.st-card:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 8px 26px rgba(0,0,0,.3)}
+.st-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px}
+.st-card.s1::before{background:linear-gradient(90deg,var(--acc),var(--accLt))}
+.st-card.s2::before{background:linear-gradient(90deg,var(--green),#2ecc71)}
+.st-card.s3::before{background:linear-gradient(90deg,var(--red),#ff6b6b)}
+.st-card.s4::before{background:linear-gradient(90deg,var(--cyan),#4dd0e1)}
+.st-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.st-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.st-ico.i1{background:var(--accG);color:var(--acc)}.st-ico.i2{background:var(--greenG);color:var(--green)}
+.st-ico.i3{background:var(--redG);color:var(--red)}.st-ico.i4{background:var(--cyanG);color:var(--cyan)}
+.st-tag{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:4px;background:rgba(77,87,112,.06);color:var(--tx3)}
+.st-num{font-size:28px;font-weight:900;line-height:1;margin-bottom:2px;letter-spacing:-.5px}
+.st-lbl{font-size:10.5px;color:var(--tx3);font-weight:600}
+
+/* === شريط الأدوات === */
+.tb{display:flex;align-items:center;gap:7px;margin-bottom:18px;flex-wrap:wrap}
+.srch{position:relative;flex:1;min-width:170px;max-width:280px}
+.srch input{width:100%;padding:9px 38px 9px 13px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:9px;color:var(--tx);font-family:'Cairo';font-size:11.5px;outline:none;transition:all .2s}
+.srch input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accG)}
+.srch input::placeholder{color:var(--tx3)}
+.srch>i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:12px;pointer-events:none}
+[dir="ltr"] .srch input{padding:9px 13px 9px 38px}
+[dir="ltr"] .srch>i{left:auto;right:11px}
+.fsel{padding:9px 30px 9px 11px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:9px;color:var(--tx);font-family:'Cairo';font-size:11.5px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Cpath fill='%234d5770' d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 9px center;max-width:150px;transition:all .2s}
+[dir="ltr"] .fsel{background-position:right 9px center}
+.fsel:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accG)}
+.vsw{display:inline-flex;border-radius:9px;border:1.5px solid var(--bd);overflow:hidden;background:var(--bg2);flex-shrink:0}
+.vsw button{width:34px;height:34px;border:none;background:transparent;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s}
+.vsw button:hover{color:var(--tx2);background:var(--bg3)}
+.vsw button.on{color:#fff;background:var(--acc)}
+.vsw button+button{border-right:1px solid var(--bd)}
+[dir="ltr"] .vsw button+button{border-right:none;border-left:1px solid var(--bd)}
+
+/* === بطاقات الشركات === */
+.co-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+@media(max-width:400px){.co-grid{grid-template-columns:1fr}}
+.co-card{background:var(--card);border:1.5px solid var(--bd);border-radius:15px;overflow:hidden;transition:all .3s;display:flex;flex-direction:column;backdrop-filter:blur(6px)}
+.co-card:hover{border-color:var(--bd2);box-shadow:0 10px 30px rgba(0,0,0,.28);transform:translateY(-3px)}
+.co-card.off{opacity:.38}.co-card.off:hover{opacity:.55}
+.co-head{padding:16px 18px 12px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--bd);background:var(--bg3);position:relative}
+.co-head::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:.7}
+.co-card:nth-child(6n+1) .co-head::before{background:var(--acc)}
+.co-card:nth-child(6n+2) .co-head::before{background:var(--green)}
+.co-card:nth-child(6n+3) .co-head::before{background:var(--cyan)}
+.co-card:nth-child(6n+4) .co-head::before{background:var(--purple)}
+.co-card:nth-child(6n+5) .co-head::before{background:var(--teal)}
+.co-card:nth-child(6n+6) .co-head::before{background:var(--red)}
+.co-av{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;color:#fff;position:relative;overflow:hidden}
+.co-av::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent 60%)}
+.co-av.a1{background:linear-gradient(135deg,#c49315,#e8b82a)}.co-av.a2{background:linear-gradient(135deg,#1e8449,#27ae60)}
+.co-av.a3{background:linear-gradient(135deg,#0097a7,#00bcd4)}.co-av.a4{background:linear-gradient(135deg,#7c4dff,#9b7bea)}
+.co-av.a5{background:linear-gradient(135deg,#00897b,#26a69a)}.co-av.a6{background:linear-gradient(135deg,#c62828,#e84040)}
+.co-info{flex:1;min-width:0}
+.co-code{font-family:'Courier New',monospace;font-size:11.5px;font-weight:900;letter-spacing:1.5px;color:var(--acc);direction:ltr;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co-code-lbl{font-size:8.5px;color:var(--tx3);font-weight:600;margin-top:1px;display:block}
+.co-st{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:8.5px;font-weight:800;flex-shrink:0}
+.co-st.on{background:var(--greenG);color:var(--green)}.co-st.off{background:var(--redG);color:var(--red)}
+.co-st .dt{width:5px;height:5px;border-radius:50%;background:currentColor}
+.co-st.on .dt{animation:bk 1.5s infinite}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.25}}
+.co-body{padding:14px 18px;flex:1;display:flex;flex-direction:column;gap:6px}
+.co-nm{font-size:14.5px;font-weight:800;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co-nm-sub{font-size:11.5px;color:var(--tx3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co-badges{display:flex;gap:4px;margin-top:2px}
+.co-bd{font-size:7.5px;font-weight:800;padding:2px 5px;border-radius:3px;letter-spacing:.5px}
+.co-bd.ar{background:rgba(212,160,23,.08);color:var(--acc)}.co-bd.en{background:rgba(0,188,212,.08);color:var(--cyan)}
+.co-foot{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;border-top:1px solid var(--bd);background:var(--bg3);margin-top:auto}
+.co-acts{display:flex;gap:4px}
+
+.ab{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10.5px;transition:all .2s}
+.ab:hover{transform:scale(1.08)}.ab.ed:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyanG)}
+.ab.dl:hover{border-color:var(--red);color:var(--red);background:var(--redG)}
+
+.tg{position:relative;width:42px;height:23px;flex-shrink:0;cursor:pointer}
+.tg input{display:none}.tg .tk{position:absolute;inset:0;background:var(--bd2);border-radius:12px;transition:all .3s}
+.tg .tk::before{content:'';position:absolute;width:17px;height:17px;border-radius:50%;background:var(--tx3);top:3px;right:3px;transition:all .3s}
+[dir="ltr"] .tg .tk::before{right:auto;left:3px}
+.tg input:checked+.tk{background:var(--green)}.tg input:checked+.tk::before{transform:translateX(-17px);background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.25)}
+[dir="ltr"] .tg input:checked+.tk::before{transform:translateX(17px)}
+.tg:hover .tk{box-shadow:0 0 0 3px var(--greenG)}
+
+/* === الجدول === */
+.tbl-wrap{background:var(--card);border:1.5px solid var(--bd);border-radius:13px;overflow:hidden;backdrop-filter:blur(6px)}
+.tbl-hd{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--bd)}
+.tbl-hd h3{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px}.tbl-hd h3 i{color:var(--acc)}
+.tbl-cnt{font-size:10.5px;color:var(--tx3);font-weight:600;padding:2px 7px;background:var(--bg2);border-radius:5px}
+.tbl-sc{overflow-x:auto}
+.stbl{width:100%;border-collapse:collapse;min-width:860px}
+.stbl thead{background:var(--bg3)}
+.stbl th{padding:9px 12px;text-align:right;font-size:8.5px;font-weight:800;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bd);white-space:nowrap}
+[dir="ltr"] .stbl th{text-align:left}
+.stbl td{padding:9px 12px;font-size:11.5px;font-weight:500;color:var(--tx2);border-bottom:1px solid var(--bd);vertical-align:middle;white-space:nowrap}
+.stbl tr:last-child td{border-bottom:none}
+.stbl tbody tr{transition:background .12s}.stbl tbody tr:hover{background:var(--bg3)}
+.stbl tbody tr.off{opacity:.3}.stbl tbody tr.off:hover{opacity:.5}
+.tc-code{font-family:'Courier New',monospace;font-size:10.5px;font-weight:900;letter-spacing:1.2px;color:var(--acc);direction:ltr}
+.tc-nm{color:var(--tx);font-weight:700}.tc-sub{color:var(--tx3);font-size:10px;margin-top:1px}
+.tc-bd{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;font-size:8.5px;font-weight:800}
+.tc-bd.on{background:var(--greenG);color:var(--green)}.tc-bd.off{background:var(--redG);color:var(--red)}
+.tc-bd .dt{width:4px;height:4px;border-radius:50%;background:currentColor}.tc-bd.on .dt{animation:bk 1.5s infinite}
+
+/* === المودال === */
+.mdl-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:14px}
+.mdl-bg.open{display:flex}
+.mdl{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 56px rgba(0,0,0,.5)}
+.mdl-top{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px}
+.mdl-top h3{font-size:14.5px;font-weight:800;flex:1;display:flex;align-items:center;gap:7px}.mdl-top h3 i{color:var(--acc)}
+.mdl-x{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx3);transition:all .2s;font-size:12px;flex-shrink:0}
+.mdl-x:hover{background:var(--redG);border-color:var(--red);color:var(--red)}
+.mdl-body{padding:20px}
+.mdl-ft{padding:12px 20px 18px;display:flex;gap:7px;justify-content:flex-end;border-top:1px solid var(--bd);background:var(--bg3);border-radius:0 0 16px 16px}
+.fg{margin-bottom:14px}.fg:last-child{margin-bottom:0}
+.fl{display:block;font-size:10.5px;font-weight:700;color:var(--tx2);margin-bottom:5px}
+.fl .rq{color:var(--red);font-size:12px}
+.fi{width:100%;padding:9px 13px;background:var(--bg);border:1.5px solid var(--bd);border-radius:9px;color:var(--tx);font-family:'Cairo';font-size:12.5px;outline:none;transition:all .2s}
+.fi:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accG)}
+.fi::placeholder{color:var(--tx3)}.fi.err{border-color:var(--red);box-shadow:0 0 0 3px var(--redG)}
+.fe{font-size:9.5px;color:var(--red);font-weight:600;margin-top:3px;display:none}.fe.vis{display:block}
+.code-row{display:flex;gap:7px;align-items:flex-start}
+.code-row .fi{flex:1;font-family:'Courier New',monospace;font-weight:700;letter-spacing:2px;text-transform:uppercase;direction:ltr;text-align:right;background:var(--bg3);cursor:default}
+.gen-btn{padding:9px 13px;border-radius:9px;border:1.5px solid var(--acc);background:var(--accG);color:var(--acc);font-family:'Cairo';font-size:10.5px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
+.gen-btn:hover{background:rgba(212,160,23,.16);transform:scale(1.02)}.gen-btn:active{transform:scale(.97)}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.fr2{grid-template-columns:1fr}}
+
+/* حذف */
+.dl-bd{padding:30px 20px;text-align:center}
+.dl-ico{width:56px;height:56px;border-radius:50%;background:var(--redG);display:inline-flex;align-items:center;justify-content:center;font-size:24px;color:var(--red);margin-bottom:14px;animation:shk .4s ease}
+@keyframes shk{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.dl-t{font-size:16px;font-weight:900;margin-bottom:5px}
+.dl-d{font-size:11.5px;color:var(--tx3);margin-bottom:14px;line-height:1.7}
+.dl-info{background:var(--bg3);border:1px solid var(--bd);border-radius:11px;padding:14px;margin-bottom:18px;text-align:right}
+.dl-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}.dl-row:last-child{margin-bottom:0}
+.dl-lbl{font-size:9.5px;color:var(--tx3);font-weight:600;min-width:45px}
+.dl-val{font-size:11.5px;font-weight:700;color:var(--tx)}
+.dl-val.cv{font-family:'Courier New',monospace;color:var(--acc);letter-spacing:1px;direction:ltr}
+.dl-acts{display:flex;gap:7px;justify-content:center}
+
+.btn{padding:8px 16px;border-radius:9px;font-family:'Cairo';font-size:11.5px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s;outline:none}
+.btn:active{transform:scale(.96)}
+.btn-p{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 3px 12px rgba(212,160,23,.18)}.btn-p:hover{box-shadow:0 5px 18px rgba(212,160,23,.28);transform:translateY(-1px)}
+.btn-g{background:var(--bg3);color:var(--tx2);border:1px solid var(--bd)}.btn-g:hover{border-color:var(--bd2);color:var(--tx)}
+.btn-d{background:var(--redG);color:var(--red);border:1px solid rgba(232,64,64,.12)}.btn-d:hover{background:rgba(232,64,64,.15)}
+
+.emp{text-align:center;padding:44px 20px;color:var(--tx3)}.emp i{font-size:40px;margin-bottom:12px;opacity:.12;display:block}.emp p{font-size:12.5px;font-weight:600}
+
+.pnl{transition:opacity .22s,transform .22s}
+.pnl.hid{opacity:0;transform:translateY(6px);position:absolute;inset:0;pointer-events:none}
+.pnl.vis{opacity:1;transform:translateY(0);position:relative;pointer-events:auto}
+
+/* توست */
+.tst-c{position:fixed;top:76px;left:18px;z-index:9999;display:flex;flex-direction:column;gap:5px}
+[dir="ltr"] .tst-c{left:auto;right:18px}
+.tst{padding:11px 16px;border-radius:10px;font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:7px;animation:tIn .28s ease;min-width:240px;box-shadow:0 5px 20px rgba(0,0,0,.28);backdrop-filter:blur(8px)}
+.tst.ok{background:rgba(39,174,96,.1);color:var(--green);border:1px solid rgba(39,174,96,.12)}
+.tst.er{background:rgba(232,64,64,.1);color:var(--red);border:1px solid rgba(232,64,64,.12)}
+.tst.inf{background:rgba(0,188,212,.1);color:var(--cyan);border:1px solid rgba(0,188,212,.12)}
+.tst.wn{background:rgba(212,160,23,.1);color:var(--acc);border:1px solid rgba(212,160,23,.12)}
+.tst.out{animation:tOut .22s ease forwards}
+@keyframes tIn{from{opacity:0;transform:translateX(-18px)}}@keyframes tOut{to{opacity:0;transform:translateX(-18px)}}
+
+.fu{opacity:0;transform:translateY(10px);animation:fU .38s ease forwards}
+@keyframes fU{to{opacity:1;transform:translateY(0)}}
+.d1{animation-delay:.02s}.d2{animation-delay:.05s}.d3{animation-delay:.08s}.d4{animation-delay:.11s}
+
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="tst-c" id="tstBox"></div>
+
+<!-- ===== مودال الإضافة/التعديل ===== -->
+<div class="mdl-bg" id="formMdl">
+<div class="mdl">
+  <div class="mdl-top">
+    <h3><i class="fas fa-building"></i> <span id="fTitle">إضافة شركة شحن</span></h3>
+    <button class="mdl-x" onclick="closeForm()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="mdl-body">
+    <input type="hidden" id="eId">
+    <div class="fg">
+      <label class="fl">كود الشركة <span class="rq">*</span></label>
+      <div class="code-row">
+        <input type="text" id="fCode" class="fi" placeholder="SHIPCOM001" maxlength="12" readonly>
+        <button type="button" class="gen-btn" onclick="genCode()"><i class="fas fa-wand-magic-sparkles"></i> <span id="genTxt">توليد</span></button>
+      </div>
+      <div class="fe" id="eCode">يرجى توليد كود الشركة</div>
+    </div>
+    <div class="fr2">
+      <div class="fg">
+        <label class="fl">اسم الشركة بالعربية <span class="rq">*</span></label>
+        <input type="text" id="fAr" class="fi" placeholder="مثال: أرامكس">
+        <div class="fe" id="eAr">هذا الحقل مطلوب</div>
+      </div>
+      <div class="fg">
+        <label class="fl">اسم الشركة بالإنجليزية <span class="rq">*</span></label>
+        <input type="text" id="fEn" class="fi" placeholder="e.g. Aramex">
+        <div class="fe" id="eEn">This field is required</div>
+      </div>
+    </div>
+    <div class="fr2">
+      <div class="fg">
+        <label class="fl">الوصف بالعربية</label>
+        <input type="text" id="fDAr" class="fi" placeholder="وصف مختصر بالعربية">
+      </div>
+      <div class="fg">
+        <label class="fl">الوصف بالإنجليزية</label>
+        <input type="text" id="fDEn" class="fi" placeholder="Brief description in English">
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">رقم الهاتف</label>
+      <input type="text" id="fPhone" class="fi" placeholder="920000000" style="direction:ltr;text-align:right;font-family:'Courier New',monospace;letter-spacing:1px">
+    </div>
+  </div>
+  <div class="mdl-ft">
+    <button class="btn btn-g" onclick="closeForm()"><span id="cancelTxt">إلغاء</span></button>
+    <button class="btn btn-p" onclick="saveCompany()"><i class="fas fa-save"></i> <span id="saveTxt">حفظ</span></button>
+  </div>
+</div>
+</div>
+
+<!-- ===== مودال الحذف ===== -->
+<div class="mdl-bg" id="delMdl">
+<div class="mdl" style="max-width:420px">
+  <div class="dl-bd">
+    <div class="dl-ico"><i class="fas fa-trash-can"></i></div>
+    <h3 class="dl-t" id="dlTitle">تأكيد الحذف</h3>
+    <p class="dl-d" id="dlDesc">سيتم حذف شركة الشحن التالية نهائياً:</p>
+    <div class="dl-info">
+      <div class="dl-row"><span class="dl-lbl" id="dlLblCode">الكود:</span><span class="dl-val cv" id="dlCode"></span></div>
+      <div class="dl-row"><span class="dl-lbl" id="dlLblAr">العربي:</span><span class="dl-val" id="dlAr"></span></div>
+      <div class="dl-row"><span class="dl-lbl" id="dlLblEn">الإنجليزي:</span><span class="dl-val" id="dlEn"></span></div>
+    </div>
+    <div class="dl-acts">
+      <button class="btn btn-g" onclick="closeDel()"><span id="dlCancelTxt">إلغاء</span></button>
+      <button class="btn btn-d" onclick="doDelete()"><i class="fas fa-trash"></i> <span id="dlDelTxt">حذف نهائياً</span></button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== الهيدر ===== -->
+<header class="cpanel-hdr">
+<div class="hdr-in">
+  <a href="#" class="back-btn" onclick="event.preventDefault();toast('الرجوع للوحة التحكم','inf')">
+    <i class="fas fa-arrow-right" id="bkIco"></i>
+    <span id="bkTxt">لوحة التحكم</span>
+  </a>
+  <div class="pg-ico"><i class="fas fa-building"></i></div>
+  <div class="pg-info">
+    <h1 id="pgTitle">شركات الشحن</h1>
+    <p id="pgDesc">إدارة شركات الشحن وبياناتها ومعلومات الاتصال</p>
+  </div>
+  <div class="hdr-r">
+    <button class="lang-btn" onclick="switchLang()"><i class="fas fa-globe"></i> <span id="langTxt">English</span></button>
+    <button class="add-btn" onclick="openAdd()"><i class="fas fa-plus"></i> <span id="addTxt">إضافة شركة</span></button>
+  </div>
+</div>
+</header>
+
+<!-- ===== المحتوى ===== -->
+<main class="cnt-wrap">
+  <div class="st-grid" id="statsArea"></div>
+
+  <div class="tb fu d3">
+    <div class="srch"><i class="fas fa-search"></i><input type="text" id="sInp" placeholder="ابحث عن شركة شحن..." oninput="applyFilter()"></div>
+    <select class="fsel" id="stFlt" onchange="applyFilter()">
+      <option value="" id="optAll">كل الحالات</option>
+      <option value="1" id="optOn">مفعّلة</option>
+      <option value="0" id="optOff">موقوفة</option>
+    </select>
+    <div class="vsw">
+      <button class="on" id="vG" onclick="setView('grid')"><i class="fas fa-grip"></i></button>
+      <button id="vL" onclick="setView('list')"><i class="fas fa-list"></i></button>
+    </div>
+  </div>
+
+  <div style="position:relative;min-height:120px">
+    <div class="pnl vis" id="gridPnl">
+      <div class="co-grid" id="gridCtn"></div>
+      <div class="emp" id="gridEmp" style="display:none"><i class="fas fa-inbox"></i><p id="gridEmpTxt">لا توجد شركات مطابقة</p></div>
+    </div>
+    <div class="pnl hid" id="listPnl">
+      <div class="tbl-wrap">
+        <div class="tbl-hd"><h3><i class="fas fa-table-list"></i> <span id="tblTitle">قائمة شركات الشحن</span></h3><span class="tbl-cnt" id="tblCnt">0</span></div>
+        <div class="tbl-sc">
+          <table class="stbl"><thead><tr>
+            <th style="width:36px">#</th><th id="thCd" style="width:115px">الكود</th><th id="thNm">اسم الشركة</th><th id="thPh" style="width:110px">الهاتف</th><th id="thSt" style="width:85px">الحالة</th><th id="thAc" style="width:115px">الإجراءات</th>
+          </tr></thead><tbody id="tblBody"></tbody></table>
+        </div>
+      </div>
+      <div class="emp" id="listEmp" style="display:none"><i class="fas fa-inbox"></i><p id="listEmpTxt">لا توجد شركات مطابقة</p></div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ================================================
+   بيانات شركات الشحن
+   ================================================ */
+var companies = [
+  {id:1, code:'SHIPCOM001', ar:'أرامكس', en:'Aramex', descAr:'شركة شحن إقليمية رائدة', descEn:'Leading regional shipping company', phone:'920000012', active:true},
+  {id:2, code:'SHIPCOM002', ar:'سمسا', en:'SMSA Express', descAr:'خدمات الشحن السريع والبريد', descEn:'Express shipping and mail services', phone:'920000045', active:true},
+  {id:3, code:'SHIPCOM003', ar:'DHL', en:'DHL', descAr:'شركة شحن دولية', descEn:'International shipping company', phone:'920000078', active:true},
+  {id:4, code:'SHIPCOM004', ar:'فيديكس', en:'FedEx', descAr:'خدمات التوصيل العالمية', descEn:'Worldwide delivery services', phone:'920000101', active:true},
+  {id:5, code:'SHIPCOM005', ar:'UPS', en:'UPS', descAr:'شركة الشحن والخدمات اللوجستية', descEn:'Shipping and logistics services', phone:'920000134', active:true},
+  {id:6, code:'SHIPCOM006', ar:'جي آند تي', en:'G&J Express', descAr:'شركة شحن سعودية', descEn:'Saudi shipping company', phone:'920000167', active:false},
+  {id:7, code:'SHIPCOM007', ar:'إمفو', en:'IMCO', descAr:'شركة الخدمات البريدية المتكاملة', descEn:'Integrated postal services company', phone:'920000200', active:true},
+  {id:8, code:'SHIPCOM008', ar:'البريد السعودي', en:'Saudi Post', descAr:'الخدمات البريدية الرسمية', descEn:'Official postal services', phone:'920000233', active:true},
+  {id:9, code:'SHIPCOM009', ar:'تي بي آي', en:'TBI', descAr:'نقل البريد والشحنات', descEn:'Mail and parcels transportation', phone:'920000266', active:false},
+  {id:10, code:'SHIPCOM010', ar:'سريع', en:'Saree', descAr:'حلول الشحن الذكية', descEn:'Smart shipping solutions', phone:'920000299', active:true},
+  {id:11, code:'SHIPCOM011', ar:'إكسل لوجستكس', en:'Xpress Logistics', descAr:'حلول لوجستية متكاملة', descEn:'Integrated logistics solutions', phone:'920000332', active:true},
+  {id:12, code:'SHIPCOM012', ar:'MHD', en:'MHD Logistics', descAr:'خدمات التخزين والتوزيع', descEn:'Warehousing and distribution', phone:'920000365', active:true}
+];
+
+/* ================================================
+   متغيرات عامة
+   ================================================ */
+var nxId = 13;
+var view = 'grid';
+var L = 'ar';
+var delId = null;
+var codeNum = 13;
+
+var avClasses = ['a1','a2','a3','a4','a5','a6'];
+
+/* ================================================
+   توليد كود
+   ================================================ */
+function genCode() {
+  var n = String(codeNum).padStart(3, '0');
+  document.getElementById('fCode').value = 'SHIPCOM' + n;
+  document.getElementById('fCode').classList.remove('err');
+  document.getElementById('eCode').classList.remove('vis');
+}
+
+/* ================================================
+   التوست
+   ================================================ */
+function toast(msg, t) {
+  var box = document.getElementById('tstBox');
+  var d = document.createElement('div');
+  d.className = 'tst ' + t;
+  var ic = {ok:'fa-circle-check',er:'fa-circle-xmark',inf:'fa-circle-info',wn:'fa-triangle-exclamation'};
+  d.innerHTML = '<i class="fas '+(ic[t]||ic.inf)+'"></i><span>'+msg+'</span>';
+  box.appendChild(d);
+  setTimeout(function(){d.classList.add('out');setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},220);},2800);
+}
+
+/* ================================================
+   المودالات
+   ================================================ */
+function openMdl(id){document.getElementById(id).classList.add('open')}
+function closeMdl(id){document.getElementById(id).classList.remove('open')}
+document.getElementById('formMdl').addEventListener('click',function(e){if(e.target===this)closeForm()});
+document.getElementById('delMdl').addEventListener('click',function(e){if(e.target===this)closeDel()});
+
+/* ================================================
+   الفلترة
+   ================================================ */
+function getList() {
+  var q = document.getElementById('sInp').value.trim().toLowerCase();
+  var st = document.getElementById('stFlt').value;
+  return companies.filter(function(c){
+    var mq = !q || c.ar.toLowerCase().indexOf(q)>-1 || c.en.toLowerCase().indexOf(q)>-1 || c.code.toLowerCase().indexOf(q)>-1;
+    var ms = st==='' || (st==='1'&&c.active) || (st==='0'&&!c.active);
+    return mq&&ms;
+  });
+}
+function applyFilter(){renderStats();renderView();}
+
+/* ================================================
+   الإحصائيات
+   ================================================ */
+function renderStats() {
+  var list = getList();
+  var total=list.length, act=0, inact=0;
+  for(var i=0;i<list.length;i++){if(list[i].active)act++;else inact++;}
+  var pct = total>0?Math.round(act/total*100):0;
+  var lb = L==='ar'
+    ? ['إجمالي الشركات','شركات مفعّلة','شركات موقوفة','نسبة التفعيل']
+    : ['Total Companies','Active Companies','Inactive Companies','Activation Rate'];
+
+  document.getElementById('statsArea').innerHTML =
+    '<div class="st-card s1 fu d1"><div class="st-top"><div class="st-ico i1"><i class="fas fa-building"></i></div><span class="st-tag">'+(L==='ar'?'الكل':'All')+'</span></div><div class="st-num">'+total+'</div><div class="st-lbl">'+lb[0]+'</div></div>'+
+    '<div class="st-card s2 fu d2"><div class="st-top"><div class="st-ico i2"><i class="fas fa-circle-check"></i></div><span class="st-tag">'+pct+'%</span></div><div class="st-num">'+act+'</div><div class="st-lbl">'+lb[1]+'</div></div>'+
+    '<div class="st-card s3 fu d3"><div class="st-top"><div class="st-ico i3"><i class="fas fa-circle-pause"></i></div><span class="st-tag">'+inact+'</span></div><div class="st-num">'+inact+'</div><div class="st-lbl">'+lb[2]+'</div></div>'+
+    '<div class="st-card s4 fu d4"><div class="st-top"><div class="st-ico i4"><i class="fas fa-chart-pie"></i></div><span class="st-tag">'+pct+'%</span></div><div class="st-num">'+pct+'%</div><div class="st-lbl">'+lb[3]+'</div></div>';
+}
+
+/* ================================================
+   عرض البطاقات
+   ================================================ */
+function renderGrid() {
+  var list = getList();
+  var ctn = document.getElementById('gridCtn');
+  var emp = document.getElementById('gridEmp');
+  document.getElementById('gridEmpTxt').textContent = L==='ar'?'لا توجد شركات مطابقة':'No matching companies';
+  if(!list.length){ctn.innerHTML='';emp.style.display='';return;}
+  emp.style.display='none';
+
+  var h='';
+  for(var i=0;i<list.length;i++){
+    var c=list[i];
+    var d=Math.min(i+1,12);
+    var av=avClasses[i%avClasses.length];
+    var letter=c.en.charAt(0).toUpperCase();
+    var nm = L==='ar'?c.ar:c.en;
+    var sub = L==='ar'?c.en:c.ar;
+    var desc = L==='ar'?(c.descAr||''):(c.descEn||'');
+    var stTxt = c.active?(L==='ar'?'مفعّلة':'Active'):(L==='ar'?'موقوفة':'Inactive');
+    var codeLbl = L==='ar'?'كود الشركة':'Company Code';
+
+    h+='<div class="co-card fu d'+d+' '+(c.active?'':'off')+'">'
+      +'<div class="co-head">'
+      +'<div class="co-av '+av+'">'+letter+'</div>'
+      +'<div class="co-info"><span class="co-code">'+c.code+'</span><span class="co-code-lbl">'+codeLbl+'</span></div>'
+      +'<span class="co-st '+(c.active?'on':'off')+'"><span class="dt"></span> '+stTxt+'</span>'
+      +'</div>'
+      +'<div class="co-body">'
+      +'<div class="co-nm">'+nm+'</div>'
+      +'<div class="co-nm-sub">'+sub+'</div>'
+      +'<div class="co-badges"><span class="co-bd ar">AR</span><span class="co-bd en">EN</span></div>'
+      +(desc?'<div style="margin-top:4px;font-size:10.5px;color:var(--tx3);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="fas fa-align-left" style="font-size:8px;margin-left:4px;opacity:.5"></i>'+desc.substring(0,55)+(desc.length>55?'...':'')+'</div>':'')
+      +(c.phone?'<div style="margin-top:2px;font-size:10px;color:var(--tx3);direction:ltr;text-align:right;font-family:\'Courier New\',monospace;letter-spacing:.5px"><i class="fas fa-phone" style="font-size:8px;margin-left:4px;opacity:.5"></i>'+c.phone+'</div>':'')
+      +'</div>'
+      +'<div class="co-foot"><div class="co-acts">'
+      +'<button class="ab ed" title="'+(L==='ar'?'تعديل':'Edit')+'" onclick="openEdit('+c.id+')"><i class="fas fa-pen"></i></button>'
+      +'<button class="ab dl" title="'+(L==='ar'?'حذف':'Delete')+'" onclick="openDel('+c.id+')"><i class="fas fa-trash"></i></button>'
+      +'</div>'
+      +'<label class="tg"><input type="checkbox" '+(c.active?'checked':'')+' onchange="toggleSt('+c.id+')"><span class="tk"></span></label>'
+      +'</div></div>';
+  }
+  ctn.innerHTML=h;
+}
+
+/* ================================================
+   عرض الجدول
+   ================================================ */
+function renderTable() {
+  var list = getList();
+  var tb = document.getElementById('tblBody');
+  var emp = document.getElementById('listEmp');
+  document.getElementById('listEmpTxt').textContent = L==='ar'?'لا توجد شركات مطابقة':'No matching companies';
+  document.getElementById('tblCnt').textContent = list.length;
+  document.getElementById('tblTitle').textContent = L==='ar'?'قائمة شركات الشحن':'Shipping Companies List';
+  if(!list.length){tb.innerHTML='';emp.style.display='';return;}
+  emp.style.display='none';
+
+  var h='';
+  for(var i=0;i<list.length;i++){
+    var c=list[i];
+    var nm = L==='ar'?c.ar:c.en;
+    var sub = L==='ar'?c.en:c.ar;
+    var stTxt = c.active?(L==='ar'?'مفعّلة':'Active'):(L==='ar'?'موقوفة':'Inactive');
+    var ph = c.phone||'—';
+
+    h+='<tr class="'+(c.active?'':'off')+'">'
+      +'<td style="color:var(--tx3);font-weight:700">'+(i+1)+'</td>'
+      +'<td><span class="tc-code">'+c.code+'</span></td>'
+      +'<td><div class="tc-nm">'+nm+'</div><div class="tc-sub">'+sub+'</div></td>'
+      +'<td style="direction:ltr;text-align:right;font-family:\'Courier New\',monospace;font-size:10.5px;color:var(--tx3);letter-spacing:.5px">'+ph+'</td>'
+      +'<td><span class="tc-bd '+(c.active?'on':'off')+'"><span class="dt"></span> '+stTxt+'</span></td>'
+      +'<td><div class="co-acts">'
+      +'<button class="ab ed" onclick="openEdit('+c.id+')"><i class="fas fa-pen"></i></button>'
+      +'<button class="ab dl" onclick="openDel('+c.id+')"><i class="fas fa-trash"></i></button>'
+      +'<label class="tg"><input type="checkbox" '+(c.active?'checked':'')+' onchange="toggleSt('+c.id+')"><span class="tk"></span></label>'
+      +'</div></td></tr>';
+  }
+  tb.innerHTML=h;
+}
+
+function renderView(){if(view==='grid')renderGrid();else renderTable();}
+
+/* ================================================
+   تبديل العرض
+   ================================================ */
+function setView(m) {
+  if(m===view)return;
+  view=m;
+  document.getElementById('vG').classList.toggle('on',m==='grid');
+  document.getElementById('vL').classList.toggle('on',m==='list');
+  var g=document.getElementById('gridPnl'),l=document.getElementById('listPnl');
+  if(m==='grid'){l.classList.remove('vis');l.classList.add('hid');setTimeout(function(){g.classList.remove('hid');g.classList.add('vis');},80);}
+  else{g.classList.remove('vis');g.classList.add('hid');setTimeout(function(){l.classList.remove('hid');l.classList.add('vis');},80);}
+  renderView();
+}
+
+/* ================================================
+   تبديل اللغة
+   ================================================ */
+function switchLang() {
+  L = L==='ar'?'en':'ar';
+  document.documentElement.lang = L;
+  document.documentElement.dir = L==='ar'?'rtl':'ltr';
+
+  document.getElementById('bkIco').className = L==='ar'?'fas fa-arrow-right':'fas fa-arrow-left';
+  document.getElementById('bkTxt').textContent = L==='ar'?'لوحة التحكم':'Dashboard';
+  document.getElementById('pgTitle').textContent = L==='ar'?'شركات الشحن':'Shipping Companies';
+  document.getElementById('pgDesc').textContent = L==='ar'?'إدارة شركات الشحن وبياناتها ومعلومات الاتصال':'Manage shipping companies, data and contact info';
+  document.getElementById('langTxt').textContent = L==='ar'?'English':'العربية';
+  document.getElementById('addTxt').textContent = L==='ar'?'إضافة شركة':'Add Company';
+  document.getElementById('sInp').placeholder = L==='ar'?'ابحث عن شركة شحن...':'Search shipping company...';
+  document.getElementById('optAll').textContent = L==='ar'?'كل الحالات':'All Status';
+  document.getElementById('optOn').textContent = L==='ar'?'مفعّلة':'Active';
+  document.getElementById('optOff').textContent = L==='ar'?'موقوفة':'Inactive';
+  document.getElementById('thCd').textContent = L==='ar'?'الكود':'Code';
+  document.getElementById('thNm').textContent = L==='ar'?'اسم الشركة':'Company Name';
+  document.getElementById('thPh').textContent = L==='ar'?'الهاتف':'Phone';
+  document.getElementById('thSt').textContent = L==='ar'?'الحالة':'Status';
+  document.getElementById('thAc').textContent = L==='ar'?'الإجراءات':'Actions';
+  document.getElementById('genTxt').textContent = L==='ar'?'توليد':'Generate';
+  document.getElementById('cancelTxt').textContent = L==='ar'?'إلغاء':'Cancel';
+  document.getElementById('saveTxt').textContent = L==='ar'?'حفظ':'Save';
+  document.getElementById('dlTitle').textContent = L==='ar'?'تأكيد الحذف':'Confirm Deletion';
+  document.getElementById('dlDesc').textContent = L==='ar'?'سيتم حذف شركة الشحن التالية نهائياً:':'The following shipping company will be permanently deleted:';
+  document.getElementById('dlLblCode').textContent = L==='ar'?'الكود:':'Code:';
+  document.getElementById('dlLblAr').textContent = L==='ar'?'العربي:':'Arabic:';
+  document.getElementById('dlLblEn').textContent = L==='ar'?'الإنجليزي:':'English:';
+  document.getElementById('dlCancelTxt').textContent = L==='ar'?'إلغاء':'Cancel';
+  document.getElementById('dlDelTxt').textContent = L==='ar'?'حذف نهائياً':'Delete Permanently';
+
+  renderStats();
+  renderView();
+}
+
+/* ================================================
+   مسح الأخطاء
+   ================================================ */
+function clrErr() {
+  ['fCode','fAr','fEn'].forEach(function(id){document.getElementById(id).classList.remove('err')});
+  ['eCode','eAr','eEn'].forEach(function(id){document.getElementById(id).classList.remove('vis')});
+}
+
+/* ================================================
+   فتح نموذج إضافة
+   ================================================ */
+function openAdd() {
+  document.getElementById('eId').value='';
+  document.getElementById('fCode').value='';
+  document.getElementById('fAr').value='';
+  document.getElementById('fEn').value='';
+  document.getElementById('fDAr').value='';
+  document.getElementById('fDEn').value='';
+  document.getElementById('fPhone').value='';
+  clrErr();
+  document.getElementById('fTitle').textContent = L==='ar'?'إضافة شركة شحن جديدة':'Add New Shipping Company';
+  openMdl('formMdl');
+  setTimeout(function(){genCode();},120);
+}
+
+/* ================================================
+   فتح نموذج تعديل
+   ================================================ */
+function openEdit(id) {
+  var c=null;
+  for(var i=0;i<companies.length;i++){if(companies[i].id===id){c=companies[i];break;}}
+  if(!c)return;
+  document.getElementById('eId').value=c.id;
+  document.getElementById('fCode').value=c.code;
+  document.getElementById('fAr').value=c.ar;
+  document.getElementById('fEn').value=c.en;
+  document.getElementById('fDAr').value=c.descAr||'';
+  document.getElementById('fDEn').value=c.descEn||'';
+  document.getElementById('fPhone').value=c.phone||'';
+  clrErr();
+  document.getElementById('fTitle').textContent = L==='ar'?'تعديل بيانات الشركة':'Edit Company Data';
+  openMdl('formMdl');
+}
+
+/* ================================================
+   إغلاق النموذج
+   ================================================ */
+function closeForm(){closeMdl('formMdl');}
+
+/* ================================================
+   حفظ الشركة
+   ================================================ */
+function saveCompany() {
+  clrErr();
+  var eId = document.getElementById('eId').value;
+  var code = document.getElementById('fCode').value.trim().toUpperCase();
+  var ar = document.getElementById('fAr').value.trim();
+  var en = document.getElementById('fEn').value.trim();
+  var dAr = document.getElementById('fDAr').value.trim();
+  var dEn = document.getElementById('fDEn').value.trim();
+  var ph = document.getElementById('fPhone').value.trim();
+  var ok = true;
+
+  if(!code||code.length<5){
+    document.getElementById('fCode').classList.add('err');
+    document.getElementById('eCode').classList.add('vis');
+    ok=false;
+  } else {
+    for(var i=0;i<companies.length;i++){
+      if(companies[i].code===code && String(companies[i].id)!==String(eId)){
+        document.getElementById('fCode').classList.add('err');
+        document.getElementById('eCode').textContent = L==='ar'?'هذا الكود مستخدم بالفعل':'Code already exists';
+        document.getElementById('eCode').classList.add('vis');
+        ok=false;break;
+      }
+    }
+  }
+  if(!ar){document.getElementById('fAr').classList.add('err');document.getElementById('eAr').classList.add('vis');ok=false;}
+  if(!en){document.getElementById('fEn').classList.add('err');document.getElementById('eEn').classList.add('vis');ok=false;}
+
+  if(!ok){toast(L==='ar'?'يرجى ملء جميع الحقول المطلوبة':'Please fill all required fields','er');return;}
+
+  if(eId){
+    for(var j=0;j<companies.length;j++){
+      if(companies[j].id===parseInt(eId,10)){
+        companies[j].code=code;companies[j].ar=ar;companies[j].en=en;
+        companies[j].descAr=dAr;companies[j].descEn=dEn;companies[j].phone=ph;
+        break;
+      }
+    }
+    toast(L==='ar'?'تم تعديل بيانات الشركة بنجاح':'Company updated successfully','ok');
+  } else {
+    companies.push({id:nxId++,code:code,ar:ar,en:en,descAr:dAr,descEn:dEn,phone:ph,active:true});
+    codeNum++;
+    toast(L==='ar'?'تمت إضافة الشركة بنجاح':'Company added successfully','ok');
+  }
+
+  closeMdl('formMdl');
+  renderStats();
+  renderView();
+}
+
+/* ================================================
+   تبديل الحالة
+   ================================================ */
+function toggleSt(id) {
+  for(var i=0;i<companies.length;i++){
+    if(companies[i].id===id){
+      companies[i].active=!companies[i].active;
+      toast(companies[i].active?(L==='ar'?'تم تفعيل الشركة':'Company activated'):(L==='ar'?'تم إيقاف الشركة':'Company deactivated'),companies[i].active?'ok':'wn');
+      break;
+    }
+  }
+  renderStats();renderView();
+}
+
+/* ================================================
+   فتح مودال الحذف
+   ================================================ */
+function openDel(id) {
+  var c=null;
+  for(var i=0;i<companies.length;i++){if(companies[i].id===id){c=companies[i];break;}}
+  if(!c)return;
+  delId=id;
+  document.getElementById('dlCode').textContent=c.code;
+  document.getElementById('dlAr').textContent=c.ar;
+  document.getElementById('dlEn').textContent=c.en;
+  openMdl('delMdl');
+}
+
+/* ================================================
+   إغلاق مودال الحذف
+   ================================================ */
+function closeDel(){closeMdl('delMdl');delId=null;}
+
+/* ================================================
+   تأكيد الحذف
+   ================================================ */
+function doDelete() {
+  if(delId===null)return;
+  var nw=[];
+  for(var i=0;i<companies.length;i++){if(companies[i].id!==delId)nw.push(companies[i]);}
+  companies=nw;
+  delId=null;
+  closeMdl('delMdl');
+  toast(L==='ar'?'تم حذف الشركة بنجاح':'Company deleted successfully','ok');
+  renderStats();renderView();
+}
+
+/* ================================================
+   التهيئة
+   ================================================ */
+(function(){
+  var mx=0;
+  for(var i=0;i<companies.length;i++){
+    var m=companies[i].code.match(/SHIPCOM(\d+)/);
+    if(m){var n=parseInt(m[1],10);if(n>mx)mx=n;}
+  }
+  codeNum=mx+1;
+  renderStats();renderView();
+})();
+</script>
+</body>
+</html>

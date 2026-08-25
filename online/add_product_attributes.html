@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم - خصائص المنتجات</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']}}}}
+</script>
+<style>
+:root{
+  --bg:#05070c;--bg2:#0a0e16;--bg3:#10141e;
+  --card:#131824;--card2:#181e2e;--cardH:#1e2640;
+  --bd:#1a2134;--bd2:#253050;--bd3:#334570;
+  --acc:#e11d48;--acc2:#be123c;--accDk:#9f1239;
+  --accGlow:rgba(225,29,72,.12);--accGlow2:rgba(225,29,72,.05);
+  --teal:#14b8a6;--tealGlow:rgba(20,184,166,.1);
+  --amber:#f59e0b;--amberGlow:rgba(245,158,11,.1);
+  --sky:#38bdf8;--skyGlow:rgba(56,189,248,.1);
+  --violet:#a78bfa;--violetGlow:rgba(167,139,250,.1);
+  --green:#22c55e;--greenGlow:rgba(34,197,94,.1);
+  --red:#ef4444;--redGlow:rgba(239,68,68,.1);
+  --rose:#fb7185;--roseGlow:rgba(251,113,133,.1);
+  --tx:#eef1f7;--tx2:#8490a5;--tx3:#4c5872;
+  --w:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 600px 500px at 5% 0%,rgba(225,29,72,.04),transparent),
+             radial-gradient(ellipse 500px 500px at 95% 85%,rgba(20,184,166,.03),transparent),
+             radial-gradient(ellipse 400px 300px at 50% 50%,rgba(56,189,248,.015),transparent)}
+
+/* === الشريط العلوي === */
+.topbar{background:rgba(10,14,22,.9);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;backdrop-filter:blur(18px)}
+.topbar-in{max-width:1400px;margin:0 auto;padding:0 28px;height:68px;display:flex;align-items:center;gap:16px}
+.back-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:11px;border:1px solid var(--bd);background:var(--card);color:var(--tx2);font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;text-decoration:none;white-space:nowrap;flex-shrink:0}
+.back-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accGlow)}
+.t-area{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+.t-ico{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0;box-shadow:0 4px 22px rgba(225,29,72,.3);position:relative;overflow:hidden}
+.t-ico::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent 50%)}
+.t-ico i{position:relative;z-index:1}
+.t-txt h1{font-size:19px;font-weight:900;letter-spacing:-.3px;line-height:1.2}
+.t-txt p{font-size:11px;color:var(--tx3);font-weight:500;margin-top:2px}
+.t-acts{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.lang-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:11px;border:1px solid var(--bd);background:var(--card);color:var(--tx2);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .25s}
+.lang-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--accGlow)}
+
+/* === المحتوى === */
+.content{max-width:1400px;margin:0 auto;padding:28px;position:relative;z-index:1}
+
+/* === الإحصائيات === */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+@media(max-width:960px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.stats{grid-template-columns:1fr}}
+.sc{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:22px 20px;position:relative;overflow:hidden;transition:all .3s}
+.sc:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,0,0,.25)}
+.sc::before{content:'';position:absolute;top:0;right:0;left:0;height:3px}
+.sc.s1::before{background:var(--acc)}.sc.s2::before{background:var(--teal)}.sc.s3::before{background:var(--amber)}.sc.s4::before{background:var(--sky)}
+.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sc-i{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.sc-i.i1{background:var(--accGlow);color:var(--acc)}.sc-i.i2{background:var(--tealGlow);color:var(--teal)}.sc-i.i3{background:var(--amberGlow);color:var(--amber)}.sc-i.i4{background:var(--skyGlow);color:var(--sky)}
+.sc-tag{font-size:11px;font-weight:800;padding:3px 9px;border-radius:7px;background:rgba(76,88,114,.12);color:var(--tx3)}
+.sc-val{font-size:34px;font-weight:900;line-height:1;margin-bottom:4px;letter-spacing:-.5px}
+.sc-lbl{font-size:12px;color:var(--tx3);font-weight:600}
+
+/* === شريط الأدوات === */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.search-w{position:relative;flex:1;min-width:240px;max-width:420px}
+.search-w input{width:100%;padding:11px 14px 11px 42px;background:var(--card);border:1.5px solid var(--bd);border-radius:12px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:all .25s}
+.search-w input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.search-w input::placeholder{color:var(--tx3)}
+.search-w>i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:14px;pointer-events:none}
+[dir="ltr"] .search-w input{padding:11px 42px 11px 14px}
+[dir="ltr"] .search-w>i{left:auto;right:14px}
+.add-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 18px rgba(225,29,72,.28);white-space:nowrap}
+.add-btn:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(225,29,72,.38)}
+.add-btn:active{transform:scale(.97)}
+
+/* === شبكة البطاقات === */
+.props-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+@media(max-width:420px){.props-grid{grid-template-columns:1fr}}
+
+/* === بطاقة الخاصية === */
+.p-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;overflow:hidden;transition:all .35s;position:relative}
+.p-card:hover{border-color:var(--bd2);box-shadow:0 8px 30px rgba(0,0,0,.25);transform:translateY(-3px)}
+.p-card-head{display:flex;align-items:center;gap:14px;padding:22px 22px 0}
+.p-ico{width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;position:relative;overflow:hidden;transition:transform .3s}
+.p-card:hover .p-ico{transform:scale(1.08) rotate(-3deg)}
+.p-ico::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent 50%)}
+.p-ico i{position:relative;z-index:1}
+.p-ico.c0{background:linear-gradient(135deg,#f87171,#dc2626);color:#fff}
+.p-ico.c1{background:linear-gradient(135deg,#38bdf8,#0284c7);color:#fff}
+.p-ico.c2{background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff}
+.p-ico.c3{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff}
+.p-ico.c4{background:linear-gradient(135deg,#34d399,#059669);color:#fff}
+.p-ico.c5{background:linear-gradient(135deg,#f472b6,#db2777);color:#fff}
+.p-ico.c6{background:linear-gradient(135deg,#fbbf24,#d97706);color:#fff}
+.p-ico.c7{background:linear-gradient(135deg,#60a5fa,#2563eb);color:#fff}
+.p-ico.c8{background:linear-gradient(135deg,#4ade80,#16a34a);color:#fff}
+.p-ico.c9{background:linear-gradient(135deg,#e879f9,#a21caf);color:#fff}
+.p-info{flex:1;min-width:0}
+.p-name{font-size:17px;font-weight:800;color:var(--tx);line-height:1.4;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-sub{font-size:12px;color:var(--tx3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-card-body{padding:14px 22px 18px}
+.p-desc{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:14px;min-height:20px}
+.p-card-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-top:1px solid var(--bd);background:var(--bg3)}
+.p-vals{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;min-width:0}
+.p-val-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:7px;font-size:11px;font-weight:700;background:var(--accGlow);color:var(--acc);white-space:nowrap}
+.p-more{font-size:11px;color:var(--tx3);font-weight:600;cursor:default}
+.p-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ab{width:36px;height:36px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s}
+.ab:hover{transform:scale(1.08)}
+.ab.ae:hover{border-color:var(--sky);color:var(--sky);background:var(--skyGlow)}
+.ab.av:hover{border-color:var(--teal);color:var(--teal);background:var(--tealGlow)}
+.ab.ad:hover{border-color:var(--red);color:var(--red);background:var(--redGlow)}
+
+/* === المودال === */
+.mov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+.mov.on{display:flex;animation:mfI .2s ease}
+.mbox{background:var(--card);border:1px solid var(--bd);border-radius:20px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.5);animation:msI .3s ease}
+@keyframes mfI{from{opacity:0}}@keyframes msI{from{opacity:0;transform:scale(.92)}}
+.mh{padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px}
+.mh h3{font-size:17px;font-weight:800;flex:1;display:flex;align-items:center;gap:10px}
+.mh h3 i{color:var(--acc)}
+.mx{width:36px;height:36px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx3);transition:all .2s;font-size:15px;flex-shrink:0}
+.mx:hover{background:var(--redGlow);border-color:var(--red);color:var(--red)}
+.mb{padding:24px}
+.fg{margin-bottom:18px}
+.fg:last-child{margin-bottom:0}
+.fl{display:block;font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:7px}
+.fl .rq{color:var(--red);font-size:14px}
+.fi{width:100%;padding:11px 15px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:12px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:14px;outline:none;transition:all .25s}
+.fi:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.fi::placeholder{color:var(--tx3)}
+.fi.er{border-color:var(--red);box-shadow:0 0 0 3px var(--redGlow)}
+.fe{font-size:11px;color:var(--red);font-weight:600;margin-top:5px;display:none}
+.fe.sh{display:block}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:540px){.frow{grid-template-columns:1fr}}
+.f-ico-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.f-ico-opt{aspect-ratio:1;border-radius:12px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:18px;color:var(--tx3);background:var(--bg2)}
+.f-ico-opt:hover{border-color:var(--bd2);color:var(--tx2)}
+.f-ico-opt.sel{border-color:var(--acc);background:var(--accGlow);color:var(--acc)}
+.f-vals-area{background:var(--bg2);border:1.5px solid var(--bd);border-radius:12px;padding:14px;min-height:80px;max-height:200px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;transition:all .25s}
+.f-vals-area:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.f-vals-area .fva-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;background:var(--card);border:1px solid var(--bd);color:var(--tx);animation:chipIn .2s ease}
+@keyframes chipIn{from{opacity:0;transform:scale(.85)}}
+.fva-chip .fva-x{cursor:pointer;color:var(--tx3);font-size:10px;padding:2px;border-radius:4px;transition:all .15s;display:inline-flex;align-items:center;justify-content:center}
+.fva-chip .fva-x:hover{color:var(--red);background:var(--redGlow)}
+.f-vals-input-row{display:flex;gap:8px;margin-top:10px}
+.f-vals-input-row input{flex:1;padding:9px 13px;background:var(--bg2);border:1.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:all .25s}
+.f-vals-input-row input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--accGlow)}
+.f-vals-input-row input::placeholder{color:var(--tx3)}
+.f-vals-add{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--acc);background:var(--accGlow);color:var(--acc);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:15px;transition:all .2s;flex-shrink:0}
+.f-vals-add:hover{background:var(--acc);color:#fff}
+.mf{padding:16px 24px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.bt{padding:10px 22px;border-radius:12px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:8px;transition:all .25s;outline:none}
+.bt:active{transform:scale(.96)}
+.bt-p{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 4px 16px rgba(225,29,72,.25)}.bt-p:hover{box-shadow:0 6px 24px rgba(225,29,72,.35);transform:translateY(-1px)}
+.bt-w{background:var(--bg2);color:var(--tx2);border:1px solid var(--bd)}.bt-w:hover{border-color:var(--bd2);color:var(--tx)}
+.bt-d{background:var(--redGlow);color:var(--red);border:1px solid rgba(239,68,68,.2)}.bt-d:hover{background:rgba(239,68,68,.2)}
+
+/* === تأكيد الحذف === */
+.db{padding:36px 24px;text-align:center}
+.db-ico{width:68px;height:68px;border-radius:50%;background:var(--redGlow);display:inline-flex;align-items:center;justify-content:center;font-size:30px;color:var(--red);margin-bottom:18px;animation:shk .4s ease}
+@keyframes shk{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+.db-t{font-size:18px;font-weight:900;margin-bottom:8px}
+.db-p{font-size:13px;color:var(--tx3);line-height:1.8;margin-bottom:6px}
+.db-n{font-size:15px;font-weight:800;color:var(--acc);margin-bottom:24px;padding:8px 16px;background:var(--accGlow);border-radius:10px;display:inline-block}
+.db-a{display:flex;gap:10px;justify-content:center}
+
+/* === فارغ === */
+.emp{text-align:center;padding:60px 20px;color:var(--tx3)}
+.emp i{font-size:52px;margin-bottom:16px;opacity:.2;display:block}
+.emp p{font-size:14px;font-weight:600}
+
+/* === التوست === */
+.tc{position:fixed;top:84px;left:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+[dir="ltr"] .tc{left:auto;right:24px}
+.tt{padding:14px 20px;border-radius:14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;animation:tI .35s ease;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.35);backdrop-filter:blur(10px)}
+.tt.ok{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.tt.er{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.tt.inf{background:rgba(56,189,248,.12);color:var(--sky);border:1px solid rgba(56,189,248,.2)}
+.tt.wn{background:rgba(225,29,72,.12);color:var(--acc);border:1px solid rgba(225,29,72,.2)}
+.tt.out{animation:tO .3s ease forwards}
+@keyframes tI{from{opacity:0;transform:translateX(-30px)}}@keyframes tO{to{opacity:0;transform:translateX(-30px)}}
+
+/* === حركات === */
+.fu{opacity:0;transform:translateY(16px);animation:fU .5s ease forwards}
+@keyframes fU{to{opacity:1;transform:translateY(0)}}
+.d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}
+
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--tx3)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="tc" id="toastC"></div>
+
+<!-- مودال إضافة/تعديل -->
+<div class="mov" id="formM">
+<div class="mbox">
+<div class="mh">
+  <h3><i class="fas fa-sliders"></i> <span id="fTitle">إضافة خاصية منتج</span></h3>
+  <button class="mx" onclick="closeM('formM')"><i class="fas fa-times"></i></button>
+</div>
+<div class="mb">
+  <input type="hidden" id="eId">
+  <div class="fg">
+    <label class="fl" id="lIco">الأيقونة <span class="rq">*</span></label>
+    <div class="f-ico-grid" id="icoGrid"></div>
+  </div>
+  <div class="frow">
+    <div class="fg">
+      <label class="fl" id="lAr">اسم الخاصية بالعربية <span class="rq">*</span></label>
+      <input type="text" id="fAr" class="fi" placeholder="مثال: اللون">
+      <span class="fe" id="eAr">هذا الحقل مطلوب</span>
+    </div>
+    <div class="fg">
+      <label class="fl" id="lEn">اسم الخاصية بالإنجليزية <span class="rq">*</span></label>
+      <input type="text" id="fEn" class="fi" placeholder="e.g. Color">
+      <span class="fe" id="eEn">This field is required</span>
+    </div>
+  </div>
+  <div class="fg">
+    <label class="fl" id="lDesc">وصف مختصر</label>
+    <textarea id="fDesc" class="fi" rows="2" placeholder="وصف بسيط للخاصية..." style="resize:vertical;min-height:52px"></textarea>
+  </div>
+  <div class="fg">
+    <label class="fl" id="lVals">قيم الخاصية</label>
+    <div class="f-vals-area" id="valsArea"></div>
+    <div class="f-vals-input-row">
+      <input type="text" id="valInp" placeholder="أدخل قيمة ثم اضغط إضافة..." onkeydown="if(event.key==='Enter'){event.preventDefault();addVal()}">
+      <button class="f-vals-add" onclick="addVal()" title="إضافة"><i class="fas fa-plus"></i></button>
+    </div>
+  </div>
+</div>
+<div class="mf">
+  <button class="bt bt-p" onclick="saveRec()"><i class="fas fa-save"></i> <span id="sBtn">حفظ</span></button>
+  <button class="bt bt-w" onclick="closeM('formM')"><span id="cBtn">إلغاء</span></button>
+</div>
+</div>
+</div>
+
+<!-- مودال تأكيد الحذف -->
+<div class="mov" id="delM">
+<div class="mbox" style="max-width:460px">
+<div class="db">
+  <div class="db-ico"><i class="fas fa-trash-can"></i></div>
+  <h3 class="db-t" id="dT">تأكيد الحذف</h3>
+  <p class="db-p" id="dP">سيتم حذف خاصية المنتج التالية نهائياً:</p>
+  <div class="db-n" id="dN"></div>
+  <div class="db-a">
+    <button class="bt bt-d" id="dConf"><i class="fas fa-trash"></i> <span id="dBT">حذف نهائياً</span></button>
+    <button class="bt bt-w" onclick="closeM('delM')"><span id="dCB">إلغاء</span></button>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- الشريط العلوي -->
+<header class="topbar">
+<div class="topbar-in">
+  <a href="#" class="back-btn" onclick="event.preventDefault();toast('Dashboard','inf')">
+    <i class="fas fa-arrow-right"></i>
+    <span id="bBtn">الرجوع للوحة التحكم</span>
+  </a>
+  <div class="t-area">
+    <div class="t-ico"><i class="fas fa-sliders"></i></div>
+    <div class="t-txt">
+      <h1 id="pT">خصائص المنتجات</h1>
+      <p id="pS">إدارة خصائص ومنتجاتك مثل اللون والمقاس والخامة</p>
+    </div>
+  </div>
+  <div class="t-acts">
+    <button class="lang-btn" onclick="toggleLang()">
+      <i class="fas fa-globe"></i>
+      <span id="lBtn">English</span>
+    </button>
+  </div>
+</div>
+</header>
+
+<!-- المحتوى -->
+<main class="content">
+  <div class="stats" id="statsA"></div>
+  <div class="toolbar fu d2">
+    <div class="search-w">
+      <i class="fas fa-search"></i>
+      <input type="text" id="sIn" placeholder="ابحث عن خاصية..." oninput="onSrc()">
+    </div>
+    <button class="add-btn" onclick="openAdd()">
+      <i class="fas fa-plus"></i>
+      <span id="aBtn">إضافة خاصية</span>
+    </button>
+  </div>
+  <div class="props-grid" id="grid"></div>
+  <div class="emp" id="empS" style="display:none">
+    <i class="fas fa-inbox"></i>
+    <p id="empT">لا توجد خصائص مطابقة</p>
+  </div>
+</main>
+
+<script>
+/* ===== البيانات ===== */
+var ICONS=['fa-palette','fa-ruler-combined','fa-flask','fa-wind','fa-database','fa-weight-hanging','fa-shirt','fa-gem','fa-bolt','fa-leaf'];
+var selIco=ICONS[0];
+var tempVals=[];
+
+var data=[
+  {id:1,icon:'fa-palette',name_ar:'اللون',name_en:'Color',desc_ar:'لون المنتج الظاهر',desc_en:'Product visible color',values:['أحمر','أزرق','أخضر','أسود','أبيض','رمادي','ذهبي','فضي']},
+  {id:2,icon:'fa-ruler-combined',name_ar:'المقاس',name_en:'Size',desc_ar:'مقاس المنتج',desc_en:'Product size',values:['XS','S','M','L','XL','XXL','3XL']},
+  {id:3,icon:'fa-flask',name_ar:'النكهة',name_en:'Flavor',desc_ar:'نكهة المنتج الغذائي',desc_en:'Food product flavor',values:['فراولة','شوكولاتة','فانيليا','موز','تمر','عنب','تفاح']},
+  {id:4,icon:'fa-wind',name_ar:'الرائحة',name_en:'Scent',desc_ar:'رائحة المنتج العطري',desc_en:'Product fragrance scent',values:['ورد','jasmine','مسك','عود','لافندر','برتقال','ليمون']},
+  {id:5,icon:'fa-database',name_ar:'السعة',name_en:'Capacity',desc_ar:'سعة التخزين أو الحجم',desc_en:'Storage or volume capacity',values:['64GB','128GB','256GB','512GB','1TB']},
+  {id:6,icon:'fa-weight-hanging',name_ar:'الوزن',name_en:'Weight',desc_ar:'وزن المنتج',desc_en:'Product weight',values:['100g','250g','500g','1kg','2kg','5kg']},
+  {id:7,icon:'fa-shirt',name_ar:'الخامة',name_en:'Material',desc_ar:'المادة المصنوع منها المنتج',desc_en:'Product manufacturing material',values:['قطن','بوليستر','صوف','حرير','كتان','جلد','دينيم']}
+];
+
+var nxId=8,lang='ar',delId=null;
+
+/* ===== الترجمة ===== */
+var T={
+  bBtn:{ar:'الرجوع للوحة التحكم',en:'Back to Dashboard'},
+  pT:{ar:'خصائص المنتجات',en:'Product Attributes'},
+  pS:{ar:'إدارة خصائص ومنتجاتك مثل اللون والمقاس والخامة',en:'Manage your product attributes like color, size and material'},
+  lBtn:{ar:'English',en:'العربية'},
+  sPh:{ar:'ابحث عن خاصية...',en:'Search attribute...'},
+  aBtn:{ar:'إضافة خاصية',en:'Add Attribute'},
+  empT:{ar:'لا توجد خصائص مطابقة',en:'No matching attributes found'},
+  totalP:{ar:'إجمالي الخصائص',en:'Total Attributes'},
+  totalV:{ar:'إجمالي القيم',en:'Total Values'},
+  avgV:{ar:'متوسط القيم',en:'Avg. Values'},
+  topP:{ar:'أكثر خاصية قيماً',en:'Most Values'},
+  addT:{ar:'إضافة خاصية جديدة',en:'Add New Attribute'},
+  edtT:{ar:'تعديل بيانات الخاصية',en:'Edit Attribute Data'},
+  lIco:{ar:'الأيقونة',en:'Icon'},
+  lAr:{ar:'اسم الخاصية بالعربية',en:'Attribute Name (Arabic)'},
+  lEn:{ar:'اسم الخاصية بالإنجليزية',en:'Attribute Name (English)'},
+  lDesc:{ar:'وصف مختصر',en:'Short Description'},
+  lVals:{ar:'قيم الخاصية',en:'Attribute Values'},
+  save:{ar:'حفظ',en:'Save'},
+  cancel:{ar:'إلغاء',en:'Cancel'},
+  phAr:{ar:'مثال: اللون',en:'e.g. Color'},
+  phEn:{ar:'مثال: Color',en:'e.g. Color'},
+  phDesc:{ar:'وصف بسيط للخاصية...',en:'Brief description of the attribute...'},
+  phVal:{ar:'أدخل قيمة ثم اضغط إضافة...',en:'Enter a value then press add...'},
+  dT:{ar:'تأكيد الحذف',en:'Confirm Deletion'},
+  dP:{ar:'سيتم حذف خاصية المنتج التالية نهائياً:',en:'The following product attribute will be permanently deleted:'},
+  dBT:{ar:'حذف نهائياً',en:'Delete Permanently'},
+  eTip:{ar:'تعديل',en:'Edit'},
+  vTip:{ar:'القيم',en:'Values'},
+  dTip:{ar:'حذف',en:'Delete'},
+  valsW:{ar:'قيمة',en:'values'},
+  tAdded:{ar:'تمت إضافة الخاصية بنجاح',en:'Attribute added successfully'},
+  tUpd:{ar:'تم تعديل الخاصية بنجاح',en:'Attribute updated successfully'},
+  tDel:{ar:'تم حذف الخاصية بنجاح',en:'Attribute deleted successfully'},
+  tErr:{ar:'يرجى ملء الحقول المطلوبة',en:'Please fill required fields'},
+  eAr:{ar:'هذا الحقل مطلوب',en:'This field is required'},
+  eEn:{ar:'هذا الحقل مطلوب',en:'This field is required'},
+  total:{ar:'الإجمالي',en:'Total'}
+};
+function lt(k){return T[k]?T[k][lang]:k}
+
+/* ===== التوست ===== */
+function toast(m,t){
+  var ic={ok:'fa-circle-check',er:'fa-circle-xmark',inf:'fa-circle-info',wn:'fa-triangle-exclamation'};
+  var c=document.getElementById('toastC');
+  var d=document.createElement('div');d.className='tt '+t;
+  d.innerHTML='<i class="fas '+(ic[t]||ic.inf)+'"></i><span>'+m+'</span>';
+  c.appendChild(d);setTimeout(function(){d.classList.add('out');setTimeout(function(){d.remove()},300)},3000);
+}
+
+/* ===== المودالات ===== */
+function openM(id){document.getElementById(id).classList.add('on')}
+function closeM(id){document.getElementById(id).classList.remove('on')}
+
+/* ===== شبكة الأيقونات ===== */
+function buildIcos(){
+  document.getElementById('icoGrid').innerHTML=ICONS.map(function(ic){
+    return '<div class="f-ico-opt'+(ic===selIco?' sel':'')+'" onclick="pickIco(\''+ic+'\',this)"><i class="fas '+ic+'"></i></div>';
+  }).join('');
+}
+function pickIco(ic,el){selIco=ic;document.querySelectorAll('.f-ico-opt').forEach(function(x){x.classList.remove('sel')});el.classList.add('sel')}
+
+/* ===== إدارة القيم المؤقتة ===== */
+function renderVals(){
+  var area=document.getElementById('valsArea');
+  if(!tempVals.length){area.innerHTML='<span style="font-size:12px;color:var(--tx3);padding:4px">—</span>';return}
+  area.innerHTML=tempVals.map(function(v,i){
+    return '<span class="fva-chip">'+v+' <span class="fva-x" onclick="rmVal('+i+')"><i class="fas fa-xmark"></i></span></span>';
+  }).join('');
+}
+function addVal(){
+  var inp=document.getElementById('valInp');
+  var v=inp.value.trim();
+  if(!v)return;
+  /* منع التكرار */
+  if(tempVals.indexOf(v)!==-1){inp.value='';return}
+  tempVals.push(v);inp.value='';renderVals();inp.focus();
+}
+function rmVal(i){tempVals.splice(i,1);renderVals()}
+
+/* ===== الترجمة ===== */
+function toggleLang(){
+  lang=lang==='ar'?'en':'ar';
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  applyL();renderAll();
+}
+function applyL(){
+  document.getElementById('bBtn').textContent=lt('bBtn');
+  document.getElementById('pT').textContent=lt('pT');
+  document.getElementById('pS').textContent=lt('pS');
+  document.getElementById('lBtn').textContent=lt('lBtn');
+  document.getElementById('sIn').placeholder=lt('sPh');
+  document.getElementById('aBtn').textContent=lt('aBtn');
+  document.getElementById('empT').textContent=lt('empT');
+  document.getElementById('sBtn').textContent=lt('save');
+  document.getElementById('cBtn').textContent=lt('cancel');
+  document.getElementById('dT').textContent=lt('dT');
+  document.getElementById('dP').textContent=lt('dP');
+  document.getElementById('dBT').textContent=lt('dBT');
+  document.getElementById('lIco').innerHTML=lt('lIco')+' <span class="rq">*</span>';
+  document.getElementById('lAr').innerHTML=lt('lAr')+' <span class="rq">*</span>';
+  document.getElementById('lEn').innerHTML=lt('lEn')+' <span class="rq">*</span>';
+  document.getElementById('lDesc').textContent=lt('lDesc');
+  document.getElementById('lVals').textContent=lt('lVals');
+  document.getElementById('fAr').placeholder=lt('phAr');
+  document.getElementById('fEn').placeholder=lt('phEn');
+  document.getElementById('fDesc').placeholder=lt('phDesc');
+  document.getElementById('valInp').placeholder=lt('phVal');
+}
+
+/* ===== البحث ===== */
+function getFiltered(){
+  var q=document.getElementById('sIn').value.trim().toLowerCase();
+  return data.filter(function(p){
+    return !q||p.name_ar.toLowerCase().indexOf(q)!==-1||p.name_en.toLowerCase().indexOf(q)!==-1;
+  });
+}
+function onSrc(){renderGrid();renderStats()}
+
+/* ===== الإحصائيات ===== */
+function renderStats(){
+  var f=getFiltered();
+  var tV=0;f.forEach(function(p){tV+=p.values.length});
+  var avgV=f.length?Math.round(tV/f.length*10)/10:0;
+  var topP=f.length?f.reduce(function(a,b){return a.values.length>=b.values.length?a:b}):null;
+
+  document.getElementById('statsA').innerHTML=
+    '<div class="sc s1 fu d1"><div class="sc-top"><div class="sc-i i1"><i class="fas fa-sliders"></i></div><span class="sc-tag">'+lt('total')+'</span></div><div class="sc-val">'+f.length+'</div><div class="sc-lbl">'+lt('totalP')+'</div></div>'+
+    '<div class="sc s2 fu d2"><div class="sc-top"><div class="sc-i i2"><i class="fas fa-tags"></i></div><span class="sc-tag">'+lt('total')+'</span></div><div class="sc-val">'+tV+'</div><div class="sc-lbl">'+lt('totalV')+'</div></div>'+
+    '<div class="sc s3 fu d3"><div class="sc-top"><div class="sc-i i3"><i class="fas fa-chart-bar"></i></div><span class="sc-tag">'+lt('total')+'</span></div><div class="sc-val">'+avgV+'</div><div class="sc-lbl">'+lt('avgV')+'</div></div>'+
+    '<div class="sc s4 fu d4"><div class="sc-top"><div class="sc-i i4"><i class="fas fa-trophy"></i></div><span class="sc-tag">'+lt('total')+'</span></div><div class="sc-val" style="font-size:22px">'+(topP?(lang==='ar'?topP.name_ar:topP.name_en):'—')+'</div><div class="sc-lbl">'+lt('topP')+'</div></div>';
+}
+
+/* ===== الشبكة ===== */
+function renderGrid(){
+  var f=getFiltered();
+  var grid=document.getElementById('grid');
+  var emp=document.getElementById('empS');
+  if(!f.length){grid.innerHTML='';emp.style.display='';return}
+  emp.style.display='none';
+
+  grid.innerHTML=f.map(function(p,i){
+    var name=lang==='ar'?p.name_ar:p.name_en;
+    var sub=lang==='ar'?p.name_en:p.name_ar;
+    var desc=lang==='ar'?(p.desc_ar||''):(p.desc_en||'');
+    var ci=ICONS.indexOf(p.icon);if(ci<0)ci=0;
+    var delay=Math.min(i+1,10);
+    var maxShow=3;
+    var chips=p.values.slice(0,maxShow).map(function(v){return '<span class="p-val-chip">'+v+'</span>';}).join('');
+    var more=p.values.length>maxShow?'<span class="p-more">+'+(p.values.length-maxShow)+' '+lt('valsW')+'</span>':'';
+
+    return '<div class="p-card fu d'+delay+'">'+
+      '<div class="p-card-head">'+
+        '<div class="p-ico c'+(ci%10)+'"><i class="fas '+p.icon+'"></i></div>'+
+        '<div class="p-info">'+
+          '<div class="p-name" title="'+name+'">'+name+'</div>'+
+          '<div class="p-sub">'+sub+'</div>'+
+        '</div>'+
+      '</div>'+
+      (desc?'<div class="p-card-body"><p class="p-desc">'+desc+'</p></div>':'')+
+      '<div class="p-card-foot">'+
+        '<div class="p-vals">'+chips+more+'</div>'+
+        '<div class="p-actions">'+
+          '<button class="ab av" title="'+lt('vTip')+'" onclick="openView('+p.id+')"><i class="fas fa-eye"></i></button>'+
+          '<button class="ab ae" title="'+lt('eTip')+'" onclick="openEdt('+p.id+')"><i class="fas fa-pen-to-square"></i></button>'+
+          '<button class="ab ad" title="'+lt('dTip')+'" onclick="openDel('+p.id+')"><i class="fas fa-trash-can"></i></button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ===== عرض القيم (مودال القراءة فقط) ===== */
+function openView(id){
+  var p=data.find(function(x){return x.id===id});if(!p)return;
+  document.getElementById('fTitle').textContent=(lang==='ar'?p.name_ar:p.name_en)+' — '+lt('lVals');
+  document.getElementById('eId').value=id;
+  document.getElementById('fAr').value=p.name_ar;
+  document.getElementById('fAr').disabled=true;
+  document.getElementById('fEn').value=p.name_en;
+  document.getElementById('fEn').disabled=true;
+  document.getElementById('fDesc').value=lang==='ar'?(p.desc_ar||''):(p.desc_en||'');
+  document.getElementById('fDesc').disabled=true;
+  selIco=p.icon;buildIcos();
+  /* تعطيل اختيار الأيقونات */
+  document.querySelectorAll('.f-ico-opt').forEach(function(el){el.style.pointerEvents='none';el.style.opacity='.5'});
+  tempVals=p.values.slice();renderVals();
+  document.querySelector('.f-vals-input-row').style.display='none';
+  openM('formM');
+  /* إعادة التفعيل عند الإغلاق */
+  var restore=function(){
+    document.getElementById('fAr').disabled=false;
+    document.getElementById('fEn').disabled=false;
+    document.getElementById('fDesc').disabled=false;
+    document.querySelector('.f-vals-input-row').style.display='';
+    document.querySelectorAll('.f-ico-opt').forEach(function(el){el.style.pointerEvents='';el.style.opacity=''});
+    document.getElementById('formM').removeEventListener('afterClose',restore);
+  };
+  /* استمع للإغلاق */
+  var observer=new MutationObserver(function(){
+    if(!document.getElementById('formM').classList.contains('on')){restore();observer.disconnect()}
+  });
+  observer.observe(document.getElementById('formM'),{attributes:true,attributeFilter:['class']});
+}
+
+/* ===== إضافة ===== */
+function openAdd(){
+  document.getElementById('eId').value='';
+  document.getElementById('fAr').value='';document.getElementById('fAr').disabled=false;
+  document.getElementById('fEn').value='';document.getElementById('fEn').disabled=false;
+  document.getElementById('fDesc').value='';document.getElementById('fDesc').disabled=false;
+  selIco=ICONS[0];tempVals=[];buildIcos();renderVals();clrErr();
+  document.querySelectorAll('.f-ico-opt').forEach(function(el){el.style.pointerEvents='';el.style.opacity=''});
+  document.querySelector('.f-vals-input-row').style.display='';
+  document.getElementById('fTitle').textContent=lt('addT');
+  openM('formM');
+  setTimeout(function(){document.getElementById('fAr').focus()},200);
+}
+
+/* ===== تعديل ===== */
+function openEdt(id){
+  var p=data.find(function(x){return x.id===id});if(!p)return;
+  document.getElementById('eId').value=id;
+  document.getElementById('fAr').value=p.name_ar;document.getElementById('fAr').disabled=false;
+  document.getElementById('fEn').value=p.name_en;document.getElementById('fEn').disabled=false;
+  document.getElementById('fDesc').value=lang==='ar'?(p.desc_ar||''):(p.desc_en||'');document.getElementById('fDesc').disabled=false;
+  selIco=p.icon;tempVals=p.values.slice();buildIcos();renderVals();clrErr();
+  document.querySelectorAll('.f-ico-opt').forEach(function(el){el.style.pointerEvents='';el.style.opacity=''});
+  document.querySelector('.f-vals-input-row').style.display='';
+  document.getElementById('fTitle').textContent=lt('edtT');
+  openM('formM');
+}
+
+/* ===== حفظ ===== */
+function saveRec(){
+  clrErr();
+  var ar=document.getElementById('fAr').value.trim();
+  var en=document.getElementById('fEn').value.trim();
+  var desc=document.getElementById('fDesc').value.trim();
+  var ok=true;
+  if(!ar){document.getElementById('fAr').classList.add('er');document.getElementById('eAr').classList.add('sh');ok=false}
+  if(!en){document.getElementById('fEn').classList.add('er');document.getElementById('eEn').classList.add('sh');ok=false}
+  if(!ok){toast(lt('tErr'),'er');return}
+
+  var eid=document.getElementById('eId').value;
+  var ci=ICONS.indexOf(selIco);if(ci<0)ci=0;
+
+  if(eid){
+    var p=data.find(function(x){return x.id===+eid});
+    if(p){
+      p.name_ar=ar;p.name_en=en;p.icon=selIco;
+      if(desc){if(lang==='ar')p.desc_ar=desc;else p.desc_en=desc}
+      p.values=tempVals.slice();
+    }
+    toast(lt('tUpd'),'ok');
+  }else{
+    data.unshift({
+      id:nxId++,icon:selIco,name_ar:ar,name_en:en,
+      desc_ar:lang==='ar'?desc:'',desc_en:lang==='en'?desc:'',
+      values:tempVals.slice()
+    });
+    toast(lt('tAdded'),'ok');
+  }
+  closeM('formM');renderAll();
+}
+function clrErr(){
+  document.querySelectorAll('.fi').forEach(function(el){el.classList.remove('er')});
+  document.querySelectorAll('.fe').forEach(function(el){el.classList.remove('sh')});
+}
+
+/* ===== حذف ===== */
+function openDel(id){
+  delId=id;
+  var p=data.find(function(x){return x.id===id});if(!p)return;
+  document.getElementById('dN').textContent=(lang==='ar'?p.name_ar:p.name_en)+' ('+p.values.length+' '+lt('valsW')+')';
+  openM('delM');
+}
+document.getElementById('dConf').addEventListener('click',function(){
+  if(delId!==null){
+    data=data.filter(function(p){return p.id!==delId});
+    delId=null;closeM('delM');
+    toast(lt('tDel'),'er');renderAll();
+  }
+});
+
+/* ===== رسم الكل ===== */
+function renderAll(){renderStats();renderGrid()}
+
+/* ===== إغلاق المودال ===== */
+document.querySelectorAll('.mov').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('on')});
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')document.querySelectorAll('.mov.on').forEach(function(m){m.classList.remove('on')});
+});
+
+/* ===== تشغيل ===== */
+applyL();buildIcos();renderAll();
+</script>
+</body>
+</html>

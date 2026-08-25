@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة البراندات</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {theme:{extend:{fontFamily:{cairo:['Cairo','sans-serif']}}}}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:#060810;color:#e8ecf4;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 600px 400px at 10% 10%,rgba(249,115,22,.04),transparent),
+  radial-gradient(ellipse 500px 500px at 90% 80%,rgba(99,102,241,.03),transparent)}
+header{background:rgba(8,12,20,.95);border-bottom:1px solid #1a2238;position:sticky;top:0;z-index:50;backdrop-filter:blur(16px)}
+.hdr{max-width:1400px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:14px}
+.logo-box{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:0 4px 20px rgba(249,115,22,.3);flex-shrink:0}
+.logo-box i{position:relative;z-index:1}
+.hdr-title h1{font-size:17px;font-weight:900;line-height:1.2}
+.hdr-title p{font-size:10px;color:#5a6580;font-weight:500;margin-top:1px}
+.hdr-acts{margin-right:auto;display:flex;align-items:center;gap:8px}
+.lang-sw{padding:8px 14px;border-radius:10px;border:1px solid #1a2238;background:#0e1422;color:#7a8699;font-family:'Cairo';font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.lang-sw:hover{border-color:#f97316;color:#f97316}
+.add-new{padding:9px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-family:'Cairo';font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(249,115,22,.25);display:inline-flex;align-items:center;gap:7px}
+.add-new:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(249,115,22,.35)}
+
+.main{max-width:1400px;margin:0 auto;padding:24px;position:relative;z-index:1}
+
+/* إحصائيات */
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:900px){.row4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.row4{grid-template-columns:1fr}}
+.scard{background:#0e1422;border:1px solid #1a2238;border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:all .3s}
+.scard:hover{border-color:#253050;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.scard.c1::before{background:#f97316}.scard.c2::before{background:#2dd4bf}.scard.c3::before{background:#38bdf8}.scard.c4::before{background:#a78bfa}
+.scard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.scard-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.scard-ico.ic1{background:rgba(249,115,22,.12);color:#f97316}
+.scard-ico.ic2{background:rgba(45,212,191,.12);color:#2dd4bf}
+.scard-ico.ic3{background:rgba(56,189,248,.12);color:#38bdf8}
+.scard-ico.ic4{background:rgba(167,139,250,.12);color:#a78bfa}
+.scard-num{font-size:30px;font-weight:900;line-height:1;margin-bottom:3px;letter-spacing:-.5px}
+.scard-lbl{font-size:11px;color:#5a6580;font-weight:600}
+.scard-pct{font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:rgba(90,101,128,.1);color:#5a6580}
+
+/* شريط الأدوات */
+.tools{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.srch{position:relative;flex:1;min-width:180px;max-width:300px}
+.srch input{width:100%;padding:10px 40px 10px 14px;background:#0e1422;border:1.5px solid #1a2238;border-radius:10px;color:#e8ecf4;font-family:'Cairo';font-size:12px;outline:none;transition:all .2s}
+.srch input:focus{border-color:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+.srch input::placeholder{color:#4a5568}
+.srch i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#4a5568;font-size:13px}
+[dir="ltr"] .srch input{padding:10px 14px 10px 40px}
+[dir="ltr"] .srch i{left:auto;right:12px}
+.fsel{padding:10px 32px 10px 12px;background:#0e1422;border:1.5px solid #1a2238;border-radius:10px;color:#e8ecf4;font-family:'Cairo';font-size:12px;outline:none;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%234a5568' d='M5 7L0 2h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:left 10px center;transition:all .2s;max-width:160px}
+[dir="ltr"] .fsel{background-position:right 10px center}
+.fsel:focus{border-color:#f97316}
+.vtog{display:inline-flex;border-radius:10px;border:1.5px solid #1a2238;overflow:hidden;background:#0e1422;flex-shrink:0}
+.vtog button{width:36px;height:36px;border:none;background:transparent;color:#4a5568;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+.vtog button:hover{color:#7a8699;background:#151d30}
+.vtog button.on{color:#fff;background:#f97316}
+.vtog button+button{border-right:1px solid #1a2238}
+[dir="ltr"] .vtog button+button{border-right:none;border-left:1px solid #1a2238}
+
+/* عرض البطاقات */
+.gview{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+@media(max-width:380px){.gview{grid-template-columns:1fr}}
+.bcard{background:#0e1422;border:1.5px solid #1a2238;border-radius:16px;overflow:hidden;transition:all .3s;display:flex;flex-direction:column}
+.bcard:hover{border-color:#253050;box-shadow:0 10px 30px rgba(0,0,0,.3);transform:translateY(-3px)}
+.bcard.off{opacity:.4}.bcard.off:hover{opacity:.6}
+.bcard-head{position:relative;height:130px;background:#0a0e18;overflow:hidden;flex-shrink:0}
+.bcard-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(to top,#0e1422,transparent);pointer-events:none;z-index:1}
+.bcard-head img{width:100%;height:100%;object-fit:contain;display:block;padding:14px;transition:transform .3s}
+.bcard:hover .bcard-head img{transform:scale(1.05)}
+.bcard-cd{position:absolute;top:8px;left:8px;z-index:2;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:900;letter-spacing:1.5px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(6px);font-family:'Courier New',monospace;direction:ltr}
+.bcard-st{position:absolute;top:8px;right:8px;z-index:2;display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:9px;font-weight:800;backdrop-filter:blur(6px)}
+.bcard-st.act{background:rgba(34,197,94,.18);color:#4ade80}
+.bcard-st.ina{background:rgba(239,68,68,.15);color:#f87171}
+.bcard-st .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.bcard-st.act .dot{animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.bcard-body{padding:14px 18px;flex:1;display:flex;flex-direction:column;gap:2px}
+.bcard-name{font-size:15px;font-weight:800;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bcard-sub{font-size:11px;color:#5a6580;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bcard-info{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.bcard-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#5a6580}
+.bcard-tag i{font-size:9px}
+.bcard-tag a{color:#38bdf8;text-decoration:none}.bcard-tag a:hover{color:#f97316}
+.bcard-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-top:1px solid #1a2238;background:#0a0e18;margin-top:auto}
+.bcard-acts{display:flex;gap:4px}
+.abtn{width:30px;height:30px;border-radius:8px;border:1px solid #1a2238;background:#060810;color:#5a6580;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s}
+.abtn:hover{transform:scale(1.08)}
+.abtn.ed:hover{border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,.08)}
+.abtn.dl:hover{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.08)}
+
+/* مفتاح التبديل */
+.sw{position:relative;width:42px;height:24px;flex-shrink:0;cursor:pointer}
+.sw input{display:none}
+.sw .sl{position:absolute;inset:0;background:#253050;border-radius:12px;transition:all .3s}
+.sw .sl::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#5a6580;top:3px;right:3px;transition:all .3s}
+[dir="ltr"] .sw .sl::before{right:auto;left:3px}
+.sw input:checked+.sl{background:#22c55e}
+.sw input:checked+.sl::before{transform:translateX(-18px);background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+[dir="ltr"] .sw input:checked+.sl::before{transform:translateX(18px)}
+
+/* عرض القائمة */
+.lview{background:#0e1422;border:1.5px solid #1a2238;border-radius:14px;overflow:hidden}
+.lview-head{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #1a2238}
+.lview-head h3{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.lview-head h3 i{color:#f97316}
+.lview-head .cnt{font-size:11px;color:#5a6580;font-weight:600;padding:2px 8px;background:#0a0e18;border-radius:6px}
+.lscroll{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:860px}
+.tbl thead{background:#0a0e18}
+.tbl th{padding:10px 12px;text-align:right;font-size:9px;font-weight:800;color:#5a6580;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #1a2238}
+[dir="ltr"] .tbl th{text-align:left}
+.tbl td{padding:10px 12px;font-size:12px;font-weight:500;color:#7a8699;border-bottom:1px solid #131a2a;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{transition:background .15s}
+.tbl tbody tr:hover{background:#131a2a}
+.tbl tbody tr.off{opacity:.35}.tbl tbody tr.off:hover{opacity:.55}
+.tbl img{width:60px;height:34px;object-fit:contain;border:1px solid #1a2238;border-radius:6px;background:#0a0e18;padding:3px}
+.tbl-code{display:inline-flex;padding:2px 6px;border-radius:5px;font-size:10px;font-weight:900;letter-spacing:1px;background:rgba(249,115,22,.1);color:#f97316;font-family:'Courier New',monospace;direction:ltr}
+.tbl-name{color:#e8ecf4;font-weight:700;font-size:12px}
+.tbl-sub{color:#5a6580;font-size:10px;margin-top:1px}
+.tbl-web{color:#38bdf8;font-size:10px;text-decoration:none;font-weight:600}.tbl-web:hover{color:#f97316}
+.tbl-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:5px;font-size:9px;font-weight:800}
+.tbl-badge.act{background:rgba(34,197,94,.1);color:#22c55e}
+.tbl-badge.ina{background:rgba(239,68,68,.08);color:#ef4444}
+.tbl-badge .dot{width:4px;height:4px;border-radius:50%;background:currentColor}
+.tbl-badge.act .dot{animation:blink 1.5s infinite}
+
+/* المودال */
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:#0e1422;border:1px solid #1a2238;border-radius:18px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-head{padding:18px 22px;border-bottom:1px solid #1a2238;display:flex;align-items:center;gap:10px}
+.modal-head h3{font-size:15px;font-weight:800;flex:1;display:flex;align-items:center;gap:8px}
+.modal-head h3 i{color:#f97316}
+.modal-close{width:32px;height:32px;border-radius:8px;border:1px solid #1a2238;background:#0a0e18;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#5a6580;transition:all .2s;font-size:13px}
+.modal-close:hover{background:rgba(239,68,68,.1);border-color:#ef4444;color:#ef4444}
+.modal-body{padding:22px}
+.modal-foot{padding:14px 22px 20px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #1a2238;background:#0a0e18;border-radius:0 0 18px 18px}
+.fgroup{margin-bottom:16px}
+.fgroup:last-child{margin-bottom:0}
+.flabel{display:block;font-size:11px;font-weight:700;color:#7a8699;margin-bottom:6px}
+.flabel .req{color:#ef4444;font-size:13px}
+.finput{width:100%;padding:10px 14px;background:#0a0e18;border:1.5px solid #1a2238;border-radius:10px;color:#e8ecf4;font-family:'Cairo';font-size:13px;outline:none;transition:all .2s}
+.finput:focus{border-color:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+.finput::placeholder{color:#3a4560}
+.finput.has-error{border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.08)}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.frow2{grid-template-columns:1fr}}
+.ferr{font-size:10px;color:#ef4444;font-weight:600;margin-top:4px;display:none}
+.ferr.show{display:block}
+.img-upload-area{display:flex;gap:14px;align-items:flex-start}
+.img-box{width:84px;height:84px;border-radius:14px;border:2px dashed #253050;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;background:#0a0e18;cursor:pointer;transition:all .2s}
+.img-box:hover{border-color:#f97316;background:rgba(249,115,22,.05)}
+.img-box.loaded{border-style:solid;border-color:#f97316}
+.img-box img{width:100%;height:100%;object-fit:contain;padding:8px}
+.img-box .ico{color:#3a4560;font-size:22px;transition:color .2s}
+.img-box:hover .ico{color:#f97316}
+.img-side{flex:1}
+.img-side p{font-size:11px;color:#5a6580;line-height:1.6;margin-bottom:8px}
+.img-btns{display:flex;gap:6px;flex-wrap:wrap}
+.img-btn{padding:7px 12px;border-radius:8px;border:1px solid #1a2238;background:#0a0e18;color:#7a8699;font-family:'Cairo';font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.img-btn:hover{border-color:#f97316;color:#f97316}
+.img-btn.rmv{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.06);display:none}
+.img-btn.rmv.show{display:inline-flex}
+.img-btn.rmv:hover{background:rgba(239,68,68,.12)}
+
+/* تأكيد الحذف */
+.del-body{padding:32px 22px;text-align:center}
+.del-ico{width:60px;height:60px;border-radius:50%;background:rgba(239,68,68,.1);display:inline-flex;align-items:center;justify-content:center;font-size:26px;color:#ef4444;margin-bottom:16px}
+.del-title{font-size:17px;font-weight:900;margin-bottom:6px}
+.del-text{font-size:12px;color:#5a6580;margin-bottom:6px;line-height:1.7}
+.del-brand{font-size:13px;font-weight:800;color:#f97316;padding:6px 14px;background:rgba(249,115,22,.1);border-radius:8px;display:inline-block;margin-bottom:4px}
+.del-cd{font-size:12px;color:#38bdf8;font-family:'Courier New',monospace;font-weight:700;letter-spacing:2px;margin-bottom:20px}
+.del-acts{display:flex;gap:8px;justify-content:center}
+.del-logo{margin-bottom:10px}
+.del-logo img{width:70px;height:70px;border-radius:12px;object-fit:contain;border:2px solid #1a2238;background:#0a0e18;padding:6px}
+
+/* الأزرار */
+.btn{padding:9px 18px;border-radius:10px;font-family:'Cairo';font-size:12px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;box-shadow:0 3px 14px rgba(249,115,22,.2)}.btn-primary:hover{box-shadow:0 5px 20px rgba(249,115,22,.3)}
+.btn-ghost{background:#0a0e18;color:#7a8699;border:1px solid #1a2238}.btn-ghost:hover{border-color:#253050;color:#e8ecf4}
+.btn-danger{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.15)}.btn-danger:hover{background:rgba(239,68,68,.18)}
+
+.empty{text-align:center;padding:50px 20px;color:#5a6580}
+.empty i{font-size:44px;margin-bottom:14px;opacity:.15;display:block}
+.empty p{font-size:13px;font-weight:600}
+
+.vpanel{transition:opacity .25s,transform .25s}
+.vpanel.gone{opacity:0;transform:translateY(8px);position:absolute;inset:0;pointer-events:none}
+.vpanel.live{opacity:1;transform:translateY(0);position:relative;pointer-events:auto}
+
+/* توست */
+.toast-wrap{position:fixed;top:78px;left:20px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+[dir="ltr"] .toast-wrap{left:auto;right:20px}
+.toast-item{padding:12px 18px;border-radius:12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;animation:toastIn .3s ease;min-width:260px;box-shadow:0 6px 24px rgba(0,0,0,.3);backdrop-filter:blur(8px)}
+.toast-item.success{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.15)}
+.toast-item.error{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.15)}
+.toast-item.info{background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.15)}
+.toast-item.warn{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.15)}
+.toast-item.bye{animation:toastOut .25s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-20px)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-20px)}}
+
+.fade-up{opacity:0;transform:translateY(12px);animation:fadeUp .4s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.fd1{animation-delay:.03s}.fd2{animation-delay:.06s}.fd3{animation-delay:.09s}.fd4{animation-delay:.12s}
+
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:#060810}::-webkit-scrollbar-thumb{background:#253050;border-radius:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toasts"></div>
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+
+<!-- ===== مودال النموذج ===== -->
+<div class="overlay" id="formOverlay">
+<div class="modal">
+  <div class="modal-head">
+    <h3><i class="fas fa-crown"></i> <span id="formTitle">إضافة براند</span></h3>
+    <button class="modal-close" onclick="closeForm()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="modal-body">
+    <input type="hidden" id="editId">
+    <div class="fgroup">
+      <label class="flabel">كود البراند <span class="req">*</span></label>
+      <input type="text" id="fCode" class="finput" placeholder="مثال: APPLE" maxlength="10" style="width:180px;font-family:'Courier New',monospace;font-weight:700;letter-spacing:2px;text-transform:uppercase">
+      <div class="ferr" id="errCode">كود 2-10 أحرف</div>
+    </div>
+    <div class="fgroup">
+      <label class="flabel">لوجو البراند</label>
+      <div class="img-upload-area">
+        <div class="img-box" id="imgBox" onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-cloud-arrow-up ico" id="imgIcon"></i>
+          <img id="imgPreview" style="display:none">
+        </div>
+        <div class="img-side">
+          <p id="imgHint">اضغط لرفع اللوجو (PNG, JPG - حد أقصى 2MB)</p>
+          <div class="img-btns">
+            <button type="button" class="img-btn" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> اختيار ملف</button>
+            <button type="button" class="img-btn rmv" id="rmImgBtn" onclick="clearImg()"><i class="fas fa-trash"></i> إزالة</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="frow2">
+      <div class="fgroup">
+        <label class="flabel">اسم البراند بالعربية <span class="req">*</span></label>
+        <input type="text" id="fAr" class="finput" placeholder="مثال: أبل">
+        <div class="ferr" id="errAr">هذا الحقل مطلوب</div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">اسم البراند بالإنجليزية <span class="req">*</span></label>
+        <input type="text" id="fEn" class="finput" placeholder="e.g. Apple">
+        <div class="ferr" id="errEn">This field is required</div>
+      </div>
+    </div>
+    <div class="frow2">
+      <div class="fgroup">
+        <label class="flabel">الموقع الإلكتروني</label>
+        <input type="url" id="fWeb" class="finput" placeholder="https://www.example.com" style="direction:ltr;text-align:right">
+        <div class="ferr" id="errWeb">رابط غير صالح</div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">بلد المنشئ <span class="req">*</span></label>
+        <select id="fCountry" class="finput" style="cursor:pointer;appearance:auto"></select>
+        <div class="ferr" id="errCtry">هذا الحقل مطلوب</div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-ghost" onclick="closeForm()">إلغاء</button>
+    <button class="btn btn-primary" onclick="saveBrand()"><i class="fas fa-save"></i> حفظ</button>
+  </div>
+</div>
+</div>
+
+<!-- ===== مودال الحذف ===== -->
+<div class="overlay" id="delOverlay">
+<div class="modal" style="max-width:440px">
+  <div class="del-body">
+    <div class="del-ico"><i class="fas fa-trash-can"></i></div>
+    <h3 class="del-title">تأكيد الحذف</h3>
+    <p class="del-text">سيتم حذف البراند التالي نهائياً:</p>
+    <div class="del-logo" id="delLogo"></div>
+    <div class="del-brand" id="delName"></div>
+    <div class="del-cd" id="delCode"></div>
+    <div class="del-acts">
+      <button class="btn btn-ghost" onclick="closeDel()">إلغاء</button>
+      <button class="btn btn-danger" onclick="doDelete()"><i class="fas fa-trash"></i> حذف نهائياً</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== الرأس ===== -->
+<header>
+<div class="hdr">
+  <div class="logo-box"><i class="fas fa-crown"></i></div>
+  <div class="hdr-title">
+    <h1>إدارة البراندات</h1>
+    <p>إدارة بيانات البراندات وشعاراتها ومواقعها</p>
+  </div>
+  <div class="hdr-acts">
+    <button class="lang-sw" onclick="switchLang()"><i class="fas fa-globe"></i> <span id="langLabel">English</span></button>
+    <button class="add-new" onclick="openAdd()"><i class="fas fa-plus"></i> <span id="addLabel">إضافة براند</span></button>
+  </div>
+</div>
+</header>
+
+<!-- ===== المحتوى ===== -->
+<main class="main">
+  <div class="row4" id="statsRow"></div>
+
+  <div class="tools fade-up fd3">
+    <div class="srch"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="ابحث عن براند..." oninput="doFilter()"></div>
+    <select class="fsel" id="statusFilter" onchange="doFilter()">
+      <option value="">كل الحالات</option>
+      <option value="active">مفعّل</option>
+      <option value="inactive">موقوف</option>
+    </select>
+    <select class="fsel" id="countryFilter" onchange="doFilter()"><option value="">كل البلدان</option></select>
+    <div class="vtog">
+      <button class="on" id="btnGrid" onclick="setView('grid')"><i class="fas fa-grip"></i></button>
+      <button id="btnList" onclick="setView('list')"><i class="fas fa-list"></i></button>
+    </div>
+  </div>
+
+  <div style="position:relative;min-height:150px">
+    <div class="vpanel live" id="gridView">
+      <div class="gview" id="gridContainer"></div>
+      <div class="empty" id="gridEmpty" style="display:none"><i class="fas fa-inbox"></i><p>لا توجد براندات مطابقة</p></div>
+    </div>
+    <div class="vpanel gone" id="listView">
+      <div class="lview">
+        <div class="lview-head"><h3><i class="fas fa-table-list"></i> قائمة البراندات</h3><span class="cnt" id="listCount">0</span></div>
+        <div class="lscroll">
+          <table class="tbl"><thead><tr>
+            <th style="width:40px">#</th><th style="width:70px">الشعار</th><th>اسم البراند</th><th style="width:80px">الكود</th><th style="width:100px">الموقع</th><th style="width:100px">البلد</th><th style="width:80px">الحالة</th><th style="width:110px">الإجراءات</th>
+          </tr></thead><tbody id="listBody"></tbody></table>
+        </div>
+      </div>
+      <div class="empty" id="listEmpty" style="display:none"><i class="fas fa-inbox"></i><p>لا توجد براندات مطابقة</p></div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ========================================
+   بيانات البلدان
+   ======================================== */
+var countries = [
+  {c:'SA',ar:'السعودية',en:'Saudi Arabia',f:'🇸🇦'},
+  {c:'AE',ar:'الإمارات',en:'UAE',f:'🇦🇪'},
+  {c:'EG',ar:'مصر',en:'Egypt',f:'🇪🇬'},
+  {c:'US',ar:'الولايات المتحدة',en:'United States',f:'🇺🇸'},
+  {c:'GB',ar:'بريطانيا',en:'United Kingdom',f:'🇬🇧'},
+  {c:'DE',ar:'ألمانيا',en:'Germany',f:'🇩🇪'},
+  {c:'FR',ar:'فرنسا',en:'France',f:'🇫🇷'},
+  {c:'TR',ar:'تركيا',en:'Turkey',f:'🇹🇷'},
+  {c:'JP',ar:'اليابان',en:'Japan',f:'🇯🇵'},
+  {c:'CN',ar:'الصين',en:'China',f:'🇨🇳'},
+  {c:'KR',ar:'كوريا الجنوبية',en:'South Korea',f:'🇰🇷'},
+  {c:'IN',ar:'الهند',en:'India',f:'🇮🇳'},
+  {c:'IT',ar:'إيطاليا',en:'Italy',f:'🇮🇹'},
+  {c:'BR',ar:'البرازيل',en:'Brazil',f:'🇧🇷'},
+  {c:'KW',ar:'الكويت',en:'Kuwait',f:'🇰🇼'},
+  {c:'QA',ar:'قطر',en:'Qatar',f:'🇶🇦'},
+  {c:'JO',ar:'الأردن',en:'Jordan',f:'🇯🇴'},
+  {c:'MY',ar:'ماليزيا',en:'Malaysia',f:'🇲🇾'},
+  {c:'DK',ar:'الدنمارك',en:'Denmark',f:'🇩🇰'},
+  {c:'ES',ar:'إسبانيا',en:'Spain',f:'🇪🇸'},
+  {c:'SE',ar:'السويد',en:'Sweden',f:'🇸🇪'}
+];
+
+/* ========================================
+   بيانات البراندات
+   ======================================== */
+var brands = [
+  {id:1,code:'APPLE',ar:'أبل',en:'Apple',web:'https://www.apple.com',country:'US',logo:'',active:true},
+  {id:2,code:'SAMSUNG',ar:'سامسونج',en:'Samsung',web:'https://www.samsung.com',country:'KR',logo:'',active:true},
+  {id:3,code:'NIKE',ar:'نايكي',en:'Nike',web:'https://www.nike.com',country:'US',logo:'',active:true},
+  {id:4,code:'ADIDAS',ar:'أديداس',en:'Adidas',web:'https://www.adidas.com',country:'DE',logo:'',active:true},
+  {id:5,code:'PUMA',ar:'بومة',en:'Puma',web:'https://www.puma.com',country:'DE',logo:'',active:true},
+  {id:6,code:'SONY',ar:'سوني',en:'Sony',web:'https://www.sony.com',country:'JP',logo:'',active:true},
+  {id:7,code:'TOYOTA',ar:'تويوتا',en:'Toyota',web:'https://www.toyota.com',country:'JP',logo:'',active:true},
+  {id:8,code:'BMW',ar:'بي إم دبليو',en:'BMW',web:'https://www.bmw.com',country:'DE',logo:'',active:true},
+  {id:9,code:'HP',ar:'إتش بي',en:'HP',web:'https://www.hp.com',country:'US',logo:'',active:true},
+  {id:10,code:'DELL',ar:'ديل',en:'Dell',web:'https://www.dell.com',country:'US',logo:'',active:true},
+  {id:11,code:'LEGO',ar:'ليغو',en:'LEGO',web:'https://www.lego.com',country:'DK',logo:'',active:true},
+  {id:12,code:'CANON',ar:'كانون',en:'Canon',web:'https://www.canon.com',country:'JP',logo:'',active:false},
+  {id:13,code:'LG',ar:'إل جي',en:'LG',web:'https://www.lg.com',country:'KR',logo:'',active:true},
+  {id:14,code:'ZARA',ar:'زارا',en:'Zara',web:'https://www.zara.com',country:'ES',logo:'',active:true},
+  {id:15,code:'HM',ar:'إتش آند أم',en:'H&M',web:'https://www.hm.com',country:'SE',logo:'',active:false},
+  {id:16,code:'GUCCI',ar:'غوتشي',en:'Gucci',web:'https://www.gucci.com',country:'IT',logo:'',active:true},
+  {id:17,code:'CHANEL',ar:'شانيل',en:'Chanel',web:'https://www.chanel.com',country:'FR',logo:'',active:true},
+  {id:18,code:'LACOSTE',ar:'لاكوست',en:'Lacoste',web:'https://www.lacoste.com',country:'FR',logo:'',active:false},
+  {id:19,code:'COCACOLA',ar:'كوكا كولا',en:'Coca-Cola',web:'https://www.coca-cola.com',country:'US',logo:'',active:true},
+  {id:20,code:'INTEL',ar:'إنتل',en:'Intel',web:'https://www.intel.com',country:'US',logo:'',active:true}
+];
+
+/* ========================================
+   متغيرات عامة
+   ======================================== */
+var nextId = 21;
+var currentView = 'grid';
+var currentLang = 'ar';
+var pendingDeleteId = null;
+var tempLogo = '';
+
+/* ========================================
+   إنشاء شعار SVG ملون لكل براند
+   ======================================== */
+var colors = ['#f97316','#22c55e','#38bdf8','#a78bfa','#fb7185','#2dd4bf','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
+
+function hashColor(str) {
+  var h = 0;
+  for (var i = 0; i < str.length; i++) {
+    h = str.charCodeAt(i) + ((h << 5) - h);
+  }
+  return colors[Math.abs(h) % colors.length];
+}
+
+function makeLogo(code) {
+  var letter = code.charAt(0);
+  var col = hashColor(code);
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">'
+    + '<rect width="200" height="200" rx="36" fill="' + col + '" fill-opacity="0.1"/>'
+    + '<text x="100" y="128" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-size="88" font-weight="900" fill="' + col + '" fill-opacity="0.8">' + letter + '</text>'
+    + '</svg>';
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+function brandLogo(brand) {
+  if (brand.logo && brand.logo.length > 10) return brand.logo;
+  return makeLogo(brand.code);
+}
+
+/* ========================================
+   ترجمة اسم البلد
+   ======================================== */
+function countryName(code) {
+  for (var i = 0; i < countries.length; i++) {
+    if (countries[i].c === code) {
+      return currentLang === 'ar' ? (countries[i].f + ' ' + countries[i].ar) : (countries[i].f + ' ' + countries[i].en);
+    }
+  }
+  return code;
+}
+
+/* ========================================
+   التوست (إشعارات)
+   ======================================== */
+function showToast(msg, type) {
+  var wrap = document.getElementById('toasts');
+  var div = document.createElement('div');
+  div.className = 'toast-item ' + type;
+  var icons = {success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info',warn:'fa-triangle-exclamation'};
+  div.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '"></i><span>' + msg + '</span>';
+  wrap.appendChild(div);
+  setTimeout(function() {
+    div.classList.add('bye');
+    setTimeout(function() { if (div.parentNode) div.parentNode.removeChild(div); }, 250);
+  }, 3000);
+}
+
+/* ========================================
+   فتح/إغلاق المودالات
+   ======================================== */
+function openOverlay(id) { document.getElementById(id).classList.add('open'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ========================================
+   الفلترة
+   ======================================== */
+function getFiltered() {
+  var q = document.getElementById('searchInput').value.trim().toLowerCase();
+  var st = document.getElementById('statusFilter').value;
+  var cn = document.getElementById('countryFilter').value;
+  return brands.filter(function(b) {
+    var mQ = !q || b.ar.toLowerCase().indexOf(q) > -1 || b.en.toLowerCase().indexOf(q) > -1 || b.code.toLowerCase().indexOf(q) > -1;
+    var mS = !st || (st === 'active' && b.active) || (st === 'inactive' && !b.active);
+    var mC = !cn || b.country === cn;
+    return mQ && mS && mC;
+  });
+}
+
+function doFilter() {
+  renderStats();
+  renderCurrentView();
+}
+
+/* ========================================
+   الإحصائيات
+   ======================================== */
+function renderStats() {
+  var list = getFiltered();
+  var total = list.length;
+  var active = 0;
+  var inactive = 0;
+  var countrySet = {};
+  var logosCount = 0;
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].active) active++; else inactive++;
+    countrySet[list[i].country] = true;
+    if (list[i].logo && list[i].logo.length > 10) logosCount++;
+  }
+  var pct = total > 0 ? Math.round(active / total * 100) : 0;
+
+  document.getElementById('statsRow').innerHTML =
+    '<div class="scard c1 fade-up fd1"><div class="scard-top"><div class="scard-ico ic1"><i class="fas fa-crown"></i></div><span class="scard-pct">الإجمالي</span></div><div class="scard-num">' + total + '</div><div class="scard-lbl">إجمالي البراندات</div></div>' +
+    '<div class="scard c2 fade-up fd2"><div class="scard-top"><div class="scard-ico ic2"><i class="fas fa-circle-check"></i></div><span class="scard-pct">' + pct + '%</span></div><div class="scard-num">' + active + '</div><div class="scard-lbl">البراندات المفعّلة</div></div>' +
+    '<div class="scard c3 fade-up fd3"><div class="scard-top"><div class="scard-ico ic3"><i class="fas fa-circle-pause"></i></div><span class="scard-pct">' + inactive + '</span></div><div class="scard-num">' + inactive + '</div><div class="scard-lbl">البراندات الموقوفة</div></div>' +
+    '<div class="scard c4 fade-up fd4"><div class="scard-top"><div class="scard-ico ic4"><i class="fas fa-flag"></i></div><span class="scard-pct">' + logosCount + ' شعار</span></div><div class="scard-num">' + Object.keys(countrySet).length + '</div><div class="scard-lbl">بلدان مختلفة</div></div>';
+}
+
+/* ========================================
+   عرض البطاقات (Grid)
+   ======================================== */
+function renderGrid() {
+  var list = getFiltered();
+  var container = document.getElementById('gridContainer');
+  var empty = document.getElementById('gridEmpty');
+
+  if (list.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var b = list[i];
+    var name = currentLang === 'ar' ? b.ar : b.en;
+    var sub = currentLang === 'ar' ? b.en : b.ar;
+    var webShort = b.web ? b.web.replace(/^https?:\/\//, '') : '';
+    if (webShort.length > 28) webShort = webShort.substring(0, 28) + '...';
+    var d = Math.min(i + 1, 12);
+
+    html += '<div class="bcard fade-up fd' + d + ' ' + (b.active ? '' : 'off') + '">'
+      + '<div class="bcard-head">'
+      + '<img src="' + brandLogo(b) + '" alt="' + b.code + '">'
+      + '<span class="bcard-cd">' + b.code + '</span>'
+      + '<span class="bcard-st ' + (b.active ? 'act' : 'ina') + '"><span class="dot"></span> ' + (b.active ? 'مفعّل' : 'موقوف') + '</span>'
+      + '</div>'
+      + '<div class="bcard-body">'
+      + '<div class="bcard-name">' + name + '</div>'
+      + '<div class="bcard-sub">' + sub + '</div>'
+      + '<div class="bcard-info">'
+      + (webShort ? '<span class="bcard-tag"><i class="fas fa-globe"></i><a href="' + b.web + '" target="_blank">' + webShort + '</a></span>' : '')
+      + '<span class="bcard-tag"><i class="fas fa-flag"></i> ' + countryName(b.country) + '</span>'
+      + '</div></div>'
+      + '<div class="bcard-foot"><div class="bcard-acts">'
+      + '<button class="abtn ed" title="تعديل" onclick="openEdit(' + b.id + ')"><i class="fas fa-pen"></i></button>'
+      + '<button class="abtn dl" title="حذف" onclick="openDel(' + b.id + ')"><i class="fas fa-trash"></i></button>'
+      + '</div>'
+      + '<label class="sw"><input type="checkbox" ' + (b.active ? 'checked' : '') + ' onchange="toggleActive(' + b.id + ')"><span class="sl"></span></label>'
+      + '</div></div>';
+  }
+  container.innerHTML = html;
+}
+
+/* ========================================
+   عرض القائمة (Table)
+   ======================================== */
+function renderList() {
+  var list = getFiltered();
+  var tbody = document.getElementById('listBody');
+  var empty = document.getElementById('listEmpty');
+  document.getElementById('listCount').textContent = list.length + ' براند';
+
+  if (list.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var b = list[i];
+    var name = currentLang === 'ar' ? b.ar : b.en;
+    var sub = currentLang === 'ar' ? b.en : b.ar;
+    var webShort = b.web ? b.web.replace(/^https?:\/\//, '') : '';
+    if (webShort.length > 25) webShort = webShort.substring(0, 25) + '...';
+
+    html += '<tr class="' + (b.active ? '' : 'off') + '">'
+      + '<td style="color:#5a6580;font-weight:700">' + (i + 1) + '</td>'
+      + '<td><img src="' + brandLogo(b) + '" alt="' + b.code + '"></td>'
+      + '<td><div class="tbl-name">' + name + '</div><div class="tbl-sub">' + sub + '</div></td>'
+      + '<td><span class="tbl-code">' + b.code + '</span></td>'
+      + '<td>' + (b.web ? '<a class="tbl-web" href="' + b.web + '" target="_blank">' + webShort + '</a>' : '—') + '</td>'
+      + '<td>' + countryName(b.country) + '</td>'
+      + '<td><span class="tbl-badge ' + (b.active ? 'act' : 'ina') + '"><span class="dot"></span> ' + (b.active ? 'مفعّل' : 'موقوف') + '</span></td>'
+      + '<td><div class="bcard-acts">'
+      + '<button class="abtn ed" onclick="openEdit(' + b.id + ')"><i class="fas fa-pen"></i></button>'
+      + '<button class="abtn dl" onclick="openDel(' + b.id + ')"><i class="fas fa-trash"></i></button>'
+      + '<label class="sw"><input type="checkbox" ' + (b.active ? 'checked' : '') + ' onchange="toggleActive(' + b.id + ')"><span class="sl"></span></label>'
+      + '</div></td></tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+function renderCurrentView() {
+  if (currentView === 'grid') renderGrid(); else renderList();
+}
+
+/* ========================================
+   تبديل العرض
+   ======================================== */
+function setView(mode) {
+  if (mode === currentView) return;
+  currentView = mode;
+  document.getElementById('btnGrid').classList.toggle('on', mode === 'grid');
+  document.getElementById('btnList').classList.toggle('on', mode === 'list');
+  var gP = document.getElementById('gridView');
+  var lP = document.getElementById('listView');
+  if (mode === 'grid') {
+    lP.classList.remove('live'); lP.classList.add('gone');
+    setTimeout(function() { gP.classList.remove('gone'); gP.classList.add('live'); }, 100);
+  } else {
+    gP.classList.remove('live'); gP.classList.add('gone');
+    setTimeout(function() { lP.classList.remove('gone'); lP.classList.add('live'); }, 100);
+  }
+  renderCurrentView();
+}
+
+/* ========================================
+   تبديل اللغة
+   ======================================== */
+function switchLang() {
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('langLabel').textContent = currentLang === 'ar' ? 'English' : 'العربية';
+  document.getElementById('addLabel').textContent = currentLang === 'ar' ? 'إضافة براند' : 'Add Brand';
+  document.getElementById('searchInput').placeholder = currentLang === 'ar' ? 'ابحث عن براند...' : 'Search brand...';
+
+  /* تحديث فلتر البلدان */
+  var cf = document.getElementById('countryFilter');
+  var sv = cf.value;
+  var optHtml = '<option value="">' + (currentLang === 'ar' ? 'كل البلدان' : 'All Countries') + '</option>';
+  for (var i = 0; i < countries.length; i++) {
+    var co = countries[i];
+    optHtml += '<option value="' + co.c + '">' + co.f + ' ' + (currentLang === 'ar' ? co.ar : co.en) + '</option>';
+  }
+  cf.innerHTML = optHtml;
+  cf.value = sv;
+
+  renderStats();
+  renderCurrentView();
+}
+
+/* ========================================
+   رفع الصورة
+   ======================================== */
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('حجم الملف يتجاوز 2MB', 'warn');
+    e.target.value = '';
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    tempLogo = ev.target.result;
+    document.getElementById('imgPreview').src = tempLogo;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('imgIcon').style.display = 'none';
+    document.getElementById('imgBox').classList.add('loaded');
+    document.getElementById('rmImgBtn').classList.add('show');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+function clearImg() {
+  tempLogo = '';
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('imgIcon').style.display = '';
+  document.getElementById('imgBox').classList.remove('loaded');
+  document.getElementById('rmImgBtn').classList.remove('show');
+}
+
+function setLogoPreview(src) {
+  if (src && src.length > 10) {
+    tempLogo = src;
+    document.getElementById('imgPreview').src = src;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('imgIcon').style.display = 'none';
+    document.getElementById('imgBox').classList.add('loaded');
+    document.getElementById('rmImgBtn').classList.add('show');
+  } else {
+    clearImg();
+  }
+}
+
+/* ========================================
+   ملء قائمة البلدان في النموذج
+   ======================================== */
+function fillCountrySelect() {
+  var sel = document.getElementById('fCountry');
+  var html = '';
+  for (var i = 0; i < countries.length; i++) {
+    var co = countries[i];
+    html += '<option value="' + co.c + '">' + co.f + ' ' + (currentLang === 'ar' ? co.ar : co.en) + '</option>';
+  }
+  sel.innerHTML = html;
+}
+
+/* ========================================
+   مسح أخطاء النموذج
+   ======================================== */
+function clearErrors() {
+  var inputs = ['fCode', 'fAr', 'fEn', 'fWeb', 'fCountry'];
+  var errs = ['errCode', 'errAr', 'errEn', 'errWeb', 'errCtry'];
+  for (var i = 0; i < inputs.length; i++) {
+    document.getElementById(inputs[i]).classList.remove('has-error');
+  }
+  for (var j = 0; j < errs.length; j++) {
+    document.getElementById(errs[j]).classList.remove('show');
+  }
+  document.getElementById('errCode').textContent = 'كود 2-10 أحرف';
+}
+
+/* ========================================
+   فتح نموذج إضافة
+   ======================================== */
+function openAdd() {
+  document.getElementById('editId').value = '';
+  document.getElementById('fCode').value = '';
+  document.getElementById('fAr').value = '';
+  document.getElementById('fEn').value = '';
+  document.getElementById('fWeb').value = '';
+  document.getElementById('fCountry').value = '';
+  clearImg();
+  clearErrors();
+  fillCountrySelect();
+  document.getElementById('formTitle').textContent = 'إضافة براند جديد';
+  openOverlay('formOverlay');
+  setTimeout(function() { document.getElementById('fCode').focus(); }, 150);
+}
+
+/* ========================================
+   فتح نموذج تعديل
+   ======================================== */
+function openEdit(id) {
+  var brand = null;
+  for (var i = 0; i < brands.length; i++) {
+    if (brands[i].id === id) { brand = brands[i]; break; }
+  }
+  if (!brand) return;
+
+  fillCountrySelect();
+  document.getElementById('editId').value = brand.id;
+  document.getElementById('fCode').value = brand.code;
+  document.getElementById('fAr').value = brand.ar;
+  document.getElementById('fEn').value = brand.en;
+  document.getElementById('fWeb').value = brand.web || '';
+  document.getElementById('fCountry').value = brand.country;
+  setLogoPreview(brand.logo || '');
+  clearErrors();
+  document.getElementById('formTitle').textContent = 'تعديل بيانات البراند';
+  openOverlay('formOverlay');
+}
+
+/* ========================================
+   إغلاق نموذج الإضافة/التعديل
+   ======================================== */
+function closeForm() {
+  closeOverlay('formOverlay');
+}
+
+/* ========================================
+   حفظ البراند (إضافة أو تعديل)
+   ======================================== */
+function saveBrand() {
+  clearErrors();
+
+  var editId = document.getElementById('editId').value;
+  var code = document.getElementById('fCode').value.trim().toUpperCase();
+  var ar = document.getElementById('fAr').value.trim();
+  var en = document.getElementById('fEn').value.trim();
+  var web = document.getElementById('fWeb').value.trim();
+  var country = document.getElementById('fCountry').value;
+  var valid = true;
+
+  /* تحقق الكود */
+  if (!code || code.length < 2 || code.length > 10) {
+    document.getElementById('fCode').classList.add('has-error');
+    document.getElementById('errCode').classList.add('show');
+    valid = false;
+  } else {
+    /* تحقق عدم التكرار */
+    for (var i = 0; i < brands.length; i++) {
+      if (brands[i].code === code && String(brands[i].id) !== String(editId)) {
+        document.getElementById('fCode').classList.add('has-error');
+        document.getElementById('errCode').textContent = 'هذا الكود مستخدم بالفعل';
+        document.getElementById('errCode').classList.add('show');
+        valid = false;
+        break;
+      }
+    }
+  }
+
+  /* تحقق الاسم العربي */
+  if (!ar) {
+    document.getElementById('fAr').classList.add('has-error');
+    document.getElementById('errAr').classList.add('show');
+    valid = false;
+  }
+
+  /* تحقق الاسم الإنجليزي */
+  if (!en) {
+    document.getElementById('fEn').classList.add('has-error');
+    document.getElementById('errEn').classList.add('show');
+    valid = false;
+  }
+
+  /* تحقق الرابط (اختياري لكن يجب أن يكون صالحاً إذا كُتب) */
+  if (web && !/^https?:\/\/.+/i.test(web)) {
+    document.getElementById('fWeb').classList.add('has-error');
+    document.getElementById('errWeb').classList.add('show');
+    valid = false;
+  }
+
+  /* تحقق البلد */
+  if (!country) {
+    document.getElementById('fCountry').classList.add('has-error');
+    document.getElementById('errCtry').classList.add('show');
+    valid = false;
+  }
+
+  if (!valid) {
+    showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
+    return;
+  }
+
+  /* تعديل */
+  if (editId) {
+    for (var j = 0; j < brands.length; j++) {
+      if (brands[j].id === parseInt(editId, 10)) {
+        brands[j].code = code;
+        brands[j].ar = ar;
+        brands[j].en = en;
+        brands[j].web = web;
+        brands[j].country = country;
+        if (tempLogo) brands[j].logo = tempLogo;
+        break;
+      }
+    }
+    showToast('تم تعديل البراند بنجاح', 'success');
+  }
+  /* إضافة */
+  else {
+    brands.push({
+      id: nextId,
+      code: code,
+      ar: ar,
+      en: en,
+      web: web,
+      country: country,
+      logo: tempLogo || '',
+      active: true
+    });
+    nextId++;
+    showToast('تمت إضافة البراند بنجاح', 'success');
+  }
+
+  closeForm();
+  renderStats();
+  renderCurrentView();
+}
+
+/* ========================================
+   تبديل حالة التفعيل
+   ======================================== */
+function toggleActive(id) {
+  for (var i = 0; i < brands.length; i++) {
+    if (brands[i].id === id) {
+      brands[i].active = !brands[i].active;
+      showToast(brands[i].active ? 'تم تفعيل البراند' : 'تم إيقاف البراند', brands[i].active ? 'success' : 'warn');
+      break;
+    }
+  }
+  renderStats();
+  renderCurrentView();
+}
+
+/* ========================================
+   فتح مودال الحذف
+   ======================================== */
+function openDel(id) {
+  var brand = null;
+  for (var i = 0; i < brands.length; i++) {
+    if (brands[i].id === id) { brand = brands[i]; break; }
+  }
+  if (!brand) return;
+
+  pendingDeleteId = id;
+  var name = currentLang === 'ar' ? brand.ar : brand.en;
+  document.getElementById('delName').textContent = name;
+  document.getElementById('delCode').textContent = brand.code;
+  document.getElementById('delLogo').innerHTML = '<img src="' + brandLogo(brand) + '" alt="' + brand.code + '">';
+  openOverlay('delOverlay');
+}
+
+/* ========================================
+   إغلاق مودال الحذف
+   ======================================== */
+function closeDel() {
+  closeOverlay('delOverlay');
+  pendingDeleteId = null;
+}
+
+/* ========================================
+   تأكيد الحذف
+   ======================================== */
+function doDelete() {
+  if (pendingDeleteId === null) return;
+  var newBrands = [];
+  for (var i = 0; i < brands.length; i++) {
+    if (brands[i].id !== pendingDeleteId) newBrands.push(brands[i]);
+  }
+  brands = newBrands;
+  pendingDeleteId = null;
+  closeOverlay('delOverlay');
+  showToast('تم حذف البراند بنجاح', 'success');
+  renderStats();
+  renderCurrentView();
+}
+
+/* ========================================
+   إغلاق المودال بالنقر خارجه
+   ======================================== */
+document.getElementById('formOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeForm();
+});
+document.getElementById('delOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeDel();
+});
+
+/* ========================================
+   التهيئة عند تحميل الصفحة
+   ======================================== */
+(function init() {
+  /* ملء فلتر البلدان */
+  var cf = document.getElementById('countryFilter');
+  var html = '<option value="">كل البلدان</option>';
+  for (var i = 0; i < countries.length; i++) {
+    var co = countries[i];
+    html += '<option value="' + co.c + '">' + co.f + ' ' + co.ar + '</option>';
+  }
+  cf.innerHTML = html;
+
+  /* رسم كل شيء */
+  renderStats();
+  renderCurrentView();
+})();
+</script>
+</body>
+</html>

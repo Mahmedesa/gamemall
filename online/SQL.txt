@@ -1,0 +1,510 @@
+create table shop_Customer ( cus_id int AUTO_INCREMENT primary key , 
+first_name varchar (100) , last_name varchar (100)  ,passw0rd varchar (100) ,
+email varchar (100) , phone varchar (100) , Gender int  , birth_date date ,
+is_active int DEFAULT 1,
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP );
+
+create table shop_Customer_address (address_id int AUTO_INCREMENT primary key ,
+ address_name varchar (100),
+`gov_id` int , `city_id` int , full_address text , zip_code int ,cus_id int ,
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+    CONSTRAINT fk_gov_id_address
+    FOREIGN KEY (gov_id)
+    REFERENCES `governorate`(gov_id) ,
+    CONSTRAINT fk_city_id_address
+    FOREIGN KEY (city_id)
+    REFERENCES `city`(city_id),
+	CONSTRAINT fk_cus_id_address
+    FOREIGN KEY (cus_id)
+    REFERENCES `shop_Customer`(cus_id)  );
+    
+    create table ST_shop_order_stages ( stage_id int AUTO_INCREMENT primary key ,
+    stage_name_AR varchar (100) , stage_name_EN varchar (100) ,
+    creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP );
+    insert into shop_order_stages ( stage_name_AR , stage_name_EN ) values 
+    ('قيد التنفيذ' , 'Under implementation' ) ;
+        insert into shop_order_stages ( stage_name_AR , stage_name_EN ) values 
+    ('تم الشحن' , 'Shipped' ) ;
+        insert into shop_order_stages ( stage_name_AR , stage_name_EN ) values 
+    ('فى الطريق' , 'in the way' ) ;
+        insert into shop_order_stages ( stage_name_AR , stage_name_EN ) values 
+    ('تم التسليم' , 'Delivered' ) ;
+        insert into shop_order_stages ( stage_name_AR , stage_name_EN ) values 
+    ('ملغى' , 'Cancelled' ) ;
+	
+	create table activity_type (type_id int , activity_type_AR  varchar (100)
+ , activity_type_EN  varchar (100) );
+-------------
+ 
+create table shop_Vendors_com ( Vendors_com_id int AUTO_INCREMENT primary key , 
+Vendors_com_name varchar (200) , Trade_name varchar (200) ,
+com_owner_name varchar (200) , activity_type int ,
+establishment_year int , Number_employees int ,
+capital bigint ,  About_company text , company_logo varchar (100) ,
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+CONSTRAINT fk_activity_type_id
+FOREIGN KEY (activity_type) 
+REFERENCES activity_type(type_id));
+    
+create table shop_Contact_information  ( id int AUTO_INCREMENT primary key ,
+contact_person_name varchar (200) , 
+contact_person_job varchar (200) ,
+contact_person_number varchar (200) ,
+other_person_number varchar (200) ,
+person_Email varchar (200),
+company_website varchar (200),
+facebook_link varchar (200) ,
+LinkedIn_link varchar (200) ,
+Twitter_link varchar (200) ,
+Instagram varchar (200) ,
+Vendors_com_id int ,
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+CONSTRAINT fk_Vendors_com_id
+FOREIGN KEY (Vendors_com_id) 
+REFERENCES shop_Vendors_com(Vendors_com_id));
+----------------------------------
+CREATE TABLE ST_continents (
+    continent_id INT AUTO_INCREMENT PRIMARY KEY,
+    continent_code CHAR(2) NOT NULL UNIQUE,
+    continent_name_ar VARCHAR(100) NOT NULL,
+    continent_name_en VARCHAR(100) NOT NULL,
+    area_km2 BIGINT,
+    population BIGINT,
+    countries_count INT,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO ST_continents
+(continent_code, continent_name_ar, continent_name_en, area_km2, countries_count)
+VALUES
+('AF','أفريقيا','Africa',30370000,54),
+('AN','القارة القطبية الجنوبية','Antarctica',14000000,0),
+('AS','آسيا','Asia',44579000,49),
+('EU','أوروبا','Europe',10180000,44),
+('NA','أمريكا الشمالية','North America',24709000,23),
+('OC','أوقيانوسيا','Oceania',8525989,14),
+('SA','أمريكا الجنوبية','South America',17840000,12);
+
+------------------
+CREATE TABLE st_countries (
+    country_id INT AUTO_INCREMENT PRIMARY KEY,
+    country_name_ar VARCHAR(200) NOT NULL,
+    country_name_en VARCHAR(200) NOT NULL,
+    iso2 CHAR(2) NOT NULL,
+    iso3 CHAR(3) NOT NULL,
+    phone_code VARCHAR(10),
+    continent_id INT ,
+	creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+	CONSTRAINT fk_continent_id_countries
+FOREIGN KEY (continent_id) 
+REFERENCES ST_continents(continent_id)
+);
+
+
+
+INSERT INTO online.st_countries
+(country_name_ar, country_name_en, iso2, iso3, phone_code, continent_id)
+VALUES
+('أفغانستان','Afghanistan','AF','AFG','93','3'),
+('ألبانيا','Albania','AL','ALB','355','4'),
+('الجزائر','Algeria','DZ','DZA','213','1'),
+('أندورا','Andorra','AD','AND','376','4'),
+('أنغولا','Angola','AO','AGO','244','1'),
+('أنتيغوا وبربودا','Antigua and Barbuda','AG','ATG','1-268','5'),
+('الأرجنتين','Argentina','AR','ARG','54','7'),
+('أرمينيا','Armenia','AM','ARM','374','3'),
+('أستراليا','Australia','AU','AUS','61','6'),
+('النمسا','Austria','AT','AUT','43','4'),
+('أذربيجان','Azerbaijan','AZ','AZE','994','3'),
+('جزر البهاما','Bahamas','BS','BHS','1-242','5'),
+('البحرين','Bahrain','BH','BHR','973','3'),
+('بنغلاديش','Bangladesh','BD','BGD','880','3'),
+('بربادوس','Barbados','BB','BRB','1-246','5'),
+('بيلاروسيا','Belarus','BY','BLR','375','4'),
+('بلجيكا','Belgium','BE','BEL','32','4'),
+('بليز','Belize','BZ','BLZ','501','5'),
+('بنين','Benin','BJ','BEN','229','1'),
+('بوتان','Bhutan','BT','BTN','975','3'),
+('بوليفيا','Bolivia','BO','BOL','591','7'),
+('البوسنة والهرسك','Bosnia and Herzegovina','BA','BIH','387','4'),
+('بوتسوانا','Botswana','BW','BWA','267','1'),
+('البرازيل','Brazil','BR','BRA','55','7'),
+('بروناي','Brunei','BN','BRN','673','3'),
+('بلغاريا','Bulgaria','BG','BGR','359','4'),
+('بوركينا فاسو','Burkina Faso','BF','BFA','226','1'),
+('بوروندي','Burundi','BI','BDI','257','1'),
+('الرأس الأخضر','Cape Verde','CV','CPV','238','1'),
+('كمبوديا','Cambodia','KH','KHM','855','3'),
+('الكاميرون','Cameroon','CM','CMR','237','1'),
+('كندا','Canada','CA','CAN','1','5'),
+('جمهورية أفريقيا الوسطى','Central 1n Republic','CF','CAF','236','1'),
+('تشاد','Chad','TD','TCD','235','1'),
+('تشيلي','Chile','CL','CHL','56','7'),
+('الصين','China','CN','CHN','86','3'),
+('كولومبيا','Colombia','CO','COL','57','7'),
+('جزر القمر','Comoros','KM','COM','269','1'),
+('جمهورية الكونغو','Republic of the Congo','CG','COG','242','1'),
+('جمهورية الكونغو الديمقراطية','Democratic Republic of the Congo','CD','COD','243','1'),
+('كوستاريكا','Costa Rica','CR','CRI','506','5'),
+('ساحل العاج','Côte d''Ivoire','CI','CIV','225','1'),
+('كرواتيا','Croatia','HR','HRV','385','4'),
+('كوبا','Cuba','CU','CUB','53','5'),
+('قبرص','Cyprus','CY','CYP','357','3');
+INSERT INTO online.st_countries
+(country_name_ar, country_name_en, iso2, iso3, phone_code, continent_id)
+VALUES
+('التشيك','Czech Republic','CZ','CZE','420','4'),
+('الدنمارك','Denmark','DK','DNK','45','4'),
+('جيبوتي','Djibouti','DJ','DJI','253','1'),
+('دومينيكا','Dominica','DM','DMA','1-767','5'),
+('جمهورية الدومينيكان','Dominican Republic','DO','DOM','1-809','5'),
+('الإكوادور','Ecuador','EC','ECU','593','7'),
+('مصر','Egypt','EG','EGY','20','1'),
+('السلفادور','El Salvador','SV','SLV','503','5'),
+('غينيا الاستوائية','Equatorial Guinea','GQ','GNQ','240','1'),
+('إريتريا','Eritrea','ER','ERI','291','1'),
+('إستونيا','Estonia','EE','EST','372','4'),
+('إسواتيني','Eswatini','SZ','SWZ','268','1'),
+('إثيوبيا','Ethiopia','ET','ETH','251','1'),
+('فيجي','Fiji','FJ','FJI','679','6'),
+('فنلندا','Finland','FI','FIN','358','4'),
+('فرنسا','France','FR','FRA','33','4'),
+('الغابون','Gabon','GA','GAB','241','1'),
+('غامبيا','Gambia','GM','GMB','220','1'),
+('جورجيا','Georgia','GE','GEO','995','3'),
+('ألمانيا','Germany','DE','DEU','49','4'),
+('غانا','Ghana','GH','GHA','233','1'),
+('اليونان','Greece','GR','GRC','30','4'),
+('غرينادا','Grenada','GD','GRD','1-473','5'),
+('غواتيمالا','Guatemala','GT','GTM','502','5'),
+('غينيا','Guinea','GN','GIN','224','1'),
+('غينيا بيساو','Guinea-Bissau','GW','GNB','245','1'),
+('غيانا','Guyana','GY','GUY','592','7'),
+('هايتي','Haiti','HT','HTI','509','5'),
+('هندوراس','Honduras','HN','HND','504','5'),
+('المجر','Hungary','HU','HUN','36','4'),
+('آيسلندا','Iceland','IS','ISL','354','4'),
+('الهند','India','IN','IND','91','3'),
+('إندونيسيا','Indonesia','ID','IDN','62','3'),
+('إيران','Iran','IR','IRN','98','3'),
+('العراق','Iraq','IQ','IRQ','964','3'),
+('أيرلندا','Ireland','IE','IRL','353','4'),
+('إسرائيل','Israel','IL','ISR','972','3'),
+('إيطاليا','Italy','IT','ITA','39','4'),
+('جامايكا','Jamaica','JM','JAM','1-876','5'),
+('اليابان','Japan','JP','JPN','81','3'),
+('الأردن','Jordan','JO','JOR','962','3'),
+('كازاخستان','Kazakhstan','KZ','KAZ','7','3');
+INSERT INTO online.st_countries
+(country_name_ar, country_name_en, iso2, iso3, phone_code, continent_id)
+VALUES
+('كينيا','Kenya','KE','KEN','254','1'),
+('كيريباتي','Kiribati','KI','KIR','686','6'),
+('الكويت','Kuwait','KW','KWT','965','3'),
+('قيرغيزستان','Kyrgyzstan','KG','KGZ','996','3'),
+('لاوس','Laos','LA','LAO','856','3'),
+('لاتفيا','Latvia','LV','LVA','371','4'),
+('لبنان','Lebanon','LB','LBN','961','3'),
+('ليسوتو','Lesotho','LS','LSO','266','1'),
+('ليبيريا','Liberia','LR','LBR','231','1'),
+('ليبيا','Libya','LY','LBY','218','1'),
+('ليختنشتاين','Liechtenstein','LI','LIE','423','4'),
+('ليتوانيا','Lithuania','LT','LTU','370','4'),
+('لوكسمبورغ','Luxembourg','LU','LUX','352','4'),
+('مدغشقر','Madagascar','MG','MDG','261','1'),
+('مالاوي','Malawi','MW','MWI','265','1'),
+('ماليزيا','Malaysia','MY','MYS','60','3'),
+('جزر المالديف','Maldives','MV','MDV','960','3'),
+('مالي','Mali','ML','MLI','223','1'),
+('مالطا','Malta','MT','MLT','356','4'),
+('جزر مارشال','Marshall Islands','MH','MHL','692','6'),
+('موريتانيا','Mauritania','MR','MRT','222','1'),
+('موريشيوس','Mauritius','MU','MUS','230','1'),
+('المكسيك','Mexico','MX','MEX','52','5'),
+('ولايات ميكرونيسيا المتحدة','Micronesia','FM','FSM','691','6'),
+('مولدوفا','Moldova','MD','MDA','373','4'),
+('موناكو','Monaco','MC','MCO','377','4'),
+('منغوليا','Mongolia','MN','MNG','976','3'),
+('الجبل الأسود','Montenegro','ME','MNE','382','4'),
+('المغرب','Morocco','MA','MAR','212','1'),
+('موزمبيق','Mozambique','MZ','MOZ','258','1'),
+('ميانمار','Myanmar','MM','MMR','95','3'),
+('ناميبيا','Namibia','NA','NAM','264','1'),
+('ناورو','Nauru','NR','NRU','674','6'),
+('نيبال','Nepal','NP','NPL','977','3'),
+('هولندا','Netherlands','NL','NLD','31','4');
+INSERT INTO online.st_countries
+(country_name_ar, country_name_en, iso2, iso3, phone_code, continent_id)
+VALUES
+('نيوزيلندا','New Zealand','NZ','NZL','64','6'),
+('نيكاراغوا','Nicaragua','NI','NIC','505','5'),
+('النيجر','Niger','NE','NER','227','1'),
+('نيجيريا','Nigeria','NG','NGA','234','1'),
+('كوريا الشمالية','North Korea','KP','PRK','850','3'),
+('مقدونيا الشمالية','North Macedonia','MK','MKD','389','4'),
+('النرويج','Norway','NO','NOR','47','4'),
+('سلطنة عمان','Oman','OM','OMN','968','3'),
+('باكستان','Pakistan','PK','PAK','92','3'),
+('بالاو','Palau','PW','PLW','680','6'),
+('فلسطين','Palestine','PS','PSE','970','3'),
+('بنما','Panama','PA','PAN','507','5'),
+('بابوا غينيا الجديدة','Papua New Guinea','PG','PNG','675','6'),
+('باراغواي','Paraguay','PY','PRY','595','7'),
+('بيرو','Peru','PE','PER','51','7'),
+('الفلبين','Philippines','PH','PHL','63','3'),
+('بولندا','Poland','PL','POL','48','4'),
+('البرتغال','Portugal','PT','PRT','351','4'),
+('قطر','Qatar','QA','QAT','974','3'),
+('رومانيا','Romania','RO','ROU','40','4'),
+('روسيا','Russia','RU','RUS','7','4'),
+('رواندا','Rwanda','RW','RWA','250','1'),
+('سانت كيتس ونيفيس','Saint Kitts and Nevis','KN','KNA','1-869','5'),
+('سانت لوسيا','Saint Lucia','LC','LCA','1-758','5'),
+('سانت فنسنت وجزر غرينادين','Saint Vincent and the Grenadines','VC','VCT','1-784','5'),
+('ساموا','Samoa','WS','WSM','685','6'),
+('سان مارينو','San Marino','SM','SMR','378','4'),
+('ساو تومي وبرينسيب','Sao Tome and Principe','ST','STP','239','1'),
+('المملكة العربية السعودية','Saudi Arabia','SA','SAU','966','3'),
+('السنغال','Senegal','SN','SEN','221','1'),
+('صربيا','Serbia','RS','SRB','381','4'),
+('سيشل','Seychelles','SC','SYC','248','1'),
+('سيراليون','Sierra Leone','SL','SLE','232','1'),
+('سنغافورة','Singapore','SG','SGP','65','3'),
+('سلوفاكيا','Slovakia','SK','SVK','421','4'),
+('سلوفينيا','Slovenia','SI','SVN','386','4'),
+('جزر سليمان','Solomon Islands','SB','SLB','677','6'),
+('الصومال','Somalia','SO','SOM','252','1'),
+('جنوب أفريقيا','South 1','ZA','ZAF','27','1'),
+('كوريا الجنوبية','South Korea','KR','KOR','82','3'),
+('جنوب السودان','South Sudan','SS','SSD','211','1'),
+('إسبانيا','Spain','ES','ESP','34','4'),
+('سريلانكا','Sri Lanka','LK','LKA','94','3'),
+('السودان','Sudan','SD','SDN','249','1'),
+('سورينام','Suriname','SR','SUR','597','7'),
+('السويد','Sweden','SE','SWE','46','4'),
+('سويسرا','Switzerland','CH','CHE','41','4'),
+('سوريا','Syria','SY','SYR','963','3'),
+('طاجيكستان','Tajikistan','TJ','TJK','992','3'),
+('تنزانيا','Tanzania','TZ','TZA','255','1'),
+('تايلاند','Thailand','TH','THA','66','3'),
+('تيمور الشرقية','Timor-Leste','TL','TLS','670','3'),
+('توغو','Togo','TG','TGO','228','1'),
+('تونغا','Tonga','TO','TON','676','6'),
+('ترينيداد وتوباغو','Trinidad and Tobago','TT','TTO','1-868','5'),
+('تونس','Tunisia','TN','TUN','216','1'),
+('تركيا','Türkiye','TR','TUR','90','3'),
+('تركمانستان','Turkmenistan','TM','TKM','993','3'),
+('توفالو','Tuvalu','TV','TUV','688','6'),
+('أوغندا','Uganda','UG','UGA','256','1'),
+('أوكرانيا','Ukraine','UA','UKR','380','4'),
+('الإمارات العربية المتحدة','United Arab Emirates','AE','ARE','971','3'),
+('المملكة المتحدة','United Kingdom','GB','GBR','44','4'),
+('الولايات المتحدة الأمريكية','United States','US','USA','1','5'),
+('أوروغواي','Uruguay','UY','URY','598','7'),
+('أوزبكستان','Uzbekistan','UZ','UZB','998','3'),
+('فانواتو','Vanuatu','VU','VUT','678','6'),
+('الفاتيكان','Vatican City','VA','VAT','379','4'),
+('فنزويلا','Venezuela','VE','VEN','58','7'),
+('فيتنام','Vietnam','VN','VNM','84','3'),
+('اليمن','Yemen','YE','YEM','967','3'),
+('زامبيا','Zambia','ZM','ZMB','260','1'),
+('زيمبابوي','Zimbabwe','ZW','ZWE','263','1');
+
+
+------------------
+create table shop_com_Address_info ( Address_id INT AUTO_INCREMENT PRIMARY KEY,
+country_id INT , gov_id int , city_id int , area_id int , zip_code int ,
+full_address text , Warehouse_address text , Return_address text , Vendors_com_id int ,
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+    CONSTRAINT fk_country_id_info
+    FOREIGN KEY (country_id)
+    REFERENCES countries (country_id) ,
+    CONSTRAINT fk_gov_id_info
+    FOREIGN KEY (gov_id)
+    REFERENCES governorate (gov_id) ,
+    CONSTRAINT fk_city_id_info
+    FOREIGN KEY (city_id)
+    REFERENCES city (city_id) ,
+    CONSTRAINT fk_area_id_info
+    FOREIGN KEY (area_id)
+    REFERENCES areas (area_id) ,
+	CONSTRAINT fk_Vendors_com_id_info
+    FOREIGN KEY (Vendors_com_id)
+    REFERENCES shop_Vendors_com (Vendors_com_id));
+	
+ create table ST_legal_status ( legal_status_id int AUTO_INCREMENT PRIMARY KEY ,
+ legal_status_AR varchar (100) , legal_status_EN varchar (100) , 
+ creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP );
+ 
+ insert into legal_status ( legal_status_AR , legal_status_EN ) values  (
+ 'ذات مسؤولية محدودة' , 'Limited Liability' ) ;
+  insert into legal_status ( legal_status_AR , legal_status_EN ) values  (
+ 'شركات تضامن' , 'partnerships' ) ;
+   insert into legal_status ( legal_status_AR , legal_status_EN ) values  (
+ 'شركات مساهمة' , 'joint-stock companies' ) ;
+ insert into legal_status ( legal_status_AR , legal_status_EN ) values  (
+ 'شركة فرد واحد' , 'One-person company' ) ;
+ 
+create table  shop_Legal_data  (Legal_data_id INT AUTO_INCREMENT PRIMARY KEY,
+ Vendors_com_id int ,
+ Commercial_Number varchar (100) comment 'رقم السجل التجاري' , 
+ Date_issuance date comment 'تاريخ إصدار السجل' ,
+ expiry_date  date comment 'تاريخ انتهاء السجل' ,
+ Tax_card_number varchar (100) comment 'رقم البطاقة الضريبية' ,
+ vat bigint comment 'رقم التسجيل الضريبي' , 
+ Activity_license_number bigint comment 'رقم رخصة النشاط'  ,
+ chamber_commerce varchar (100) comment 'الغرفة التجارية' ,
+ legal_status_id int comment 'الحالة القانونية ' ,
+ creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
+ 	CONSTRAINT fk_legal_status_id_data
+    FOREIGN KEY (legal_status_id)
+    REFERENCES ST_legal_status (legal_status_id));
+ 
+ create table shop_Required_documents ( id INT AUTO_INCREMENT PRIMARY KEY, 
+ Vendors_com_id int ,
+ Commercial_registration_image varchar (100) comment 'صورة السجل التجارى',
+ Tax_card_image varchar (100) comment 'البطاقة الضريبية',
+ VAT_Certificate_image varchar (100) comment 'شهادة ضريبية القيمة المضافة' ,
+ Business_license_image varchar (100) comment 'رخصة النشاط' , 
+ legal_representative_image varchar (100) comment 'صورة الهوية أو جواز السفر للممثل القانوني' ,
+ Bank_account_certificate varchar (100) comment 'شهادة الحساب البنكي' ,
+ Official_authorization_image varchar (100) comment 'صورة تفويض رسمى' ,
+ company_logo varchar (100) comment 'شعار الشركة' , 
+ Product_Catalog varchar (100) comment 'كتالوج المنتجات' ,
+ creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+ CONSTRAINT fk_Vendors_com_id_documents
+ FOREIGN KEY (Vendors_com_id)
+ REFERENCES shop_Vendors_com (Vendors_com_id) );
+  
+CREATE TABLE st_banks (
+    bank_id INT AUTO_INCREMENT PRIMARY KEY,
+    bank_code VARCHAR(20) UNIQUE,
+    swift_code VARCHAR(20),
+    bank_name_ar VARCHAR(200) NOT NULL,
+    bank_name_en VARCHAR(200) NOT NULL,
+    bank_type ENUM(
+        'Government',
+        'Private',
+        'Islamic',
+        'Foreign',
+        'Joint Venture',
+        'Central Bank'
+    ) NOT NULL,
+    website VARCHAR(255),
+    phone VARCHAR(50),
+    email VARCHAR(150),
+    address VARCHAR(255),
+    city VARCHAR(100),
+    country VARCHAR(100) DEFAULT 'Egypt',
+    logo VARCHAR(255),
+    is_instapay TINYINT(1) DEFAULT 1,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO st_banks
+(bank_code,bank_name_ar,bank_name_en,bank_type,is_instapay,is_active)
+VALUES
+('CBE','البنك المركزي المصري','Central Bank of Egypt','Central Bank',0,1),
+('NBE','البنك الأهلي المصري','National Bank of Egypt','Government',1,1),
+('BM','بنك مصر','Banque Misr','Government',1,1),
+('BDC','بنك القاهرة','Banque du Caire','Government',1,1),
+('ABE','البنك الزراعي المصري','Agricultural Bank of Egypt','Government',1,1),
+('EALB','البنك العقاري المصري العربي','Egyptian Arab Land Bank','Government',1,1),
+('CIB','البنك التجاري الدولي','Commercial International Bank','Private',1,1),
+('ALEX','بنك الإسكندرية','Bank of Alexandria','Private',1,1),
+('QNB','بنك قطر الوطني الأهلي','QNB Alahli','Foreign',1,1),
+('AAIB','البنك العربي الأفريقي الدولي','Arab African International Bank','Joint Venture',1,1),
+('ADIB','مصرف أبوظبي الإسلامي - مصر','Abu Dhabi Islamic Bank Egypt','Islamic',1,1),
+('FAB','بنك أبوظبي الأول - مصر','First Abu Dhabi Bank Egypt','Foreign',1,1),
+('ADCB','بنك أبوظبي التجاري - مصر','Abu Dhabi Commercial Bank Egypt','Foreign',1,1),
+('ENBD','بنك الإمارات دبي الوطني - مصر','Emirates NBD Egypt','Foreign',1,1),
+('NBK','بنك الكويت الوطني - مصر','National Bank of Kuwait Egypt','Foreign',1,1),
+('CAE','بنك كريدي أجريكول مصر','Credit Agricole Egypt','Foreign',1,1),
+('HSBC','بنك HSBC مصر','HSBC Bank Egypt','Foreign',1,1),
+('BARAKA','بنك البركة مصر','Al Baraka Bank Egypt','Islamic',1,1),
+('FIB','بنك فيصل الإسلامي المصري','Faisal Islamic Bank of Egypt','Islamic',1,1),
+('SAIB','بنك الشركة المصرفية العربية الدولية','SAIB','Joint Venture',1,1),
+('SCB','بنك قناة السويس','Suez Canal Bank','Private',1,1),
+('HDB','بنك التعمير والإسكان','Housing and Development Bank','Private',1,1),
+('MID','ميد بنك','MIDBANK','Private',1,1),
+('EGB','إي جي بنك','EG Bank','Private',1,1),
+('AIB','بنك الاستثمار العربي','Arab Investment Bank','Government',1,1),
+('AIBK','البنك العربي الدولي','Arab International Bank','Joint Venture',1,1),
+('IDB','بنك التنمية الصناعية','Industrial Development Bank','Private',1,1),
+('EBE','البنك المصري لتنمية الصادرات','Export Development Bank of Egypt','Government',1,1),
+('UB','المصرف المتحد','The United Bank','Private',1,1),
+('MIDB','بنك مصر إيران للتنمية','Misr Iran Development Bank','Joint Venture',1,1),
+('ABC','بنك المؤسسة العربية المصرفية - مصر','ABC Bank Egypt','Foreign',1,1),
+('MASHREQ','بنك المشرق - مصر','Mashreq Bank Egypt','Foreign',1,1),
+('CITI','سيتي بنك مصر','Citibank Egypt','Foreign',1,1),
+('AWB','بنك التجاري وفا - مصر','Attijariwafa Bank Egypt','Foreign',1,1),
+('NEXT','بنك نكست','Next Bank','Private',1,1);
+
+---------------------
+
+
+	
+create table shop_Bank_account_info ( Bank_account_id INT AUTO_INCREMENT PRIMARY KEY,
+Vendors_com_id int ,
+bank_id INT , 
+Account_holder_name varchar (200) comment 'اسم صاحب الحساب' ,
+Account_number bigint comment 'رقم الحساب' ,
+IBAN varchar (200) comment 'رقم IBAN' ,
+SWIFT_Code varchar (200) ,
+currency_type_id int , 
+country_id INT , 
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+	CONSTRAINT fk_Vendors_com_id_account_info
+    FOREIGN KEY (Vendors_com_id)
+    REFERENCES shop_Vendors_com (Vendors_com_id),
+	CONSTRAINT fk_country_id_account_info
+    FOREIGN KEY (country_id)
+    REFERENCES countries (country_id),
+    CONSTRAINT fk_country_id_account_info
+    FOREIGN KEY (currency_type_id)
+    REFERENCES currency (currency_type_id),
+    CONSTRAINT fk_bank_id_account_info
+    FOREIGN KEY (bank_id)
+    REFERENCES st_banks (bank_id));
+    
+create table ST_Tax_data_type ( Tax_type_id int AUTO_INCREMENT PRIMARY KEY, 
+type_Name_AR varchar (200) , type_Name_EN varchar (200) , descriptions text ,
+ color_id int ,
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
+	CONSTRAINT fk_color_id_Tax_type
+    FOREIGN KEY (color_id)
+    REFERENCES st_color (color_id)) ;
+
+insert into Tax_data_type ( type_Name_AR , type_Name_EN ) values 
+( 'ضريبة القيمة المضافة' , 'Value Added Tax' );
+insert into Tax_data_type ( type_Name_AR , type_Name_EN ) values 
+( 'ضريبة  الدخل' , 'Income tax' );
+insert into Tax_data_type ( type_Name_AR , type_Name_EN ) values 
+( 'ضريبة  المبيعات' , 'Sales tax' );
+insert into Tax_data_type ( type_Name_AR , type_Name_EN ) values 
+( 'اخرى' , 'other' );
+
+create table shop_Tax_data_info ( Tax_data_id int AUTO_INCREMENT PRIMARY KEY,
+ Vendors_com_id int ,  
+vat_number bigint , tax_rate int , Tax_type_id int , country_id int ,
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+    CONSTRAINT fk_country_id_tax_info
+    FOREIGN KEY (country_id)
+    REFERENCES st_countries (country_id) ,
+     CONSTRAINT fk_Vendors_com_id_tax_info
+    FOREIGN KEY (Vendors_com_id)
+    REFERENCES shop_Vendors_com (Vendors_com_id));
+    
+    create table online.shop_Quality_data ( quality_id  INT AUTO_INCREMENT PRIMARY KEY ,
+Vendors_com_id int ,
+quality_certificates varchar (500) comment 'شهادات الجودة' ,
+certificates_conformity varchar (500) comment 'شهادات المطابقة',
+certificates_origin varchar (500) comment 'شهادات المنشأ' ,
+safety_certificates varchar (500) comment  'شهادات السلامة' ,
+creation_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+ CONSTRAINT fk_Vendors_com_id_Quality_data
+ FOREIGN KEY (Vendors_com_id)
+ REFERENCES online.shop_Vendors_com (Vendors_com_id) );

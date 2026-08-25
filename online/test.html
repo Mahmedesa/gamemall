@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المول الذهبي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: { extend: { fontFamily: { cairo: ['Cairo','sans-serif'] } } }
+    }
+    </script>
+    <style>
+        :root {
+            --bg: #0d0d1a;
+            --fg: #f0e6d3;
+            --muted: #6b6b7b;
+            --accent: #d4a04a;
+            --card: #16162a;
+            --border: #2a2a44;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Cairo',sans-serif; background:var(--bg); color:var(--fg); overflow-x:hidden; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+        /* === جزيئات الغبار === */
+        #particles { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+        /* === خلفية الممر === */
+        .mall-bg {
+            position:fixed; inset:0; z-index:0;
+            background:
+                radial-gradient(ellipse 100% 30% at 50% 0%, rgba(212,160,74,0.1), transparent),
+                radial-gradient(ellipse 60% 40% at 50% 100%, rgba(212,160,74,0.06), transparent),
+                var(--bg);
+        }
+        .mall-bg::before {
+            content:''; position:absolute; bottom:0; left:5%; right:5%; height:38%;
+            background:
+                repeating-linear-gradient(90deg, rgba(212,160,74,0.06) 0 1px, transparent 1px 90px),
+                repeating-linear-gradient(0deg, rgba(212,160,74,0.06) 0 1px, transparent 1px 90px);
+            transform: perspective(600px) rotateX(25deg);
+            transform-origin: bottom center;
+            mask-image: linear-gradient(to top, rgba(0,0,0,0.6), transparent 80%);
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.6), transparent 80%);
+        }
+        .mall-bg::after {
+            content:''; position:absolute; top:8%; left:0; right:0; height:2px;
+            background: linear-gradient(90deg, transparent 5%, rgba(212,160,74,0.2) 50%, transparent 95%);
+        }
+
+        /* === لافتة النيون === */
+        .neon-sign {
+            color: var(--shop-color);
+            text-shadow: 0 0 8px var(--shop-color), 0 0 20px var(--shop-color), 0 0 40px color-mix(in srgb, var(--shop-color) 40%, transparent);
+            animation: neonPulse 4s ease-in-out infinite;
+        }
+        @keyframes neonPulse {
+            0%,100% { filter:brightness(1); }
+            50% { filter:brightness(1.15); }
+            92% { filter:brightness(1); }
+            94% { filter:brightness(0.8); }
+            96% { filter:brightness(1.1); }
+        }
+
+        /* === بطاقة المحل === */
+        .shop-card {
+            position:relative; border-radius:16px; overflow:hidden;
+            background: var(--card); border:1px solid var(--border);
+            transition: transform 0.4s, box-shadow 0.4s;
+            cursor:default;
+        }
+        .shop-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 60px -15px color-mix(in srgb, var(--shop-color) 30%, transparent);
+        }
+
+        /* === واجهة العرض === */
+        .shop-window {
+            height:110px; position:relative; overflow:hidden;
+            background: linear-gradient(135deg, var(--shop-dark), color-mix(in srgb, var(--shop-color) 15%, #0d0d1a));
+        }
+        .shop-window::after {
+            content:''; position:absolute; inset:0;
+            background: linear-gradient(to bottom, transparent 40%, var(--card));
+        }
+
+        /* === الأبواب === */
+        .shop-door {
+            position:relative; height:130px; margin:0 20px;
+            cursor:pointer; overflow:hidden; border-radius:4px 4px 0 0;
+        }
+        .door-interior {
+            position:absolute; inset:3px; border-radius:2px;
+            background: radial-gradient(ellipse, var(--shop-color), var(--shop-dark) 60%, #000);
+            opacity:0; transition: opacity 0.6s 0.2s;
+        }
+        .shop-door.open .door-interior { opacity:1; }
+        .door-panel {
+            position:absolute; top:3px; bottom:3px; width:calc(50% - 4px);
+            transition: transform 0.9s cubic-bezier(0.4,0,0.2,1);
+            z-index:2;
+        }
+        .door-panel.left { left:3px; }
+        .door-panel.right { right:3px; }
+        .door-frame {
+            position:absolute; inset:0; border:3px solid var(--shop-color);
+            border-radius:4px 4px 0 0; z-index:1; opacity:0.6;
+            box-shadow: inset 0 0 15px color-mix(in srgb, var(--shop-color) 20%, transparent);
+        }
+
+        /* أبواب منزلقة - كمبيوتر */
+        .door-sliding .door-panel {
+            background: linear-gradient(180deg, color-mix(in srgb, var(--shop-color) 25%, #0a1a18), #0a1a18);
+            border:1px solid color-mix(in srgb, var(--shop-color) 40%, transparent);
+        }
+        .door-sliding .door-panel::before {
+            content:''; position:absolute; inset:4px;
+            background:
+                repeating-linear-gradient(0deg, transparent 0 7px, color-mix(in srgb, var(--shop-color) 15%, transparent) 7px 8px),
+                repeating-linear-gradient(90deg, transparent 0 14px, color-mix(in srgb, var(--shop-color) 15%, transparent) 14px 15px);
+        }
+        .door-sliding.open .door-panel.left { transform:translateX(-105%); }
+        .door-sliding.open .door-panel.right { transform:translateX(105%); }
+
+        /* أبواب فرنسية - ملابس */
+        .door-french .door-panel {
+            background: linear-gradient(160deg, color-mix(in srgb, var(--shop-color) 30%, #1a0f15), #1a0f15);
+            border:1px solid color-mix(in srgb, var(--shop-color) 50%, transparent);
+            border-radius:40px 40px 0 0;
+        }
+        .door-french .door-panel::before {
+            content:''; position:absolute; top:8px; left:20%; right:20%; height:60%;
+            border:1px solid color-mix(in srgb, var(--shop-color) 25%, transparent);
+            border-radius:30px 30px 0 0;
+        }
+        .door-french.open .door-panel.left { transform:perspective(500px) rotateY(-80deg); transform-origin:right center; }
+        .door-french.open .door-panel.right { transform:perspective(500px) rotateY(80deg); transform-origin:left center; }
+
+        /* باب زجاجي - إلكترونيات */
+        .door-glass .door-panel {
+            width:calc(100% - 6px) !important; left:3px !important;
+            background: linear-gradient(135deg, color-mix(in srgb, var(--shop-color) 10%, #0f1a10), #0f1a10);
+            border:2px solid color-mix(in srgb, var(--shop-color) 50%, transparent);
+            backdrop-filter:blur(2px);
+        }
+        .door-glass .door-panel.right { display:none; }
+        .door-glass.open .door-panel.left { transform:translateX(-105%); }
+
+        /* باب صناعي - رياضة */
+        .door-rollup .door-panel {
+            width:calc(100% - 6px) !important; left:3px !important;
+            background:
+                repeating-linear-gradient(0deg, color-mix(in srgb, var(--shop-color) 35%, #1a1208) 0 8px, #1a1208 8px 10px),
+                #1a1208;
+            border:1px solid color-mix(in srgb, var(--shop-color) 40%, transparent);
+        }
+        .door-rollup .door-panel.right { display:none; }
+        .door-rollup.open .door-panel.left { transform:translateY(-105%); }
+
+        /* باب كلاسيكي مقوس - كتب */
+        .door-arch .door-panel {
+            width:calc(100% - 6px) !important; left:3px !important;
+            background: linear-gradient(170deg, color-mix(in srgb, var(--shop-color) 40%, #1a1508), #1a1508 50%, color-mix(in srgb, var(--shop-color) 20%, #1a1508));
+            border:2px solid color-mix(in srgb, var(--shop-color) 50%, transparent);
+            border-radius:50% 50% 0 0;
+        }
+        .door-arch .door-panel::before {
+            content:''; position:absolute; top:25%; right:12px; width:8px; height:40%;
+            background: var(--shop-color); border-radius:4px; box-shadow: 0 0 8px var(--shop-color);
+        }
+        .door-arch .door-panel.right { display:none; }
+        .door-arch.open .door-panel.left { transform:perspective(500px) rotateY(-80deg); transform-origin:left center; }
+
+        /* أبواب سالون - مطعم */
+        .door-saloon .door-panel {
+            height:65% !important; top:auto !important; bottom:3px !important;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--shop-color) 40%, #1a0f0f), #1a0f0f);
+            border:1px solid color-mix(in srgb, var(--shop-color) 50%, transparent);
+            border-bottom:none;
+        }
+        .door-saloon .door-panel::before {
+            content:''; position:absolute; top:40%; left:50%; transform:translateX(-50%);
+            width:6px; height:20%; background:var(--shop-color); border-radius:3px;
+        }
+        .door-saloon.open .door-panel.left { transform:perspective(400px) rotateY(65deg); transform-origin:right center; }
+        .door-saloon.open .door-panel.right { transform:perspective(400px) rotateY(-65deg); transform-origin:left center; }
+
+        /* === مؤشر الدخول === */
+        .enter-hint {
+            animation: hintPulse 2s ease-in-out infinite;
+        }
+        @keyframes hintPulse {
+            0%,100% { opacity:0.5; transform:translateY(0); }
+            50% { opacity:1; transform:translateY(-3px); }
+        }
+
+        /* === طبقة الانتقال === */
+        #transitionOverlay {
+            position:fixed; inset:0; z-index:500; pointer-events:none;
+            opacity:0; transition: opacity 0.4s ease;
+        }
+        #transitionOverlay.active { opacity:1; pointer-events:all; }
+
+        /* === واجهة المحل الداخلي === */
+        .shop-interior {
+            min-height:100vh;
+            background:
+                radial-gradient(ellipse 80% 30% at 50% 0%, color-mix(in srgb, var(--shop-color) 12%, var(--bg)), transparent),
+                var(--bg);
+        }
+        .product-card {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:14px; overflow:hidden;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+        .product-card:hover {
+            transform:translateY(-4px);
+            box-shadow: 0 12px 40px -10px rgba(0,0,0,0.5);
+            border-color: var(--shop-color);
+        }
+        .product-card img {
+            width:100%; height:180px; object-fit:cover;
+            transition: transform 0.4s;
+        }
+        .product-card:hover img { transform:scale(1.06); }
+
+        /* === سلة التسوق === */
+        #cartSidebar {
+            position:fixed; top:0; left:0; bottom:0; width:380px; max-width:90vw;
+            background:var(--card); border-right:1px solid var(--border);
+            z-index:400; transform:translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+            overflow-y:auto;
+        }
+        #cartSidebar.open { transform:translateX(0); }
+        #cartOverlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.6);
+            z-index:399; opacity:0; pointer-events:none;
+            transition: opacity 0.3s;
+        }
+        #cartOverlay.open { opacity:1; pointer-events:all; }
+
+        /* === الإشعارات === */
+        .toast {
+            padding:12px 24px; border-radius:10px; color:#fff;
+            font-size:14px; font-weight:600;
+            transform:translateX(120%); transition:transform 0.35s ease;
+            margin-bottom:8px;
+        }
+        .toast.show { transform:translateX(0); }
+        .toast-success { background:linear-gradient(135deg, #00b894, #00a381); }
+        .toast-error { background:linear-gradient(135deg, #e74c3c, #c0392b); }
+        .toast-info { background:linear-gradient(135deg, var(--accent), #b8862e); }
+
+        /* === نافذة التأكيد === */
+        .modal-backdrop {
+            position:fixed; inset:0; background:rgba(0,0,0,0.7);
+            z-index:600; display:flex; align-items:center; justify-content:center;
+            opacity:0; pointer-events:none; transition:opacity 0.3s;
+        }
+        .modal-backdrop.active { opacity:1; pointer-events:all; }
+        .modal-box {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:20px; padding:32px; max-width:420px; width:90%;
+            transform:scale(0.9); transition:transform 0.3s;
+        }
+        .modal-backdrop.active .modal-box { transform:scale(1); }
+
+        /* === حركات عامة === */
+        @keyframes fadeInUp {
+            from { opacity:0; transform:translateY(20px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+        .anim-in { animation: fadeInUp 0.5s ease forwards; }
+
+        @keyframes float {
+            0%,100% { transform:translateY(0); }
+            50% { transform:translateY(-8px); }
+        }
+
+        @media (max-width:768px) {
+            .shop-door { height:100px; margin:0 12px; }
+            .shop-window { height:80px; }
+        }
+    </style>
+</head>
+<body class="font-cairo">
+    <!-- جزيئات الغبار -->
+    <canvas id="particles"></canvas>
+    <!-- خلفية الممر -->
+    <div class="mall-bg"></div>
+    <!-- طبقة الانتقال -->
+    <div id="transitionOverlay"></div>
+
+    <!-- ==================== واجهة المول ==================== -->
+    <div id="mallView" class="relative z-10 min-h-screen flex flex-col">
+        <!-- الهيدر -->
+        <header class="relative z-20 flex items-center justify-between px-6 py-4 border-b border-[--border] bg-[--bg]/80 backdrop-blur-md">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[--accent] to-amber-700 flex items-center justify-center">
+                    <i class="fa-solid fa-store text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-[--accent] leading-tight">المول الذهبي</h1>
+                    <p class="text-[10px] text-[--muted] tracking-wider">GOLDEN MALL</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <input id="mallSearch" type="text" placeholder="ابحث عن محل..."
+                        class="bg-[--border]/50 text-[--fg] text-sm rounded-xl px-4 py-2 pr-10 w-48 focus:outline-none focus:border-[--accent] border border-transparent transition placeholder:text-[--muted]">
+                    <i class="fa-solid fa-search absolute right-3 top-1/2 -translate-y-1/2 text-[--muted] text-sm"></i>
+                </div>
+                <button onclick="toggleCart()" class="relative p-2.5 rounded-xl bg-[--border]/50 hover:bg-[--border] transition group">
+                    <i class="fa-solid fa-cart-shopping text-[--fg] group-hover:text-[--accent] transition"></i>
+                    <span id="cartBadge" class="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-[--accent] text-[--bg] text-[10px] font-bold flex items-center justify-center hidden">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- شبكة المحلات -->
+        <main class="flex-1 px-4 md:px-8 py-6">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-4xl font-black text-[--fg] mb-2">مرحباً بك في المول</h2>
+                <p class="text-[--muted] text-sm">اختر المحل الذي تريد زيارته واضغط على الباب للدخول</p>
+            </div>
+            <div id="shopsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"></div>
+        </main>
+    </div>
+
+    <!-- ==================== واجهة المحل الداخلي ==================== -->
+    <div id="shopView" class="relative z-10 shop-interior" style="display:none;">
+        <header class="sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-[--bg]/90 backdrop-blur-md border-b border-[--border]">
+            <div class="flex items-center gap-3">
+                <button onclick="exitShop()" class="w-10 h-10 rounded-xl bg-[--border]/50 hover:bg-[--border] flex items-center justify-center transition group">
+                    <i class="fa-solid fa-arrow-right text-[--fg] group-hover:text-[--accent] transition"></i>
+                </button>
+                <div>
+                    <h2 id="shopViewName" class="text-lg font-bold"></h2>
+                    <p id="shopViewSub" class="text-[11px] text-[--muted]"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <input id="shopSearch" type="text" placeholder="ابحث في المحل..."
+                    class="bg-[--border]/50 text-[--fg] text-sm rounded-xl px-4 py-2 pr-10 w-44 focus:outline-none focus:border-[--accent] border border-transparent transition placeholder:text-[--muted]">
+                <i class="fa-solid fa-search absolute mr-[7.5rem] mt-0.5 text-[--muted] text-sm pointer-events-none"></i>
+                <button onclick="toggleCart()" class="relative p-2.5 rounded-xl bg-[--border]/50 hover:bg-[--border] transition group">
+                    <i class="fa-solid fa-cart-shopping text-[--fg] group-hover:text-[--accent] transition"></i>
+                    <span id="cartBadge2" class="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-[--accent] text-[--bg] text-[10px] font-bold flex items-center justify-center hidden">0</span>
+                </button>
+            </div>
+        </header>
+        <main class="px-4 md:px-8 py-6">
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto"></div>
+        </main>
+    </div>
+
+    <!-- ==================== سلة التسوق ==================== -->
+    <div id="cartOverlay" onclick="toggleCart()"></div>
+    <aside id="cartSidebar" class="flex flex-col">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-[--border]">
+            <h3 class="text-lg font-bold"><i class="fa-solid fa-cart-shopping ml-2 text-[--accent]"></i>سلة التسوق</h3>
+            <button onclick="toggleCart()" class="w-8 h-8 rounded-lg bg-[--border]/50 hover:bg-[--border] flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+        <div id="cartItems" class="flex-1 px-6 py-4 overflow-y-auto"></div>
+        <div id="cartFooter" class="border-t border-[--border] px-6 py-5 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-[--muted]">الإجمالي</span>
+                <span id="cartTotal" class="text-2xl font-black text-[--accent]">0 ج.م</span>
+            </div>
+            <button onclick="checkout()" class="w-full py-3 rounded-xl bg-gradient-to-l from-[--accent] to-amber-700 text-[--bg] font-bold text-sm hover:opacity-90 transition">
+                إتمام الشراء
+            </button>
+            <button onclick="clearCart()" class="w-full py-2 mt-2 rounded-xl text-[--muted] text-xs hover:text-red-400 transition">
+                تفريغ السلة
+            </button>
+        </div>
+    </aside>
+
+    <!-- ==================== نافذة التأكيد ==================== -->
+    <div id="checkoutModal" class="modal-backdrop">
+        <div class="modal-box text-center">
+            <div id="checkoutContent"></div>
+        </div>
+    </div>
+
+    <!-- الإشعارات -->
+    <div id="toasts" class="fixed top-4 left-4 z-[700] flex flex-col items-start"></div>
+
+    <script>
+    /* ===================== بيانات المحلات والمنتجات ===================== */
+    const shopsData = [
+        {
+            id:'computers', name:'عالم الكمبيوتر', subtitle:'أحدث الأجهزة والقطع الإلكترونية',
+            icon:'fa-microchip', color:'#00d4aa', dark:'#003d30', doorType:'sliding',
+            products:[
+                { id:'c1', name:'لابتوب ASUS ROG Strix', price:45000, img:'https://picsum.photos/seed/rog1/400/400' },
+                { id:'c2', name:'ماوس لوجيتك G Pro X', price:2500, img:'https://picsum.photos/seed/mouse2/400/400' },
+                { id:'c3', name:'شاشة Samsung Odyssey 27"', price:18000, img:'https://picsum.photos/seed/monitor3/400/400' },
+                { id:'c4', name:'كيبورد ميكانيكي Razer', price:4500, img:'https://picsum.photos/seed/keyboard4/400/400' },
+                { id:'c5', name:'سماعات HyperX Cloud III', price:3200, img:'https://picsum.photos/seed/headset5/400/400' },
+                { id:'c6', name:'هارد SSD 1TB Samsung', price:2800, img:'https://picsum.photos/seed/ssd6/400/400' },
+            ]
+        },
+        {
+            id:'clothes', name:'أناقة الملابس', subtitle:'أزياء عصرية لكلا الجنسين',
+            icon:'fa-shirt', color:'#ff6b9d', dark:'#3d1528', doorType:'french',
+            products:[
+                { id:'cl1', name:'قميص قطني كلاسيك', price:850, img:'https://picsum.photos/seed/shirt11/400/400' },
+                { id:'cl2', name:'بنطلون جينز عصري', price:1200, img:'https://picsum.photos/seed/jeans12/400/400' },
+                { id:'cl3', name:'جاكيت جلد طبيعي', price:3500, img:'https://picsum.photos/seed/jacket13/400/400' },
+                { id:'cl4', name:'حذاء رياضي أبيض', price:2800, img:'https://picsum.photos/seed/shoes14/400/400' },
+                { id:'cl5', name:'فستان سهرة أنيق', price:2200, img:'https://picsum.photos/seed/dress15/400/400' },
+                { id:'cl6', name:'تيشيرت بولو كلاسيك', price:650, img:'https://picsum.photos/seed/polo16/400/400' },
+            ]
+        },
+        {
+            id:'electronics', name:'إلكترونكس', subtitle:'أحدث الأجهزة الإلكترونية والملحقات',
+            icon:'fa-bolt', color:'#00c853', dark:'#0a3018', doorType:'glass',
+            products:[
+                { id:'e1', name:'سماعات بلوتوث Sony WH-1000', price:3500, img:'https://picsum.photos/seed/sony21/400/400' },
+                { id:'e2', name:'شاحن لاسلكي سريع', price:450, img:'https://picsum.photos/seed/charger22/400/400' },
+                { id:'e3', name:'باور بانك 20000mAh', price:800, img:'https://picsum.photos/seed/power23/400/400' },
+                { id:'e4', name:'كاميرا ويب Full HD', price:1200, img:'https://picsum.photos/seed/webcam24/400/400' },
+                { id:'e5', name:'سبيكر JBL Flip 6', price:2200, img:'https://picsum.photos/seed/speaker25/400/400' },
+                { id:'e6', name:'ماوس لاسلكي صامت', price:350, img:'https://picsum.photos/seed/wmouse26/400/400' },
+            ]
+        },
+        {
+            id:'sports', name:'الرياضة واللياقة', subtitle:'معدات رياضية وملابس تدريب',
+            icon:'fa-dumbbell', color:'#ff8a00', dark:'#3d2408', doorType:'rollup',
+            products:[
+                { id:'s1', name:'دمبل قابل للتعديل 24kg', price:1800, img:'https://picsum.photos/seed/dumbbell31/400/400' },
+                { id:'s2', name:'سجادة يوغا مضادة للانزلاق', price:350, img:'https://picsum.photos/seed/yoga32/400/400' },
+                { id:'s3', name:'حذاء جري احترافي', price:1500, img:'https://picsum.photos/seed/running33/400/400' },
+                { id:'s4', name:'قبضة تنس Wilson', price:450, img:'https://picsum.photos/seed/tennis34/400/400' },
+                { id:'s5', name:'كرة قدم Adidas', price:600, img:'https://picsum.photos/seed/football35/400/400' },
+                { id:'s6', name:'طقم ملابس رياضية', price:1100, img:'https://picsum.photos/seed/sportswear36/400/400' },
+            ]
+        },
+        {
+            id:'books', name:'عالم الكتب', subtitle:'روايات وكتب معرفية متنوعة',
+            icon:'fa-book-open', color:'#d4a574', dark:'#3d2e18', doorType:'arch',
+            products:[
+                { id:'b1', name:'مئة عام من العزلة', price:180, img:'https://picsum.photos/seed/book41/400/400' },
+                { id:'b2', name:'فن الحرب - سون تزو', price:150, img:'https://picsum.photos/seed/book42/400/400' },
+                { id:'b3', name:'تفكير سريع وبطيء', price:220, img:'https://picsum.photos/seed/book43/400/400' },
+                { id:'b4', name:'المرآة - أحلام مستغانمي', price:170, img:'https://picsum.photos/seed/book44/400/400' },
+                { id:'b5', name:'القوة الذاتية', price:200, img:'https://picsum.photos/seed/book45/400/400' },
+                { id:'b6', name:'موسوعة تاريخ الحضارات', price:350, img:'https://picsum.photos/seed/book46/400/400' },
+            ]
+        },
+        {
+            id:'food', name:'مطعم الشيف', subtitle:'أشهى المأكولات والمشروبات',
+            icon:'fa-utensils', color:'#ff4444', dark:'#3d1010', doorType:'saloon',
+            products:[
+                { id:'f1', name:'بيتزا مارغريتا', price:120, img:'https://picsum.photos/seed/pizza51/400/400' },
+                { id:'f2', name:'برجر كلاسيك لحم أنجوس', price:95, img:'https://picsum.photos/seed/burger52/400/400' },
+                { id:'f3', name:'سوشي مجموعة 12 قطعة', price:250, img:'https://picsum.photos/seed/sushi53/400/400' },
+                { id:'f4', name:'قهوة مختصة لاتيه', price:65, img:'https://picsum.photos/seed/coffee54/400/400' },
+                { id:'f5', name:'كيكة شوكولاتة بلجيكية', price:85, img:'https://picsum.photos/seed/cake55/400/400' },
+                { id:'f6', name:'سلطة سيزر بالدجاج', price:75, img:'https://picsum.photos/seed/salad56/400/400' },
+            ]
+        }
+    ];
+
+    /* ===================== الحالة ===================== */
+    let cart = [];
+    let currentShopId = null;
+    let isTransitioning = false;
+
+    /* ===================== أدوات مساعدة ===================== */
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
+
+    function formatPrice(n) {
+        return n.toLocaleString('ar-EG') + ' ج.م';
+    }
+
+    /* ===================== الجزيئات ===================== */
+    function initParticles() {
+        const c = $('#particles');
+        const ctx = c.getContext('2d');
+        let w, h;
+        function resize() { w = c.width = innerWidth; h = c.height = innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const pts = Array.from({length:60}, () => ({
+            x: Math.random()*w, y: Math.random()*h,
+            r: Math.random()*1.8+0.4,
+            vy: -(Math.random()*0.25+0.08),
+            vx: (Math.random()-0.5)*0.15,
+            o: Math.random()*0.35+0.08
+        }));
+
+        (function loop() {
+            ctx.clearRect(0,0,w,h);
+            pts.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                ctx.fillStyle = `rgba(212,160,74,${p.o})`;
+                ctx.fill();
+                p.y += p.vy; p.x += p.vx;
+                if (p.y < -10) { p.y = h+10; p.x = Math.random()*w; }
+                if (p.x < -10) p.x = w+10;
+                if (p.x > w+10) p.x = -10;
+            });
+            requestAnimationFrame(loop);
+        })();
+    }
+
+    /* ===================== عرض المحلات ===================== */
+    function renderShops(filter='') {
+        const grid = $('#shopsGrid');
+        const filtered = shopsData.filter(s =>
+            s.name.includes(filter) || s.subtitle.includes(filter)
+        );
+        grid.innerHTML = filtered.map((shop, i) => `
+            <div class="shop-card anim-in" data-shop="${shop.id}"
+                 style="--shop-color:${shop.color};--shop-dark:${shop.dark};animation-delay:${i*0.1}s">
+                <!-- واجهة العرض -->
+                <div class="shop-window">
+                    <div class="absolute inset-0 flex items-center justify-center opacity-20">
+                        <i class="fa-solid ${shop.icon} text-6xl" style="color:${shop.color}"></i>
+                    </div>
+                    <div class="absolute bottom-2 right-3 text-[10px] font-bold tracking-widest opacity-40" style="color:${shop.color}">
+                        ${shop.subtitle}
+                    </div>
+                </div>
+                <!-- لافتة المحل -->
+                <div class="text-center py-3 border-b border-[--border]">
+                    <span class="neon-sign text-lg font-black">${shop.name}</span>
+                </div>
+                <!-- الباب -->
+                <div class="shop-door door-${shop.doorType}" onclick="enterShop('${shop.id}')">
+                    <div class="door-interior"></div>
+                    <div class="door-panel left"></div>
+                    <div class="door-panel right"></div>
+                    <div class="door-frame"></div>
+                </div>
+                <!-- مؤشر الدخول -->
+                <div class="text-center py-2.5 enter-hint">
+                    <span class="text-xs font-semibold" style="color:${shop.color}">
+                        <i class="fa-solid fa-hand-pointer ml-1"></i>
+                        اضغط على الباب للدخول
+                    </span>
+                </div>
+                <!-- حافة سفلية -->
+                <div class="h-2 rounded-b-2xl" style="background:linear-gradient(90deg,transparent,${shop.color}40,transparent)"></div>
+            </div>
+        `).join('');
+    }
+
+    /* ===================== الدخول للمحل ===================== */
+    async function enterShop(shopId) {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
+        const shop = shopsData.find(s => s.id === shopId);
+        const card = $(`[data-shop="${shopId}"]`);
+        const door = card.querySelector('.shop-door');
+
+        // فتح الباب
+        door.classList.add('open');
+
+        // انتظار فتح الباب
+        await delay(900);
+
+        // تأثير الانتقال بلون المحل
+        const overlay = $('#transitionOverlay');
+        overlay.style.background = `radial-gradient(circle, ${shop.color}, ${shop.dark})`;
+        overlay.classList.add('active');
+
+        await delay(450);
+
+        // إخفاء المول وإظهار المحل
+        $('#mallView').style.display = 'none';
+        $('#shopView').style.display = 'block';
+        $('#shopView').style.setProperty('--shop-color', shop.color);
+        $('#shopView').style.setProperty('--shop-dark', shop.dark);
+        currentShopId = shopId;
+        renderShopInterior(shopId);
+
+        // إخفاء التأثير
+        overlay.classList.remove('active');
+        await delay(450);
+
+        // إعادة الباب لحالته
+        door.classList.remove('open');
+        isTransitioning = false;
+    }
+
+    /* ===================== الخروج من المحل ===================== */
+    async function exitShop() {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
+        const overlay = $('#transitionOverlay');
+        overlay.style.background = 'var(--bg)';
+        overlay.classList.add('active');
+
+        await delay(400);
+
+        $('#shopView').style.display = 'none';
+        $('#mallView').style.display = 'flex';
+        currentShopId = null;
+
+        overlay.classList.remove('active');
+        await delay(400);
+        isTransitioning = false;
+    }
+
+    /* ===================== عرض داخل المحل ===================== */
+    function renderShopInterior(shopId, filter='') {
+        const shop = shopsData.find(s => s.id === shopId);
+        $('#shopViewName').textContent = shop.name;
+        $('#shopViewName').style.color = shop.color;
+        $('#shopViewSub').textContent = shop.subtitle;
+
+        const filtered = shop.products.filter(p => p.name.includes(filter));
+        const grid = $('#productsGrid');
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `<div class="col-span-full text-center py-20">
+                <i class="fa-solid fa-magnifying-glass text-4xl text-[--muted] mb-4 block"></i>
+                <p class="text-[--muted]">لا توجد منتجات مطابقة للبحث</p>
+            </div>`;
+            return;
+        }
+
+        grid.innerHTML = filtered.map((p, i) => {
+            const inCart = cart.find(c => c.id === p.id);
+            return `
+            <div class="product-card anim-in" style="--shop-color:${shop.color};animation-delay:${i*0.07}s">
+                <div class="overflow-hidden">
+                    <img src="${p.img}" alt="${p.name}" loading="lazy">
+                </div>
+                <div class="p-4">
+                    <h4 class="font-bold text-sm mb-1 leading-relaxed">${p.name}</h4>
+                    <p class="text-lg font-black mb-3" style="color:${shop.color}">${formatPrice(p.price)}</p>
+                    ${inCart
+                        ? `<div class="flex items-center gap-2">
+                            <button onclick="updateQty('${p.id}',-1)" class="w-9 h-9 rounded-lg bg-[--border] hover:bg-red-500/20 hover:text-red-400 flex items-center justify-center transition text-sm">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <span class="flex-1 text-center font-bold text-lg">${inCart.qty}</span>
+                            <button onclick="updateQty('${p.id}',1)" class="w-9 h-9 rounded-lg bg-[--border] hover:bg-green-500/20 hover:text-green-400 flex items-center justify-center transition text-sm">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                           </div>`
+                        : `<button onclick="addToCart('${p.id}','${shopId}')"
+                            class="w-full py-2.5 rounded-xl text-sm font-bold transition
+                            border-2 hover:text-white"
+                            style="border-color:${shop.color};color:${shop.color};
+                            background:transparent;"
+                            onmouseover="this.style.background='${shop.color}'"
+                            onmouseout="this.style.background='transparent';this.style.color='${shop.color}'">
+                            <i class="fa-solid fa-cart-plus ml-1"></i>
+                            أضف للعربة
+                        </button>`
+                    }
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ===================== سلة التسوق ===================== */
+    function addToCart(productId, shopId) {
+        const shop = shopsData.find(s => s.id === shopId);
+        const product = shop.products.find(p => p.id === productId);
+        const existing = cart.find(c => c.id === productId);
+
+        if (existing) {
+            existing.qty++;
+        } else {
+            cart.push({ ...product, qty:1, shopName:shop.name, shopColor:shop.color });
+        }
+
+        updateCartUI();
+        if (currentShopId) renderShopInterior(currentShopId, $('#shopSearch').value);
+        showToast(`تمت إضافة "${product.name}" إلى السلة`, 'success');
+    }
+
+    function updateQty(productId, delta) {
+        const item = cart.find(c => c.id === productId);
+        if (!item) return;
+
+        item.qty += delta;
+        if (item.qty <= 0) {
+            cart = cart.filter(c => c.id !== productId);
+            showToast(`تم حذف "${item.name}" من السلة`, 'info');
+        }
+
+        updateCartUI();
+        if (currentShopId) renderShopInterior(currentShopId, $('#shopSearch').value);
+    }
+
+    function clearCart() {
+        cart = [];
+        updateCartUI();
+        if (currentShopId) renderShopInterior(currentShopId, $('#shopSearch').value);
+        showToast('تم تفريغ السلة', 'info');
+    }
+
+    function updateCartUI() {
+        const count = cart.reduce((s,i) => s+i.qty, 0);
+        const total = cart.reduce((s,i) => s+i.price*i.qty, 0);
+
+        // شارات العدد
+        [$('#cartBadge'), $('#cartBadge2')].forEach(badge => {
+            if (count > 0) {
+                badge.classList.remove('hidden');
+                badge.textContent = count > 99 ? '99+' : count;
+            } else {
+                badge.classList.add('hidden');
+            }
+        });
+
+        // عناصر السلة
+        const container = $('#cartItems');
+        const footer = $('#cartFooter');
+
+        if (cart.length === 0) {
+            container.innerHTML = `<div class="text-center py-16">
+                <i class="fa-solid fa-cart-shopping text-5xl text-[--border] mb-4 block"></i>
+                <p class="text-[--muted] text-sm">السلة فارغة</p>
+                <p class="text-[--muted] text-xs mt-1">ادخل محل واختر منتجاتك</p>
+            </div>`;
+            footer.classList.add('hidden');
+            return;
+        }
+
+        footer.classList.remove('hidden');
+        $('#cartTotal').textContent = formatPrice(total);
+
+        container.innerHTML = cart.map(item => `
+            <div class="flex gap-3 py-3 border-b border-[--border]/50 last:border-0">
+                <img src="${item.img}" class="w-14 h-14 rounded-lg object-cover flex-shrink-0" alt="">
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold truncate">${item.name}</p>
+                    <p class="text-[10px] mt-0.5" style="color:${item.shopColor}">${item.shopName}</p>
+                    <div class="flex items-center gap-2 mt-1.5">
+                        <button onclick="updateQty('${item.id}',-1)" class="w-6 h-6 rounded bg-[--border] hover:bg-red-500/20 text-[10px] flex items-center justify-center transition">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <span class="text-xs font-bold w-5 text-center">${item.qty}</span>
+                        <button onclick="updateQty('${item.id}',1)" class="w-6 h-6 rounded bg-[--border] hover:bg-green-500/20 text-[10px] flex items-center justify-center transition">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <span class="text-xs font-bold mr-auto" style="color:${item.shopColor}">${formatPrice(item.price*item.qty)}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleCart() {
+        const sidebar = $('#cartSidebar');
+        const overlay = $('#cartOverlay');
+        const isOpen = sidebar.classList.contains('open');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+        if (!isOpen) updateCartUI();
+    }
+
+    /* ===================== إتمام الشراء ===================== */
+    function checkout() {
+        if (cart.length === 0) return;
+        const total = cart.reduce((s,i) => s+i.price*i.qty, 0);
+        const count = cart.reduce((s,i) => s+i.qty, 0);
+
+        $('#checkoutContent').innerHTML = `
+            <div class="w-16 h-16 rounded-full bg-[--accent]/10 flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-bag-shopping text-2xl text-[--accent]"></i>
+            </div>
+            <h3 class="text-xl font-black mb-2">تأكيد الطلب</h3>
+            <p class="text-[--muted] text-sm mb-4">${count} منتج بإجمالي <span class="text-[--accent] font-bold">${formatPrice(total)}</span></p>
+            <div class="flex gap-3">
+                <button onclick="confirmOrder()" class="flex-1 py-3 rounded-xl bg-gradient-to-l from-[--accent] to-amber-700 text-[--bg] font-bold text-sm hover:opacity-90 transition">
+                    تأكيد
+                </button>
+                <button onclick="closeCheckout()" class="flex-1 py-3 rounded-xl bg-[--border] text-[--fg] font-bold text-sm hover:bg-[--border]/80 transition">
+                    إلغاء
+                </button>
+            </div>
+        `;
+        $('#checkoutModal').classList.add('active');
+    }
+
+    async function confirmOrder() {
+        $('#checkoutContent').innerHTML = `
+            <div class="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4" style="animation:float 1s ease-in-out infinite">
+                <i class="fa-solid fa-check text-3xl text-green-400"></i>
+            </div>
+            <h3 class="text-xl font-black mb-2 text-green-400">تم تأكيد طلبك</h3>
+            <p class="text-[--muted] text-sm">شكراً لتسوقك معنا! سيتم تحضير طلبك قريباً</p>
+        `;
+        await delay(2000);
+        closeCheckout();
+        cart = [];
+        updateCartUI();
+        toggleCart();
+        if (currentShopId) renderShopInterior(currentShopId, $('#shopSearch').value);
+        showToast('تم تأكيد الطلب بنجاح', 'success');
+    }
+
+    function closeCheckout() {
+        $('#checkoutModal').classList.remove('active');
+    }
+
+    /* ===================== الإشعارات ===================== */
+    function showToast(msg, type='success') {
+        const t = document.createElement('div');
+        t.className = `toast toast-${type}`;
+        t.innerHTML = `<i class="fa-solid ${type==='success'?'fa-check-circle':type==='error'?'fa-exclamation-circle':'fa-info-circle'} ml-2"></i>${msg}`;
+        $('#toasts').appendChild(t);
+        requestAnimationFrame(() => t.classList.add('show'));
+        setTimeout(() => {
+            t.classList.remove('show');
+            setTimeout(() => t.remove(), 350);
+        }, 2800);
+    }
+
+    /* ===================== البحث ===================== */
+    $('#mallSearch').addEventListener('input', e => renderShops(e.target.value.trim()));
+    $('#shopSearch').addEventListener('input', e => {
+        if (currentShopId) renderShopInterior(currentShopId, e.target.value.trim());
+    });
+
+    /* ===================== التهيئة ===================== */
+    initParticles();
+    renderShops();
+    updateCartUI();
+    </script>
+</body>
+</html>
