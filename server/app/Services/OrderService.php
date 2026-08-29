@@ -9,6 +9,9 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\CustomerAddress;
+use App\Models\PaymentMethod;
+use App\Models\PaymentStatus;
+use App\Models\PaymentTransaction;
 use App\Core\Database;
 use RuntimeException;
 
@@ -22,16 +25,73 @@ class OrderService
     private Store $store;
     private CustomerAddress $customerAddress;
 
-    /**
-     * الحالات المسموح بيها لأوردر (لا يوجد FK مباشر في الداتا بيز،
-     * فبنتحقق منها هنا يدويًا)
-     */
+    private PaymentMethod $paymentMethod;
+    private PaymentStatus $paymentStatus;
+    private PaymentTransaction $paymentTransaction;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Order Statuses
+    |--------------------------------------------------------------------------
+    */
+
     private const ALLOWED_STATUSES = [
         'PENDING',
         'CONFIRMED',
+        'PROCESSING',
         'SHIPPED',
         'DELIVERED',
         'CANCELLED'
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Allowed Status Transitions
+    |--------------------------------------------------------------------------
+    |
+    | PENDING
+    |    ├──> CONFIRMED
+    |    └──> CANCELLED
+    |
+    | CONFIRMED
+    |    ├──> PROCESSING
+    |    └──> CANCELLED
+    |
+    | PROCESSING
+    |    ├──> SHIPPED
+    |    └──> CANCELLED
+    |
+    | SHIPPED
+    |    └──> DELIVERED
+    |
+    | DELIVERED  -> no changes
+    | CANCELLED  -> no changes
+    |
+    */
+
+    private const STATUS_TRANSITIONS = [
+        'PENDING' => [
+            'CONFIRMED',
+            'CANCELLED'
+        ],
+
+        'CONFIRMED' => [
+            'PROCESSING',
+            'CANCELLED'
+        ],
+
+        'PROCESSING' => [
+            'SHIPPED',
+            'CANCELLED'
+        ],
+
+        'SHIPPED' => [
+            'DELIVERED'
+        ],
+
+        'DELIVERED' => [],
+
+        'CANCELLED' => []
     ];
 
     public function __construct()
@@ -43,11 +103,18 @@ class OrderService
         $this->product = new Product();
         $this->store = new Store();
         $this->customerAddress = new CustomerAddress();
+
+        $this->paymentMethod = new PaymentMethod();
+        $this->paymentStatus = new PaymentStatus();
+        $this->paymentTransaction = new PaymentTransaction();
     }
 
-    /**
-     * التأكد إن الحساب الحالي "customer" وإرجاع الـ cus_id بتاعه
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Current Customer
+    |--------------------------------------------------------------------------
+    */
+
     private function currentCustomerId(array $authUser): int
     {
         if (($authUser['account_type'] ?? null) !== 'customer') {
@@ -69,9 +136,12 @@ class OrderService
         return (int) $customerId;
     }
 
-    /**
-     * التأكد إن الحساب الحالي "vendor" وإرجاع الـ Vendors_com_id بتاعه
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Current Vendor
+    |--------------------------------------------------------------------------
+    */
+
     private function currentVendorId(array $authUser): int
     {
         if (($authUser['account_type'] ?? null) !== 'vendor') {
@@ -93,20 +163,29 @@ class OrderService
         return (int) $vendorId;
     }
 
-    /**
-     * كود أوردر فريد
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Generate Order Code
+    |--------------------------------------------------------------------------
+    */
+
     private function generateOrderCode(): string
     {
         do {
-
-            $code = 'ORD-' .
+            $code =
+                'ORD-' .
                 date('Ymd') .
                 '-' .
-                strtoupper(bin2hex(random_bytes(4)));
+                strtoupper(
+                    bin2hex(random_bytes(4))
+                );
 
             $exists = $this->order
-                ->where('order_code', '=', $code)
+                ->where(
+                    'order_code',
+                    '=',
+                    $code
+                )
                 ->exists();
 
         } while ($exists);
@@ -114,15 +193,95 @@ class OrderService
         return $code;
     }
 
-    /**
-     * تحويل السلة الحالية لأوردر واحد أو أكثر (أوردر منفصل لكل محل)
-     */
-    public function checkout(array $authUser, array $data): array
+    /*
+    |--------------------------------------------------------------------------
+    | Validate Payment Method
+    |--------------------------------------------------------------------------
+    */
+
+    private function validatePaymentMethod(
+        int $paymentMethodId
+    ): array {
+        $paymentMethod = $this->paymentMethod
+            ->where(
+                'payment_method_id',
+                '=',
+                $paymentMethodId
+            )
+            ->where(
+                'is_active',
+                '=',
+                1
+            )
+            ->first();
+
+        if (!$paymentMethod) {
+            throw new RuntimeException(
+                'Payment method not found or inactive',
+                422
+            );
+        }
+
+        return $paymentMethod;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get UNPAID Payment Status
+    |--------------------------------------------------------------------------
+    */
+
+    private function getUnpaidPaymentStatus(): array
     {
-        $customerId = $this->currentCustomerId($authUser);
+        $status = $this->paymentStatus
+            ->where(
+                'payment_status_code',
+                '=',
+                'UNPAID'
+            )
+            ->where(
+                'is_active',
+                '=',
+                1
+            )
+            ->first();
+
+        if (!$status) {
+            throw new RuntimeException(
+                'UNPAID payment status is not configured',
+                500
+            );
+        }
+
+        return $status;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Checkout
+    |--------------------------------------------------------------------------
+    */
+
+    public function checkout(
+        array $authUser,
+        array $data
+    ): array {
+
+        $customerId =
+            $this->currentCustomerId($authUser);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get Cart
+        |--------------------------------------------------------------------------
+        */
 
         $cart = $this->cart
-            ->where('cus_id', '=', $customerId)
+            ->where(
+                'cus_id',
+                '=',
+                $customerId
+            )
             ->first();
 
         if (!$cart) {
@@ -132,8 +291,18 @@ class OrderService
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Get Cart Items
+        |--------------------------------------------------------------------------
+        */
+
         $items = $this->cartItem
-            ->where('carts_id', '=', $cart['carts_id'])
+            ->where(
+                'carts_id',
+                '=',
+                $cart['carts_id']
+            )
             ->get();
 
         if (empty($items)) {
@@ -144,13 +313,20 @@ class OrderService
         }
 
         /*
-         * العنوان مطلوب وقت الـ checkout، ولازم يكون ملك الكاستومر الحالي
-         */
-        $addressId = $data['address_id'] ?? null;
+        |--------------------------------------------------------------------------
+        | Validate Address
+        |--------------------------------------------------------------------------
+        */
+
+        $addressId =
+            $data['address_id'] ?? null;
 
         if (
             $addressId === null ||
-            filter_var($addressId, FILTER_VALIDATE_INT) === false
+            filter_var(
+                $addressId,
+                FILTER_VALIDATE_INT
+            ) === false
         ) {
             throw new RuntimeException(
                 'A valid address_id is required for checkout',
@@ -160,7 +336,8 @@ class OrderService
 
         $addressId = (int) $addressId;
 
-        $address = $this->customerAddress->find($addressId);
+        $address = $this->customerAddress
+            ->find($addressId);
 
         if (
             !$address ||
@@ -173,41 +350,101 @@ class OrderService
         }
 
         /*
-         * تقسيم عناصر السلة حسب المحل - كل محل هياخد أوردر مستقل
-         */
+        |--------------------------------------------------------------------------
+        | Validate Payment Method
+        |--------------------------------------------------------------------------
+        */
+
+        $paymentMethodId =
+            $data['payment_method_id'] ?? null;
+
+        if (
+            $paymentMethodId === null ||
+            filter_var(
+                $paymentMethodId,
+                FILTER_VALIDATE_INT
+            ) === false
+        ) {
+            throw new RuntimeException(
+                'A valid payment_method_id is required',
+                422
+            );
+        }
+
+        $paymentMethodId =
+            (int) $paymentMethodId;
+
+        $this->validatePaymentMethod(
+            $paymentMethodId
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get UNPAID Status
+        |--------------------------------------------------------------------------
+        */
+
+        $unpaidStatus =
+            $this->getUnpaidPaymentStatus();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Group Items By Store
+        |--------------------------------------------------------------------------
+        */
+
         $itemsByStore = [];
 
         foreach ($items as $item) {
-            $itemsByStore[(int) $item['store_id']][] = $item;
+            $itemsByStore[
+                (int) $item['store_id']
+            ][] = $item;
         }
 
         /*
-         * التأكد إن كل منتج في السلة متوفر بالكمية المطلوبة قبل ما نكمل.
-         * بنجمع الكمية المطلوبة لكل منتج (حتى لو ظهر أكتر من مرة بألوان
-         * مختلفة) عشان نقارنها صح بالمخزون المتاح مرة واحدة.
-         */
+        |--------------------------------------------------------------------------
+        | Validate Stock
+        |--------------------------------------------------------------------------
+        */
+
         $productsCache = [];
         $requestedPerProduct = [];
 
         foreach ($items as $item) {
 
-            $productId = (int) $item['product_id'];
+            $productId =
+                (int) $item['product_id'];
 
-            if (!isset($productsCache[$productId])) {
+            if (
+                !isset(
+                    $productsCache[$productId]
+                )
+            ) {
                 $productsCache[$productId] =
-                    $this->product->find($productId);
+                    $this->product->find(
+                        $productId
+                    );
             }
 
-            if (!isset($requestedPerProduct[$productId])) {
+            if (
+                !isset(
+                    $requestedPerProduct[$productId]
+                )
+            ) {
                 $requestedPerProduct[$productId] = 0;
             }
 
-            $requestedPerProduct[$productId] += (int) $item['Quantity'];
+            $requestedPerProduct[$productId] +=
+                (int) $item['Quantity'];
         }
 
-        foreach ($requestedPerProduct as $productId => $requested) {
+        foreach (
+            $requestedPerProduct
+            as $productId => $requested
+        ) {
 
-            $product = $productsCache[$productId];
+            $product =
+                $productsCache[$productId];
 
             if (!$product) {
                 throw new RuntimeException(
@@ -216,111 +453,305 @@ class OrderService
                 );
             }
 
-            $available = (int) ($product['stock_quantity'] ?? 0);
+            $available =
+                (int) (
+                    $product['stock_quantity']
+                    ?? 0
+                );
 
             if ($available < $requested) {
 
                 $productName =
-                    $product['product_name_en'] ??
-                    $product['product_name_ar'] ??
+                    $product['product_name_en']
+                    ??
+                    $product['product_name_ar']
+                    ??
                     ('#' . $productId);
 
                 throw new RuntimeException(
                     "Not enough stock for \"{$productName}\". " .
-                        "Available: {$available}, requested: {$requested}",
+                    "Available: {$available}, requested: {$requested}",
                     422
                 );
             }
         }
 
-        $paymentMethod = $data['payment_method'] ?? null;
-        $notes = $data['notes'] ?? null;
+        $notes =
+            $data['notes'] ?? null;
 
         $db = Database::connection();
 
         try {
 
+            /*
+            |--------------------------------------------------------------------------
+            | Begin Transaction
+            |--------------------------------------------------------------------------
+            */
+
             $db->beginTransaction();
 
             $createdOrders = [];
 
-            foreach ($itemsByStore as $storeId => $storeItems) {
+            /*
+            |--------------------------------------------------------------------------
+            | Create Order For Each Store
+            |--------------------------------------------------------------------------
+            */
+
+            foreach (
+                $itemsByStore
+                as $storeId => $storeItems
+            ) {
 
                 $subtotal = 0;
 
-                foreach ($storeItems as $storeItem) {
-                    $subtotal += (float) ($storeItem['total'] ?? 0);
+                foreach (
+                    $storeItems
+                    as $storeItem
+                ) {
+
+                    $subtotal +=
+                        (float) (
+                            $storeItem['total']
+                            ?? 0
+                        );
                 }
 
-                $orderCode = $this->generateOrderCode();
+                $subtotal =
+                    round($subtotal, 2);
 
-                $this->order->create([
-                    'order_code' => $orderCode,
-                    'store_id' => $storeId,
-                    'customer_id' => $customerId,
-                    'cus_address_id' => $addressId,
-                    'order_status' => 'PENDING',
-                    'payment_status' => 'UNPAID',
-                    'payment_method' => $paymentMethod,
-                    'subtotal' => round($subtotal, 2),
-                    'discount_amount' => 0,
-                    'tax_amount' => 0,
-                    'shipping_amount' => 0,
-                    'total_amount' => round($subtotal, 2),
-                    'notes' => $notes,
-                    'created_by' => $authUser['auth_id'] ?? null
+                /*
+                |--------------------------------------------------------------------------
+                | Order Code
+                |--------------------------------------------------------------------------
+                */
+
+                $orderCode =
+                    $this->generateOrderCode();
+
+                /*
+                |--------------------------------------------------------------------------
+                | Create Order
+                |--------------------------------------------------------------------------
+                */
+
+                $created = $this->order->create([
+                    'order_code' =>
+                        $orderCode,
+
+                    'store_id' =>
+                        $storeId,
+
+                    'customer_id' =>
+                        $customerId,
+
+                    'cus_address_id' =>
+                        $addressId,
+
+                    'order_status' =>
+                        'PENDING',
+
+                    'payment_status' =>
+                        'UNPAID',
+
+                    'payment_method' =>
+                        $paymentMethodId,
+
+                    'subtotal' =>
+                        $subtotal,
+
+                    'discount_amount' =>
+                        0,
+
+                    'tax_amount' =>
+                        0,
+
+                    'shipping_amount' =>
+                        0,
+
+                    'total_amount' =>
+                        $subtotal,
+
+                    'notes' =>
+                        $notes,
+
+                    'created_by' =>
+                        $authUser['auth_id']
+                        ?? null
                 ]);
 
-                $orderId = (int) $db->lastInsertId();
+                if (!$created) {
+                    throw new RuntimeException(
+                        'Failed to create order',
+                        500
+                    );
+                }
 
-                foreach ($storeItems as $storeItem) {
+                /*
+                |--------------------------------------------------------------------------
+                | Get Order ID
+                |--------------------------------------------------------------------------
+                */
 
-                    $productId = (int) $storeItem['product_id'];
-                    $product = $productsCache[$productId];
+                $orderId =
+                    (int) $db->lastInsertId();
+
+                /*
+                |--------------------------------------------------------------------------
+                | Create Payment Transaction
+                |--------------------------------------------------------------------------
+                */
+
+                $paymentCreated =
+                    $this->paymentTransaction->create([
+                        'order_id' =>
+                            $orderId,
+
+                        'payment_method_id' =>
+                            $paymentMethodId,
+
+                        'payment_statuses_id' =>
+                            $unpaidStatus[
+                                'payment_statuses_id'
+                            ],
+
+                        'total' =>
+                            $subtotal
+                    ]);
+
+                if (!$paymentCreated) {
+                    throw new RuntimeException(
+                        'Failed to create payment transaction',
+                        500
+                    );
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Create Order Items
+                |--------------------------------------------------------------------------
+                */
+
+                foreach (
+                    $storeItems
+                    as $storeItem
+                ) {
+
+                    $productId =
+                        (int) $storeItem['product_id'];
+
+                    $product =
+                        $productsCache[$productId];
 
                     $this->orderItem->create([
-                        'order_id' => $orderId,
-                        'product_id' => $storeItem['product_id'],
+                        'order_id' =>
+                            $orderId,
+
+                        'product_id' =>
+                            $productId,
+
                         'product_name_ar' =>
-                            $product['product_name_ar'] ?? null,
+                            $product[
+                                'product_name_ar'
+                            ] ?? null,
+
                         'product_name_en' =>
-                            $product['product_name_en'] ?? null,
-                        'quantity' => $storeItem['Quantity'],
-                        'unit_price' => $storeItem['product_Cost'],
-                        'discount_amount' => 0,
-                        'tax_amount' => 0,
-                        'total_amount' => $storeItem['total']
+                            $product[
+                                'product_name_en'
+                            ] ?? null,
+
+                        'quantity' =>
+                            $storeItem['Quantity'],
+
+                        'unit_price' =>
+                            $storeItem[
+                                'product_Cost'
+                            ],
+
+                        'discount_amount' =>
+                            0,
+
+                        'tax_amount' =>
+                            0,
+
+                        'total_amount' =>
+                            $storeItem['total']
                     ]);
 
                     /*
-                     * خصم الكمية المباعة من مخزون المنتج
-                     * (بنحدّث الكاش كمان عشان لو نفس المنتج ظهر تاني
-                     * بلون مختلف في نفس السلة، الخصم يبني على آخر قيمة)
-                     */
-                    $newStock =
-                        (int) ($product['stock_quantity'] ?? 0) -
-                        (int) $storeItem['Quantity'];
+                    |--------------------------------------------------------------------------
+                    | Decrease Stock
+                    |--------------------------------------------------------------------------
+                    */
 
-                    $newStock = max(0, $newStock);
+                    $newStock =
+                        (int) (
+                            $product[
+                                'stock_quantity'
+                            ] ?? 0
+                        )
+                        -
+                        (int) $storeItem[
+                            'Quantity'
+                        ];
+
+                    $newStock =
+                        max(
+                            0,
+                            $newStock
+                        );
 
                     $this->product->update(
                         $productId,
-                        ['stock_quantity' => $newStock]
+                        [
+                            'stock_quantity' =>
+                                $newStock
+                        ]
                     );
 
-                    $productsCache[$productId]['stock_quantity'] =
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Update Product Cache
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $productsCache[
+                        $productId
+                    ]['stock_quantity'] =
                         $newStock;
                 }
 
-                $createdOrders[] = $this->order->find($orderId);
+                /*
+                |--------------------------------------------------------------------------
+                | Add Order To Response
+                |--------------------------------------------------------------------------
+                */
+
+                $createdOrders[] =
+                    $this->order->find(
+                        $orderId
+                    );
             }
 
             /*
-             * تفريغ السلة بعد ما اتحولت لأوردرات
-             */
+            |--------------------------------------------------------------------------
+            | Clear Cart
+            |--------------------------------------------------------------------------
+            */
+
             foreach ($items as $item) {
-                $this->cartItem->delete($item['cart_items_id']);
+
+                $this->cartItem->delete(
+                    $item['cart_items_id']
+                );
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Commit
+            |--------------------------------------------------------------------------
+            */
 
             $db->commit();
 
@@ -336,26 +767,49 @@ class OrderService
         }
     }
 
-    /**
-     * كل أوردرات الكاستومر الحالي
-     */
-    public function listMyOrders(array $authUser): array
-    {
-        $customerId = $this->currentCustomerId($authUser);
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Orders
+    |--------------------------------------------------------------------------
+    */
+
+    public function listMyOrders(
+        array $authUser
+    ): array {
+
+        $customerId =
+            $this->currentCustomerId(
+                $authUser
+            );
 
         return $this->order
-            ->where('customer_id', '=', $customerId)
-            ->orderBy('order_date', 'DESC')
+            ->where(
+                'customer_id',
+                '=',
+                $customerId
+            )
+            ->orderBy(
+                'created_at',
+                'DESC'
+            )
             ->get();
     }
 
-    /**
-     * عرض أوردر واحد بتفاصيله (لازم يكون ملك الكاستومر، أو ملك الفيندور
-     * لو المحل بتاعه)
-     */
-    public function showOrder(array $authUser, int $orderId): array
-    {
-        $order = $this->order->find($orderId);
+    /*
+    |--------------------------------------------------------------------------
+    | Show Order
+    |--------------------------------------------------------------------------
+    */
+
+    public function showOrder(
+        array $authUser,
+        int $orderId
+    ): array {
+
+        $order =
+            $this->order->find(
+                $orderId
+            );
 
         if (!$order) {
             throw new RuntimeException(
@@ -364,28 +818,57 @@ class OrderService
             );
         }
 
-        $accountType = $authUser['account_type'] ?? null;
+        $accountType =
+            $authUser['account_type']
+            ?? null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Customer
+        |--------------------------------------------------------------------------
+        */
 
         if ($accountType === 'customer') {
 
-            $customerId = $this->currentCustomerId($authUser);
+            $customerId =
+                $this->currentCustomerId(
+                    $authUser
+                );
 
-            if ((int) $order['customer_id'] !== $customerId) {
+            if (
+                (int) $order['customer_id']
+                !==
+                $customerId
+            ) {
                 throw new RuntimeException(
                     'You are not authorized to view this order',
                     403
                 );
             }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Vendor
+        |--------------------------------------------------------------------------
+        */
+
         } elseif ($accountType === 'vendor') {
 
-            $vendorId = $this->currentVendorId($authUser);
+            $vendorId =
+                $this->currentVendorId(
+                    $authUser
+                );
 
-            $store = $this->store->find((int) $order['store_id']);
+            $store =
+                $this->store->find(
+                    (int) $order['store_id']
+                );
 
             if (
                 !$store ||
-                (int) $store['Vendors_com_id'] !== $vendorId
+                (int) $store['Vendors_com_id']
+                !==
+                $vendorId
             ) {
                 throw new RuntimeException(
                     'You are not authorized to view this order',
@@ -401,21 +884,44 @@ class OrderService
             );
         }
 
-        $order['items'] = $this->orderItem
-            ->where('order_id', '=', $orderId)
-            ->get();
+        /*
+        |--------------------------------------------------------------------------
+        | Order Items
+        |--------------------------------------------------------------------------
+        */
+
+        $order['items'] =
+            $this->orderItem
+                ->where(
+                    'order_id',
+                    '=',
+                    $orderId
+                )
+                ->get();
 
         return $order;
     }
 
-    /**
-     * أوردرات محل معين (بشرط إن المحل ملك الفيندور الحالي)
-     */
-    public function listStoreOrders(array $authUser, int $storeId): array
-    {
-        $vendorId = $this->currentVendorId($authUser);
+    /*
+    |--------------------------------------------------------------------------
+    | Store Orders
+    |--------------------------------------------------------------------------
+    */
 
-        $store = $this->store->find($storeId);
+    public function listStoreOrders(
+        array $authUser,
+        int $storeId
+    ): array {
+
+        $vendorId =
+            $this->currentVendorId(
+                $authUser
+            );
+
+        $store =
+            $this->store->find(
+                $storeId
+            );
 
         if (!$store) {
             throw new RuntimeException(
@@ -424,7 +930,11 @@ class OrderService
             );
         }
 
-        if ((int) $store['Vendors_com_id'] !== $vendorId) {
+        if (
+            (int) $store['Vendors_com_id']
+            !==
+            $vendorId
+        ) {
             throw new RuntimeException(
                 'You are not authorized to view this store orders',
                 403
@@ -432,33 +942,85 @@ class OrderService
         }
 
         return $this->order
-            ->where('store_id', '=', $storeId)
-            ->orderBy('order_date', 'DESC')
+            ->where(
+                'store_id',
+                '=',
+                $storeId
+            )
+            ->orderBy(
+                'created_at',
+                'DESC'
+            )
             ->get();
     }
 
-    /**
-     * تحديث حالة أوردر (الفيندور بس، وبس لو الأوردر تابع لمحله)
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Update Order Status
+    |--------------------------------------------------------------------------
+    */
+
     public function updateOrderStatus(
         array $authUser,
         int $orderId,
         string $status
     ): array {
 
-        $vendorId = $this->currentVendorId($authUser);
+        /*
+        |--------------------------------------------------------------------------
+        | Current Vendor
+        |--------------------------------------------------------------------------
+        */
 
-        $status = strtoupper(trim($status));
+        $vendorId =
+            $this->currentVendorId(
+                $authUser
+            );
 
-        if (!in_array($status, self::ALLOWED_STATUSES, true)) {
+        /*
+        |--------------------------------------------------------------------------
+        | Normalize New Status
+        |--------------------------------------------------------------------------
+        */
+
+        $status =
+            strtoupper(
+                trim($status)
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Status
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !in_array(
+                $status,
+                self::ALLOWED_STATUSES,
+                true
+            )
+        ) {
             throw new RuntimeException(
                 'Invalid order status. Allowed: ' .
-                    implode(', ', self::ALLOWED_STATUSES),
+                implode(
+                    ', ',
+                    self::ALLOWED_STATUSES
+                ),
                 422
             );
         }
 
-        $order = $this->order->find($orderId);
+        /*
+        |--------------------------------------------------------------------------
+        | Get Order
+        |--------------------------------------------------------------------------
+        */
+
+        $order =
+            $this->order->find(
+                $orderId
+            );
 
         if (!$order) {
             throw new RuntimeException(
@@ -467,11 +1029,73 @@ class OrderService
             );
         }
 
-        $store = $this->store->find((int) $order['store_id']);
+        /*
+        |--------------------------------------------------------------------------
+        | Current Status
+        |--------------------------------------------------------------------------
+        */
+
+        $currentStatus =
+            strtoupper(
+                trim(
+                    $order['order_status']
+                    ?? ''
+                )
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Same Status
+        |--------------------------------------------------------------------------
+        */
+
+        if ($currentStatus === $status) {
+            throw new RuntimeException(
+                'Order already has this status',
+                422
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Transition
+        |--------------------------------------------------------------------------
+        */
+
+        $allowedNextStatuses =
+            self::STATUS_TRANSITIONS[
+                $currentStatus
+            ] ?? [];
+
+        if (
+            !in_array(
+                $status,
+                $allowedNextStatuses,
+                true
+            )
+        ) {
+            throw new RuntimeException(
+                "Cannot change order status from {$currentStatus} to {$status}",
+                422
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Store Ownership
+        |--------------------------------------------------------------------------
+        */
+
+        $store =
+            $this->store->find(
+                (int) $order['store_id']
+            );
 
         if (
             !$store ||
-            (int) $store['Vendors_com_id'] !== $vendorId
+            (int) $store['Vendors_com_id']
+            !==
+            $vendorId
         ) {
             throw new RuntimeException(
                 'You are not authorized to update this order',
@@ -480,43 +1104,89 @@ class OrderService
         }
 
         /*
-         * لو الأوردر بيتلغى (وماكانش ملغي بالفعل)، بنرجّع الكميات
-         * المباعة لمخزون المنتجات تاني
-         */
+        |--------------------------------------------------------------------------
+        | Cancellation
+        |--------------------------------------------------------------------------
+        |
+        | Return Stock
+        |
+        */
+
         if (
             $status === 'CANCELLED' &&
-            $order['order_status'] !== 'CANCELLED'
+            $currentStatus !== 'CANCELLED'
         ) {
 
-            $orderItems = $this->orderItem
-                ->where('order_id', '=', $orderId)
-                ->get();
+            $orderItems =
+                $this->orderItem
+                    ->where(
+                        'order_id',
+                        '=',
+                        $orderId
+                    )
+                    ->get();
 
-            foreach ($orderItems as $orderItem) {
+            foreach (
+                $orderItems
+                as $orderItem
+            ) {
 
-                $product = $this->product->find(
-                    (int) $orderItem['product_id']
-                );
+                $product =
+                    $this->product->find(
+                        (int) $orderItem[
+                            'product_id'
+                        ]
+                    );
 
                 if ($product) {
 
                     $restoredStock =
-                        (int) ($product['stock_quantity'] ?? 0) +
-                        (int) $orderItem['quantity'];
+                        (int) (
+                            $product[
+                                'stock_quantity'
+                            ] ?? 0
+                        )
+                        +
+                        (int) $orderItem[
+                            'quantity'
+                        ];
 
                     $this->product->update(
-                        (int) $orderItem['product_id'],
-                        ['stock_quantity' => $restoredStock]
+                        (int) $orderItem[
+                            'product_id'
+                        ],
+                        [
+                            'stock_quantity' =>
+                                $restoredStock
+                        ]
                     );
                 }
             }
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Update Order Status
+        |--------------------------------------------------------------------------
+        */
+
         $this->order->update(
             $orderId,
-            ['order_status' => $status]
+            [
+                'order_status' =>
+                    $status
+            ]
         );
 
-        return $this->order->find($orderId);
+        /*
+        |--------------------------------------------------------------------------
+        | Return Updated Order
+        |--------------------------------------------------------------------------
+        */
+
+        return $this->order->find(
+            $orderId
+        );
     }
 }
+

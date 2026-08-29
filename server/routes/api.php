@@ -14,6 +14,7 @@ use App\Controllers\OrderController;
 use App\Controllers\UnitController;
 use App\Controllers\AddressController;
 use App\Controllers\ReviewController;
+use App\Controllers\PaymentController;
 
 /** @var App\Core\Router $router */
 
@@ -340,7 +341,7 @@ $router->post(
     ]
 );
 
- 
+
 /*
 |--------------------------------------------------------------------------
 | Customer Address Routes (Customer only)
@@ -459,4 +460,17 @@ $router->post(
         ]
     ]
 );
- 
+
+/* |-------------------------------------------------------------------------- | Payment Routes |-------------------------------------------------------------------------- */ /* * Get active payment methods * * GET /api/payment/methods * * أي User authenticated يقدر يشوف طرق الدفع. */
+$router->get(
+    '/api/payment/methods', 
+    [
+        PaymentController::class, 'methods'
+        ], 
+        [AuthMiddleware::class
+    ]
+); /* * Get payment information * * GET /api/payment/order?order_id=1 * * Customer only */
+$router->get('/api/payment/order', [PaymentController::class, 'orderPayment'], [AuthMiddleware::class, [RoleMiddleware::class, 'customer']]); /* * Get payment status * * GET /api/payment/status?order_id=1 * * Customer only */
+$router->get('/api/payment/status', [PaymentController::class, 'status'], [AuthMiddleware::class, [RoleMiddleware::class, 'customer']]); /* * Change payment method * * POST /api/payment/change-method * * Customer only */
+$router->post('/api/payment/change-method', [PaymentController::class, 'changeMethod'], [AuthMiddleware::class, [RoleMiddleware::class, 'customer']]); /* * Update payment status * * POST /api/payment/status * * Customer only for now. * * لاحقًا عندما نعمل Payment Gateway: * الـ Gateway Callback هو اللي هيستخدم * Service مباشرة بدل ما نفتح endpoint * للعميل يغير PAID بنفسه. */
+$router->post('/api/payment/status', [PaymentController::class, 'updateStatus'], [AuthMiddleware::class, [RoleMiddleware::class, 'customer']]);
