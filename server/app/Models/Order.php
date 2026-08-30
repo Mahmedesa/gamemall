@@ -15,7 +15,7 @@ class Order extends BaseModel
         'cus_address_id',
         'order_status',
         'payment_status',
-        'payment_method',
+        'payment_method_id',
         'subtotal',
         'discount_amount',
         'tax_amount',

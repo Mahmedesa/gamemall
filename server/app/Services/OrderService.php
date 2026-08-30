@@ -555,7 +555,7 @@ class OrderService
                     'payment_status' =>
                         'UNPAID',
 
-                    'payment_method' =>
+                    'payment_method_id' =>
                         $paymentMethodId,
 
                     'subtotal' =>
