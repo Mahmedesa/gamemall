@@ -15,6 +15,7 @@ function Login() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [enteringMall, setEnteringMall] = useState(false);
 
     const handleChange = (e) => {
         setForm({
@@ -62,14 +63,17 @@ function Login() {
              * Later we will replace this with
              * role-based dashboard navigation.
              */
-            if (user.account_type === "vendor") {
-                window.location.href = "/vendor";
-            } else if (user.account_type === "customer") {
-                window.location.href = "/mall";
-            } else {
-                window.location.href = "/";
-            }
+            setEnteringMall(true);
 
+            setTimeout(() => {
+                if (user.account_type === "vendor") {
+                    window.location.href = "/vendor";
+                } else if (user.account_type === "customer") {
+                    window.location.href = "/mall";
+                } else {
+                    window.location.href = "/";
+                }
+            }, 3200);
         } catch (error) {
             console.error(error);
 
@@ -106,12 +110,39 @@ function Login() {
     };
 
     return (
-        <div className="login-page">
+        <div className={`login-page ${enteringMall ? "mall-entering" : ""}`}>
 
             {/* Background overlays */}
             <div className="login-background-overlay"></div>
             <div className="login-background-glow glow-one"></div>
             <div className="login-background-glow glow-two"></div>
+
+            {/* =========================================
+                MALL ENTRANCE ANIMATION
+            ========================================= */}
+
+            <div className="mall-entrance-animation">
+
+                <div className="entrance-light"></div>
+
+                <div className="mall-door door-left">
+                    <div className="door-frame"></div>
+                    <div className="door-glass"></div>
+                </div>
+
+                <div className="mall-door door-right">
+                    <div className="door-frame"></div>
+                    <div className="door-glass"></div>
+                </div>
+
+                <div className="mall-avatar">
+                    <img
+                        src="/images/avatar.webp"
+                        alt="Avatar"
+                    />
+                </div>
+
+            </div>
 
             {/* Top Branding */}
             <header className="login-brand">
