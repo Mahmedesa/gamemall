@@ -12,6 +12,7 @@ use App\Models\CustomerAddress;
 use App\Models\PaymentMethod;
 use App\Models\PaymentStatus;
 use App\Models\PaymentTransaction;
+use App\Models\Currency;
 use App\Core\Database;
 use RuntimeException;
 
@@ -24,7 +25,7 @@ class OrderService
     private Product $product;
     private Store $store;
     private CustomerAddress $customerAddress;
-
+    private Currency $currency;
     private PaymentMethod $paymentMethod;
     private PaymentStatus $paymentStatus;
     private PaymentTransaction $paymentTransaction;
@@ -103,7 +104,7 @@ class OrderService
         $this->product = new Product();
         $this->store = new Store();
         $this->customerAddress = new CustomerAddress();
-
+        $this->currency = new Currency();
         $this->paymentMethod = new PaymentMethod();
         $this->paymentStatus = new PaymentStatus();
         $this->paymentTransaction = new PaymentTransaction();
@@ -378,6 +379,18 @@ class OrderService
             $paymentMethodId
         );
 
+        $currencyTypeId = (int)($data['currency_type_id'] ?? 0);
+
+        if ($currencyTypeId <= 0) {
+            throw new RuntimeException('Currency is required', 422);
+        }
+
+        $currency = $this->currency->find($currencyTypeId);
+
+        if (!$currency) {
+            throw new RuntimeException('Invalid currency', 422);
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Get UNPAID Status
@@ -617,7 +630,10 @@ class OrderService
                             ],
 
                         'total' =>
-                            $subtotal
+                            $subtotal,
+
+                        'currency_type_id' => 
+                            $currencyTypeId
                     ]);
 
                 if (!$paymentCreated) {
@@ -679,35 +695,38 @@ class OrderService
                             $storeItem['total']
                     ]);
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Decrease Stock
-                    |--------------------------------------------------------------------------
-                    */
 
-                    $newStock =
+                    $currentStock =
                         (int) (
-                            $product[
-                                'stock_quantity'
-                            ] ?? 0
-                        )
-                        -
-                        (int) $storeItem[
-                            'Quantity'
-                        ];
-
-                    $newStock =
-                        max(
-                            0,
-                            $newStock
+                            $product['stock_quantity'] ?? 0
                         );
 
-                    $this->product->update(
-                        $productId,
-                        [
-                            'stock_quantity' =>
-                                $newStock
-                        ]
+                    $quantity =
+                        (int) $storeItem['Quantity'];
+
+                    if ($quantity <= 0) {
+                        throw new RuntimeException(
+                            'Invalid product quantity',
+                            400
+                        );
+                    }
+
+                    if ($quantity > $currentStock) {
+                        throw new RuntimeException(
+                            'Insufficient stock for product ID: ' . $productId,
+                            400
+                        );
+                    }
+
+                    $newStock =
+                        $currentStock - $quantity;
+
+                    $this->product->update( 
+                        $productId, 
+                        [ 
+                            'stock_quantity' => 
+                                $newStock 
+                        ] 
                     );
 
                     /*

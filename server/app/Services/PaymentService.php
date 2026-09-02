@@ -233,6 +233,20 @@ class PaymentService
             );
         }
 
+        $protectedStatuses = [
+            'PAID',
+            'FAILED',
+            'REFUNDED',
+            'CANCELLED',
+        ];
+
+        if (in_array($statusCode, $protectedStatuses, true)) {
+            throw new RuntimeException(
+                'This payment status cannot be changed manually',
+                403
+            );
+        }
+
         /*
          * Get existing transaction
          */
@@ -461,7 +475,7 @@ class PaymentService
             $this->order->update(
                 $orderId,
                 [
-                    'payment_method' =>
+                    'payment_method_id' =>
                         $paymentMethodId
                 ]
             );
