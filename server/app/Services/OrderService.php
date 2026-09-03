@@ -13,6 +13,7 @@ use App\Models\PaymentMethod;
 use App\Models\PaymentStatus;
 use App\Models\PaymentTransaction;
 use App\Models\Currency;
+use App\Services\GameService;
 use App\Core\Database;
 use RuntimeException;
 
@@ -29,6 +30,7 @@ class OrderService
     private PaymentMethod $paymentMethod;
     private PaymentStatus $paymentStatus;
     private PaymentTransaction $paymentTransaction;
+    private GameService $gameService;
 
     /*
     |--------------------------------------------------------------------------
@@ -108,6 +110,7 @@ class OrderService
         $this->paymentMethod = new PaymentMethod();
         $this->paymentStatus = new PaymentStatus();
         $this->paymentTransaction = new PaymentTransaction();
+        $this->gameService = new GameService();
     }
 
     /*
@@ -1199,6 +1202,29 @@ class OrderService
 
         /*
         |--------------------------------------------------------------------------
+        | Game Reward (XP / Coins / Achievements)
+        |--------------------------------------------------------------------------
+        |
+        | لازم يحصل بعد تحديث حالة الأوردر في الداتا بيز مباشرة، عشان
+        | فحص الإنجازات جوه GameService يشوف الأوردر بحالته الجديدة
+        | (Delivered) وقت ما بيحسب عدد الأوردرات المستلمة
+        |
+        */
+
+        if (
+            $status === 'DELIVERED' &&
+            $currentStatus !== 'DELIVERED' &&
+            !empty($order['customer_id'])
+        ) {
+
+            $this->gameService->rewardOrderDelivered(
+                (int) $order['customer_id'],
+                $orderId
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
         | Return Updated Order
         |--------------------------------------------------------------------------
         */
@@ -1208,4 +1234,3 @@ class OrderService
         );
     }
 }
-

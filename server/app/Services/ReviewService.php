@@ -6,6 +6,7 @@ use App\Models\Review;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\GameService;
 use App\Core\Database;
 use RuntimeException;
 
@@ -15,6 +16,7 @@ class ReviewService
     private Product $product;
     private Order $order;
     private OrderItem $orderItem;
+    private GameService $gameService;
 
     public function __construct()
     {
@@ -22,6 +24,7 @@ class ReviewService
         $this->product = new Product();
         $this->order = new Order();
         $this->orderItem = new OrderItem();
+        $this->gameService = new GameService();
     }
 
     /**
@@ -292,6 +295,11 @@ class ReviewService
         ]);
 
         $reviewId = (int) $db->lastInsertId();
+
+        /*
+         * مكافأة XP + Coins للكاستومر مقابل كتابة تقييم
+         */
+        $this->gameService->rewardReviewSubmitted($customerId, $reviewId);
 
         return $this->review->find($reviewId);
     }

@@ -15,6 +15,7 @@ use App\Controllers\UnitController;
 use App\Controllers\AddressController;
 use App\Controllers\ReviewController;
 use App\Controllers\PaymentController;
+use App\Controllers\GameController;
 
 /** @var App\Core\Router $router */
 
@@ -506,3 +507,58 @@ $router->post(
 //             AuthMiddleware::class, 
 //             [RoleMiddleware::class, 'customer']
 //     ]);
+
+/*
+|--------------------------------------------------------------------------
+| Game Routes (Player Profile / XP / Achievements)
+|--------------------------------------------------------------------------
+*/
+$router->get(
+    '/api/customer/player-profile',
+    [GameController::class, 'profile'],
+    [
+        AuthMiddleware::class,
+        [
+            RoleMiddleware::class,
+            'customer'
+        ]
+    ]
+);
+$router->post(
+    '/api/customer/player-profile/avatar',
+    [GameController::class, 'updateAvatar'],
+    [
+        AuthMiddleware::class,
+        [
+            RoleMiddleware::class,
+            'customer'
+        ]
+    ]
+);
+$router->get(
+    '/api/customer/xp-history',
+    [GameController::class, 'xpHistory'],
+    [
+        AuthMiddleware::class,
+        [
+            RoleMiddleware::class,
+            'customer'
+        ]
+    ]
+);
+$router->get(
+    '/api/achievements',
+    [GameController::class, 'allAchievements']
+);
+$router->get(
+    '/api/customer/achievements',
+    [GameController::class, 'myAchievements'],
+    [
+        AuthMiddleware::class,
+        [
+            RoleMiddleware::class,
+            'customer'
+        ]
+    ]
+);
+ 
