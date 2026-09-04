@@ -16,6 +16,7 @@ use App\Controllers\AddressController;
 use App\Controllers\ReviewController;
 use App\Controllers\PaymentController;
 use App\Controllers\GameController;
+use App\Controllers\MallController;
 
 /** @var App\Core\Router $router */
 
@@ -561,4 +562,19 @@ $router->get(
         ]
     ]
 );
- 
+
+/*
+|--------------------------------------------------------------------------
+| Mall / Game World Routes
+|--------------------------------------------------------------------------
+*/
+
+$router->get(
+    '/api/mall',
+    [MallController::class, 'index']
+);
+
+$router->get(
+    '/api/mall/floor',
+    [MallController::class, 'floor']
+);
