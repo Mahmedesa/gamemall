@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Services\PaymobService;
 use App\Core\Database;
 use App\Models\PaymentMethod;
 use App\Models\PaymentStatus;
 use App\Models\PaymentTransaction;
 use App\Models\Order;
+use App\Models\Customer;
+use App\Models\Currency;
 use RuntimeException;
 
 class PaymentService
@@ -15,6 +18,9 @@ class PaymentService
     private PaymentStatus $paymentStatus;
     private PaymentTransaction $paymentTransaction;
     private Order $order;
+    private Customer $customer;
+    private Currency $currency;
+    private PaymobService $paymob;
 
     public function __construct()
     {
@@ -22,6 +28,9 @@ class PaymentService
         $this->paymentStatus = new PaymentStatus();
         $this->paymentTransaction = new PaymentTransaction();
         $this->order = new Order();
+        $this->paymob = new PaymobService();
+        $this->customer = new Customer();
+        $this->currency = new Currency();
     }
 
     /**
@@ -497,6 +506,255 @@ class PaymentService
                     'payment_transactions_id'
                 ]
             ) ?? [];
+    }
+
+    /**
+     * Start Paymob payment for an existing order
+     */
+    public function startPaymobPayment(
+        array $authUser,
+        int $orderId
+    ): array {
+
+        $customerId = $this->currentCustomerId($authUser);
+
+        /*
+        * Get Order
+        */
+        $order = $this->order->find($orderId);
+
+        if (!$order) {
+            throw new RuntimeException(
+                'Order not found',
+                404
+            );
+        }
+
+        /*
+        * Check ownership
+        */
+        if ((int) $order['customer_id'] !== $customerId) {
+            throw new RuntimeException(
+                'You are not authorized to pay for this order',
+                403
+            );
+        }
+
+        /*
+        * Get Customer
+        */
+        $customer = $this->customer->find($customerId);
+
+        if (!$customer) {
+            throw new RuntimeException(
+                'Customer not found',
+                404
+            );
+        }
+
+        /*
+        * Customer email is required by Paymob
+        */
+        $email = trim((string) ($customer['email'] ?? ''));
+
+        if ($email === '') {
+            throw new RuntimeException(
+                'Customer email is required before starting payment',
+                422
+            );
+        }
+
+        /*
+        * Get latest payment transaction
+        */
+        $payment = $this->paymentTransaction
+            ->where(
+                'order_id',
+                '=',
+                $orderId
+            )
+            ->orderBy(
+                'payment_transactions_id',
+                'DESC'
+            )
+            ->first();
+
+        if (!$payment) {
+            throw new RuntimeException(
+                'Payment transaction not found',
+                404
+            );
+        }
+
+        /*
+        * Get currency
+        */
+        $currencyId = (int) (
+            $payment['currency_type_id'] ?? 0
+        );
+
+        if ($currencyId <= 0) {
+            throw new RuntimeException(
+                'Payment currency is not configured',
+                422
+            );
+        }
+
+        $currency = $this->currency->find($currencyId);
+
+        if (!$currency) {
+            throw new RuntimeException(
+                'Payment currency not found',
+                422
+            );
+        }
+
+        /*
+        * Paymob expects the currency code
+        */
+        $currencyCode = strtoupper(
+            trim(
+                (string) (
+                    $currency['currency_abbre']
+                    ?? $currency['currency_abbrev']
+                    ?? ''
+                )
+            )
+        );
+
+        if ($currencyCode === '') {
+            throw new RuntimeException(
+                'Currency code is not configured',
+                422
+            );
+        }
+
+        /*
+        * Get payment amount
+        */
+        $total = (float) (
+            $payment['total']
+            ?? $order['total_amount']
+            ?? 0
+        );
+
+        if ($total <= 0) {
+            throw new RuntimeException(
+                'Invalid payment amount',
+                422
+            );
+        }
+
+        /*
+        * Paymob amount is sent in the smallest currency unit.
+        *
+        * Example:
+        * 100.00 EGP => 10000
+        */
+        $amountCents = (int) round(
+            $total * 100
+        );
+
+        /*
+        * Customer information
+        */
+        $firstName = trim(
+            (string) ($customer['first_name'] ?? '')
+        );
+
+        $lastName = trim(
+            (string) ($customer['last_name'] ?? '')
+        );
+
+        $phone = trim(
+            (string) ($customer['phone'] ?? '')
+        );
+
+        /*
+        * Create Paymob Payment Intention
+        */
+        $intention = $this->paymob->createIntention(
+            $amountCents,
+            $currencyCode,
+            (string) $order['order_code'],
+            $email,
+            $firstName,
+            $lastName,
+            $phone
+        );
+
+        /*
+        * Paymob returns client_secret for Unified Checkout
+        */
+        $clientSecret = trim(
+            (string) (
+                $intention['client_secret']
+                ?? ''
+            )
+        );
+
+        if ($clientSecret === '') {
+            throw new RuntimeException(
+                'Paymob did not return a client secret',
+                502
+            );
+        }
+
+        /*
+        * Paymob intention information
+        */
+        $intentionOrderId = $intention['intention_order_id']
+            ?? null;
+
+        $intentionId = $intention['id']
+            ?? null;
+
+        /*
+        * Save Paymob reference on our transaction
+        */
+        $transactionUpdate = [
+            'gateway_name' => 'paymob'
+        ];
+
+        if ($intentionId !== null) {
+            $transactionUpdate['gateway_transaction_id'] =
+                (string) $intentionId;
+        }
+
+        if ($intentionOrderId !== null) {
+            $transactionUpdate['transaction_reference'] =
+                (string) $intentionOrderId;
+        }
+
+        $this->paymentTransaction->update(
+            $payment['payment_transactions_id'],
+            $transactionUpdate
+        );
+
+        /*
+        * Create Unified Checkout URL
+        */
+        $checkoutUrl = $this->paymob->getCheckoutUrl(
+            $clientSecret
+        );
+
+        return [
+            'order_id' => (int) $order['order_id'],
+            'order_code' => $order['order_code'],
+
+            'payment_transaction_id' =>
+                (int) $payment['payment_transactions_id'],
+
+            'amount' => round($total, 2),
+            'currency' => $currencyCode,
+
+            'gateway' => 'paymob',
+
+            'intention_id' => $intentionId,
+            'intention_order_id' => $intentionOrderId,
+
+            'checkout_url' => $checkoutUrl
+        ];
     }
 
     /**
