@@ -425,13 +425,7 @@ class PaymentController
         try {
             $authUser = Auth::user();
 
-            $input = file_get_contents('php://input');
-
-            $data = json_decode($input, true);
-
-            if (!is_array($data)) {
-                $data = [];
-            }
+            $data = $this->getRequestBody();
 
             $orderId = $data['order_id'] ?? null;
 

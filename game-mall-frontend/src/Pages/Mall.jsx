@@ -2,8 +2,12 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import GroundFloor from "../Componant/Mall/GroundFloor";
 import SecondFloor from "../Componant/Mall/SecondFloor";
+import Atrium from "../Componant/Mall/Atrium";
+import AtriumRailing from "../Componant/Mall/AtriumRailing";
+import Escalators from "../Componant/Mall/Escalators";
 
 function MallScene() {
+
     return (
         <>
             <ambientLight intensity={1.5} />
@@ -40,7 +44,14 @@ function MallScene() {
             </mesh>
             {/* Ground Floor Stores */}
             <GroundFloor />
+
+            <Atrium />
+
+            <AtriumRailing />
+
             <SecondFloor />
+
+            <Escalators />
         </>
     );
 }
