@@ -409,5 +409,59 @@ class PaymentController
 
         return 400;
     }
+
+    /**
+     * Start Paymob payment
+     *
+     * POST /api/payment/paymob/start
+     *
+     * Body:
+     * {
+     *     "order_id": 1
+     * }
+     */
+    public function startPaymobPayment(): void
+    {
+        try {
+            $authUser = Auth::user();
+
+            $input = file_get_contents('php://input');
+
+            $data = json_decode($input, true);
+
+            if (!is_array($data)) {
+                $data = [];
+            }
+
+            $orderId = $data['order_id'] ?? null;
+
+            if (
+                $orderId === null ||
+                filter_var($orderId, FILTER_VALIDATE_INT) === false
+            ) {
+                throw new RuntimeException(
+                    'A valid order_id is required',
+                    422
+                );
+            }
+
+            $result = $this->paymentService->startPaymobPayment(
+                $authUser,
+                (int) $orderId
+            );
+
+            Response::success(
+                $result,
+                'Paymob payment started successfully'
+            );
+
+        } catch (Throwable $e) {
+
+            Response::error(
+                $e->getMessage(),
+                $this->statusFromException($e)
+            );
+        }
+    }
 }
 

@@ -578,3 +578,15 @@ $router->get(
     '/api/mall/floor',
     [MallController::class, 'floor']
 );
+
+$router->post(
+    '/api/payment/paymob/start',
+    [PaymentController::class, 'startPaymobPayment'],
+    [
+        AuthMiddleware::class,
+        [
+            RoleMiddleware::class,
+            'customer'
+        ]
+    ]
+);
