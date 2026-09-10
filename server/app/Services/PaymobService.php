@@ -11,14 +11,16 @@ class PaymobService
     private string $secretKey;
     private string $publicKey;
     private int $integrationId;
+    private string $hmacSecret;
 
     public function __construct()
     {
-        $config = require dirname(__DIR__, 2) . '/config/paymob.php';
+        $config = require dirname(__DIR__, 2) . '/config/Paymob.php';
 
         $this->secretKey = $config['secret_key'] ?? '';
         $this->publicKey = $config['public_key'] ?? '';
         $this->integrationId = (int) ($config['integration_id'] ?? 0);
+        $this->hmacSecret = $config['hmac_secret'] ?? '';
 
         if ($this->secretKey === '') {
             throw new RuntimeException(
@@ -35,6 +37,12 @@ class PaymobService
         if ($this->integrationId <= 0) {
             throw new RuntimeException(
                 'Paymob integration ID is not configured'
+            );
+        }
+
+        if ($this->hmacSecret === '') {
+            throw new RuntimeException(
+                'Paymob HMAC secret is not configured'
             );
         }
     }
@@ -80,7 +88,7 @@ class PaymobService
             );
         }
 
-        $config = require dirname(__DIR__, 2) . '/config/paymob.php';
+        $config = require dirname(__DIR__, 2) . '/config/Paymob.php';
 
         if (empty($config['notification_url'])) {
             throw new RuntimeException(
@@ -225,5 +233,101 @@ class PaymobService
             . urlencode($this->publicKey)
             . '&clientSecret='
             . urlencode($clientSecret);
+    }
+
+    /**
+     * الحقول الـ 20 الرسمية اللي Paymob بيستخدمها لحساب الـ HMAC
+     * بتاع TRANSACTION callback، لازم تتقرا بالترتيب الأبجدي ده بالظبط
+     * وتتلزق مع بعض من غير أي فاصل، بعدين نعمل عليها HMAC-SHA512.
+     *
+     * المرجع الرسمي: Paymob Developers - HMAC Calculation
+     */
+    private const HMAC_FIELDS = [
+        'amount_cents',
+        'created_at',
+        'currency',
+        'error_occured',
+        'has_parent_transaction',
+        'id',
+        'integration_id',
+        'is_3d_secure',
+        'is_auth',
+        'is_capture',
+        'is_refunded',
+        'is_standalone_payment',
+        'is_voided',
+        'order.id',
+        'owner',
+        'pending',
+        'source_data.pan',
+        'source_data.sub_type',
+        'source_data.type',
+        'success'
+    ];
+
+    /**
+     * التحقق من إن الـ webhook فعلاً جاي من Paymob ومحدش لعب فيه
+     * في الطريق. بناخد الـ obj (بيانات الأوردر/الترانزاكشن) والـ hmac
+     * اللي جالنا، ونعيد حساب الـ hash بنفسنا ونقارنهم.
+     */
+    public function verifyHmac(array $obj, string $receivedHmac): bool
+    {
+        if ($receivedHmac === '') {
+            return false;
+        }
+
+        $concatenated = '';
+
+        foreach (self::HMAC_FIELDS as $field) {
+
+            $value = $this->extractHmacFieldValue($obj, $field);
+
+            $concatenated .= $value;
+        }
+
+        $calculatedHmac = hash_hmac(
+            'sha512',
+            $concatenated,
+            $this->hmacSecret
+        );
+
+        return hash_equals($calculatedHmac, strtolower($receivedHmac));
+    }
+
+    /**
+     * جلب قيمة حقل من الـ obj، مع دعم الحقول المتداخلة زي
+     * order.id و source_data.pan (بيبقوا arrays متداخلة جوه الـ obj)
+     */
+    private function extractHmacFieldValue(array $obj, string $field): string
+    {
+        if (!str_contains($field, '.')) {
+
+            $value = $obj[$field] ?? '';
+
+            return $this->stringifyHmacValue($value);
+        }
+
+        [$parent, $child] = explode('.', $field, 2);
+
+        $value = $obj[$parent][$child] ?? '';
+
+        return $this->stringifyHmacValue($value);
+    }
+
+    /**
+     * Paymob بيحوّل الـ boolean لـ "true"/"false" نصيًا وقت حساب
+     * الـ HMAC، فلازم نطابق نفس التحويل بالظبط
+     */
+    private function stringifyHmacValue($value): string
+    {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        if ($value === null) {
+            return '';
+        }
+
+        return (string) $value;
     }
 }

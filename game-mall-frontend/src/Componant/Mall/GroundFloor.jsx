@@ -1,163 +1,198 @@
 import Store3D from "./Store3D";
 
+/*
+    Ground Floor
+    ------------------------------------------------
+    Based on the original 135m semicircle plan.
+
+    18 Units
+    3 Flagships
+
+    All stores are on the same ground level.
+*/
+
 const stores = [
-    // =========================
-    // LEFT SIDE — U-01 → U-09
-    // =========================
+    // ============================================
+    // LEFT WING
+    // ============================================
+
     {
         id: "U-01",
-        position: [-48, 0, -30],
-        rotation: Math.PI * 0.18,
+        position: [-49, 0, -8],
+        rotation: Math.PI * 0.27,
         width: 6,
         depth: 10,
+        height: 5.5,
     },
     {
         id: "U-02",
-        position: [-52, 0, -18],
-        rotation: Math.PI * 0.22,
+        position: [-48, 0, 4],
+        rotation: Math.PI * 0.34,
         width: 8,
         depth: 12,
+        height: 5.5,
     },
     {
         id: "U-03",
-        position: [-55, 0, -5],
-        rotation: Math.PI * 0.28,
+        position: [-45, 0, 17],
+        rotation: Math.PI * 0.41,
         width: 6,
         depth: 10,
+        height: 5.5,
     },
     {
         id: "U-04",
-        position: [-56, 0, 9],
-        rotation: Math.PI * 0.34,
+        position: [-41, 0, 29],
+        rotation: Math.PI * 0.48,
         width: 10,
         depth: 15,
+        height: 5.5,
     },
     {
         id: "U-05",
-        position: [-53, 0, 24],
-        rotation: Math.PI * 0.40,
+        position: [-35, 0, 39],
+        rotation: Math.PI * 0.56,
         width: 6,
         depth: 10,
+        height: 5.5,
     },
     {
         id: "U-06",
-        position: [-47, 0, 37],
-        rotation: Math.PI * 0.48,
+        position: [-28, 0, 48],
+        rotation: Math.PI * 0.64,
         width: 8,
         depth: 12,
+        height: 5.5,
     },
     {
         id: "U-07",
-        position: [-37, 0, 47],
-        rotation: Math.PI * 0.58,
+        position: [-20, 0, 54],
+        rotation: Math.PI * 0.72,
         width: 6,
         depth: 10,
+        height: 5.5,
     },
     {
         id: "U-08",
-        position: [-25, 0, 53],
-        rotation: Math.PI * 0.68,
+        position: [-12, 0, 57],
+        rotation: Math.PI * 0.82,
         width: 8,
         depth: 12,
+        height: 5.5,
     },
-    {
-        id: "U-09",
-        position: [-10, 0, 56],
-        rotation: Math.PI * 0.78,
-        width: 6,
-        depth: 10,
-    },
+    // {
+    //     id: "U-09",
+    //     position: [-7, 0, 61],
+    //     rotation: Math.PI * 0.92,
+    //     width: 6,
+    //     depth: 10,
+    //     height: 5.5,
+    // },
 
-    // =========================
-    // RIGHT SIDE — U-10 → U-18
-    // =========================
-    {
-        id: "U-10",
-        position: [10, 0, 56],
-        rotation: -Math.PI * 0.78,
-        width: 6,
-        depth: 10,
-    },
+    // ============================================
+    // RIGHT WING
+    // ============================================
+
+    // {
+    //     id: "U-10",
+    //     position: [7, 0, 61],
+    //     rotation: -Math.PI * 0.92,
+    //     width: 6,
+    //     depth: 10,
+    //     height: 5.5,
+    // },
     {
         id: "U-11",
-        position: [25, 0, 53],
-        rotation: -Math.PI * 0.68,
+        position: [12, 0, 57],
+        rotation: -Math.PI * 0.82,
         width: 8,
         depth: 12,
+        height: 5.5,
     },
     {
         id: "U-12",
-        position: [37, 0, 47],
-        rotation: -Math.PI * 0.58,
+        position: [20, 0, 54],
+        rotation: -Math.PI * 0.72,
         width: 6,
         depth: 10,
+        height: 5.5,
     },
     {
         id: "U-13",
-        position: [47, 0, 37],
-        rotation: -Math.PI * 0.48,
+        position: [28, 0, 48],
+        rotation: -Math.PI * 0.64,
         width: 10,
         depth: 15,
+        height: 5.5,
     },
     {
         id: "U-14",
-        position: [53, 0, 24],
-        rotation: -Math.PI * 0.40,
+        position: [35, 0, 39],
+        rotation: -Math.PI * 0.56,
         width: 6,
         depth: 10,
+        height: 5.5,
     },
     {
         id: "U-15",
-        position: [56, 0, 9],
-        rotation: -Math.PI * 0.34,
+        position: [41, 0, 29],
+        rotation: -Math.PI * 0.48,
         width: 8,
         depth: 12,
+        height: 5.5,
     },
     {
         id: "U-16",
-        position: [55, 0, -5],
-        rotation: -Math.PI * 0.28,
+        position: [45, 0, 17],
+        rotation: -Math.PI * 0.41,
         width: 6,
         depth: 10,
+        height: 5.5,
     },
     {
         id: "U-17",
-        position: [52, 0, -18],
-        rotation: -Math.PI * 0.22,
+        position: [48, 0, 4],
+        rotation: -Math.PI * 0.34,
         width: 8,
         depth: 12,
+        height: 5.5,
     },
     {
         id: "U-18",
-        position: [48, 0, -30],
-        rotation: -Math.PI * 0.18,
+        position: [49, 0, -8],
+        rotation: -Math.PI * 0.27,
         width: 6,
         depth: 10,
+        height: 5.5,
     },
 
-    // =========================
-    // BACK — FLAGSHIP / HERO
-    // =========================
+    // ============================================
+    // FLAGSHIP AREA
+    // ============================================
+
     {
         id: "F-01",
-        position: [-23, 0, 62],
+        position: [-21, 0, 57],
         rotation: Math.PI,
         width: 12,
         depth: 16,
+        height: 5.5,
     },
     {
         id: "F-02",
-        position: [0, 0, 64],
+        position: [0, 0, 61],
         rotation: Math.PI,
         width: 15,
         depth: 18,
+        height: 5.5,
     },
     {
         id: "F-03",
-        position: [23, 0, 62],
+        position: [21, 0, 57],
         rotation: Math.PI,
         width: 12,
         depth: 16,
+        height: 5.5,
     },
 ];
 

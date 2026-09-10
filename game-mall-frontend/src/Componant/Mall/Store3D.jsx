@@ -1,4 +1,5 @@
 import { Text } from "@react-three/drei";
+import { mallMaterials } from "./MallMaterials";
 
 export default function Store3D({
     id,
@@ -14,13 +15,12 @@ export default function Store3D({
             rotation={[0, rotation, 0]}
         >
             {/* Store body */}
-            <mesh position={[0, height / 2, 0]}>
-                <boxGeometry args={[width, height, depth]} />
-
-                <meshStandardMaterial
-                    color="#24243a"
-                    roughness={0.65}
-                    metalness={0.15}
+            <mesh
+                position={[0, height / 2, 0]}
+                material={mallMaterials.storeBody}
+            >
+                <boxGeometry
+                    args={[width, height, depth]}
                 />
             </mesh>
 
@@ -29,23 +29,16 @@ export default function Store3D({
                 position={[
                     0,
                     height / 2,
-                    depth / 2 + 0.03
+                    depth / 2 + 0.03,
                 ]}
+                material={mallMaterials.storeGlass}
             >
                 <boxGeometry
                     args={[
                         width * 0.82,
                         height * 0.78,
-                        0.08
+                        0.08,
                     ]}
-                />
-
-                <meshStandardMaterial
-                    color="#8ddcff"
-                    transparent
-                    opacity={0.35}
-                    roughness={0.15}
-                    metalness={0.5}
                 />
             </mesh>
 
@@ -54,23 +47,16 @@ export default function Store3D({
                 position={[
                     0,
                     height * 0.39,
-                    depth / 2 + 0.09
+                    depth / 2 + 0.09,
                 ]}
+                material={mallMaterials.darkMetal}
             >
                 <boxGeometry
                     args={[
                         Math.min(width * 0.32, 2.4),
                         height * 0.78,
-                        0.1
+                        0.1,
                     ]}
-                />
-
-                <meshStandardMaterial
-                    color="#11111d"
-                    transparent
-                    opacity={0.7}
-                    metalness={0.8}
-                    roughness={0.15}
                 />
             </mesh>
 
@@ -79,20 +65,16 @@ export default function Store3D({
                 position={[
                     0,
                     height * 0.9,
-                    depth / 2 + 0.12
+                    depth / 2 + 0.12,
                 ]}
+                material={mallMaterials.storeFrame}
             >
                 <boxGeometry
                     args={[
                         Math.min(width * 0.8, 7),
                         0.65,
-                        0.15
+                        0.15,
                     ]}
-                />
-
-                <meshStandardMaterial
-                    color="#17172a"
-                    emissive="#17172a"
                 />
             </mesh>
 
@@ -101,7 +83,7 @@ export default function Store3D({
                 position={[
                     0,
                     height * 0.9,
-                    depth / 2 + 0.22
+                    depth / 2 + 0.22,
                 ]}
                 fontSize={0.42}
                 color="white"
@@ -111,24 +93,17 @@ export default function Store3D({
                 {id}
             </Text>
 
-            {/* Floor */}
+            {/* Store floor */}
             <mesh
-                position={[
-                    0,
-                    0.05,
-                    0
-                ]}
+                position={[0, 0.05, 0]}
+                material={mallMaterials.storeBase}
             >
                 <boxGeometry
                     args={[
                         width + 0.15,
                         0.1,
-                        depth + 0.15
+                        depth + 0.15,
                     ]}
-                />
-
-                <meshStandardMaterial
-                    color="#303047"
                 />
             </mesh>
         </group>

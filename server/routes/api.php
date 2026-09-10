@@ -17,6 +17,7 @@ use App\Controllers\ReviewController;
 use App\Controllers\PaymentController;
 use App\Controllers\GameController;
 use App\Controllers\MallController;
+use App\Controllers\CurrencyController;
 
 /** @var App\Core\Router $router */
 
@@ -471,7 +472,12 @@ $router->get(
         ], 
         [AuthMiddleware::class
     ]
-); /* * Get payment information * * GET /api/payment/order?order_id=1 * * Customer only */
+    
+); 
+
+$router->get('/api/currencies', [CurrencyController::class, 'currency']);
+
+/* * Get payment information * * GET /api/payment/order?order_id=1 * * Customer only */
 $router->get(
     '/api/payment/order',
      [
@@ -589,4 +595,35 @@ $router->post(
             'customer'
         ]
     ]
+);
+
+// Public Catalog
+$router->get(
+    '/api/stores',
+    [StoreController::class, 'publicIndex']
+);
+
+$router->get(
+    '/api/stores/show',
+    [StoreController::class, 'publicShow']
+);
+
+$router->get(
+    '/api/products',
+    [ProductController::class, 'publicIndex']
+);
+
+$router->get(
+    '/api/products/show',
+    [ProductController::class, 'publicShow']
+);
+
+/*
+|--------------------------------------------------------------------------
+| Paymob Webhook (Server-to-Server, No Auth - HMAC verified internally)
+|--------------------------------------------------------------------------
+*/
+$router->post(
+    '/api/payment/paymob/webhook',
+    [PaymentController::class, 'paymobWebhook']
 );

@@ -84,9 +84,55 @@ class CartService
 
         $subtotal = 0;
 
-        foreach ($items as $item) {
-            $subtotal += (float) ($item['total'] ?? 0);
+        foreach ($items as &$item) {
+
+            $product = $this->product->find(
+                (int) $item['product_id']
+            );
+
+            if (!$product) {
+                continue;
+            }
+
+            $price = (float) ($product['selling_price'] ?? 0);
+            $quantity = (int) ($item['Quantity'] ?? 0);
+
+            $total = round($quantity * $price, 2);
+
+            // تحديث السعر والإجمالي المخزن في cart
+            if (
+                (float) ($item['product_Cost'] ?? 0) !== $price ||
+                (float) ($item['total'] ?? 0) !== $total
+            ) {
+                $this->cartItem->update(
+                    (int) $item['cart_items_id'],
+                    [
+                        'product_Cost' => $price,
+                        'total' => $total
+                    ]
+                );
+            }
+
+            // تحديث البيانات اللي راجعة للـ API
+            $item['product_Cost'] = number_format(
+                $price,
+                2,
+                '.',
+                ''
+            );
+
+            $item['total'] = number_format(
+                $total,
+                2,
+                '.',
+                ''
+            );
+
+            // هنا فقط نحسب subtotal
+            $subtotal += $total;
         }
+
+        unset($item);
 
         return [
             'cart_id' => (int) $cart['carts_id'],
@@ -295,7 +341,7 @@ class CartService
             }
         }
 
-        $price = (float) ($item['product_Cost'] ?? 0);
+        $price = (float) ($product['selling_price'] ?? 0);
 
         $this->cartItem->update(
             $cartItemId,

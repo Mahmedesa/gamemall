@@ -457,5 +457,39 @@ class PaymentController
             );
         }
     }
-}
 
+    /**
+     * Paymob Webhook (Server-to-Server Notification)
+     *
+     * POST /api/payment/paymob/webhook
+     *
+     * ده مسار عام (بدون auth) لأن Paymob نفسه اللي بيناديه،
+     * مش أي مستخدم في النظام بتاعنا. الحماية هنا بتحصل عن طريق
+     * التحقق من الـ HMAC signature جوه PaymentService، مش middleware.
+     */
+    public function paymobWebhook(): void
+    {
+        try {
+
+            $payload = $this->getRequestBody();
+
+            $this->paymentService->handlePaymobWebhook($payload);
+
+            /*
+             * Paymob بيحتاج رد 200 بسيط عشان يعتبر إن الـ webhook
+             * اتسلّم بنجاح، وإلا هيعيد المحاولة تاني بعدين
+             */
+            Response::success(
+                [],
+                'Webhook processed successfully'
+            );
+
+        } catch (Throwable $e) {
+
+            Response::error(
+                $e->getMessage(),
+                $this->statusFromException($e)
+            );
+        }
+    }
+}

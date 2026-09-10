@@ -281,4 +281,40 @@ class StoreService
 
         return $this->store->delete($storeId);
     }
+
+    /**
+     * Public: جلب كل المحلات النشطة
+     * GET /api/stores
+     */
+    public function publicList(): array
+    {
+        return $this->store
+            ->where('is_active', '=', 1)
+            ->get();
+    }
+
+    /**
+     * Public: عرض محل نشط واحد
+     * GET /api/stores/show?store_id=1
+     */
+    public function publicShow(int $storeId): array
+    {
+        $store = $this->store->find($storeId);
+
+        if (!$store) {
+            throw new RuntimeException(
+                'Store not found',
+                404
+            );
+        }
+
+        if ((int) $store['is_active'] !== 1) {
+            throw new RuntimeException(
+                'Store is not available',
+                404
+            );
+        }
+
+        return $store;
+    }
 }

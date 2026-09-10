@@ -60,6 +60,26 @@ abstract class BaseModel
             $value
         );
     }
+    /**
+ * Get records
+ */
+public function get(): array
+{
+    return $this->query->get();
+}
+
+/**
+ * Order By
+ */
+public function orderBy(
+    string $column,
+    string $direction = 'ASC'
+): QueryBuilder {
+    return $this->query->orderBy(
+        $column,
+        $direction
+    );
+}
 
     /**
      * Create new record

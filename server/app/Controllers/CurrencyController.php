@@ -20,13 +20,12 @@ class CurrencyController{
         try {
 
             $result = $this->currency
-                ->where('is_active', '=', 1)
-                ->orderBy('currency', 'ASC')
+                ->orderBy('currency_type_name', 'ASC')
                 ->get();
 
             Response::success(
                 $result,
-                'Brands fetched successfully'
+                'Currencies fetched successfully'
             );
 
         } catch (Throwable $e) {

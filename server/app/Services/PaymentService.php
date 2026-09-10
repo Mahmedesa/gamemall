@@ -20,7 +20,7 @@ class PaymentService
     private Order $order;
     private Customer $customer;
     private Currency $currency;
-    private PaymobService $paymob;
+    private ?PaymobService $paymob = null;
 
     public function __construct()
     {
@@ -28,9 +28,22 @@ class PaymentService
         $this->paymentStatus = new PaymentStatus();
         $this->paymentTransaction = new PaymentTransaction();
         $this->order = new Order();
-        $this->paymob = new PaymobService();
         $this->customer = new Customer();
         $this->currency = new Currency();
+    }
+
+    /**
+     * تهيئة PaymobService بس وقت الحاجة الفعلية ليها (lazy)،
+     * عشان باقي دوال الكلاس (زي عرض طرق الدفع) متفشلش لو إعدادات
+     * Paymob مش مظبوطة في الـ .env
+     */
+    private function paymob(): PaymobService
+    {
+        if ($this->paymob === null) {
+            $this->paymob = new PaymobService();
+        }
+
+        return $this->paymob;
     }
 
     /**
@@ -673,7 +686,7 @@ class PaymentService
         /*
         * Create Paymob Payment Intention
         */
-        $intention = $this->paymob->createIntention(
+        $intention = $this->paymob()->createIntention(
             $amountCents,
             $currencyCode,
             (string) $order['order_code'],
@@ -734,7 +747,7 @@ class PaymentService
         /*
         * Create Unified Checkout URL
         */
-        $checkoutUrl = $this->paymob->getCheckoutUrl(
+        $checkoutUrl = $this->paymob()->getCheckoutUrl(
             $clientSecret
         );
 
@@ -790,5 +803,143 @@ class PaymentService
 
         return (int) $customerId;
     }
-}
 
+    /**
+     * جلب حالة دفع بكودها (زي PAID أو FAILED) من جدول الحالات
+     */
+    private function getPaymentStatusByCode(string $code): array
+    {
+        $status = $this->paymentStatus
+            ->where('payment_status_code', '=', $code)
+            ->where('is_active', '=', 1)
+            ->first();
+
+        if (!$status) {
+            throw new RuntimeException(
+                "{$code} payment status is not configured",
+                500
+            );
+        }
+
+        return $status;
+    }
+
+    /**
+     * معالجة الـ Webhook القادم من Paymob بعد ما العميل يخلّص
+     * عملية الدفع (نجاح أو فشل). لازم يتحقق أولًا من الـ HMAC
+     * قبل ما يصدّق أي بيانات جواه.
+     *
+     * POST /api/payment/paymob/webhook
+     */
+    public function handlePaymobWebhook(array $payload): void
+    {
+        /*
+         * Paymob بيبعت بيانات المعاملة جوه "obj"، والتوقيع في "hmac"
+         */
+        $obj = $payload['obj'] ?? null;
+        $receivedHmac = (string) ($payload['hmac'] ?? '');
+
+        if (!is_array($obj)) {
+            throw new RuntimeException(
+                'Invalid webhook payload',
+                422
+            );
+        }
+
+        /*
+         * التحقق من التوقيع - أهم خطوة أمان هنا، لو فشلت نرفض
+         * الطلب فورًا وميتحدّثش أي حاجة في قاعدة البيانات
+         */
+        if (!$this->paymob()->verifyHmac($obj, $receivedHmac)) {
+            throw new RuntimeException(
+                'Invalid webhook signature',
+                401
+            );
+        }
+
+        /*
+         * بس بنعالج TRANSACTION callbacks (مش TOKEN callbacks
+         * الخاصة بحفظ الكروت)
+         */
+        $callbackType = (string) ($payload['type'] ?? '');
+
+        if ($callbackType !== '' && $callbackType !== 'TRANSACTION') {
+            return;
+        }
+
+        /*
+         * special_reference اللي بعتناه وقت إنشاء الـ Intention
+         * هو order_code بتاعنا، وده بيرجع في order.merchant_order_id
+         * أو نستخدم order.id (Paymob's order id) اللي حفظناه إحنا
+         * كـ transaction_reference وقت startPaymobPayment
+         */
+        $paymobOrderId = (string) ($obj['order']['id'] ?? '');
+
+        if ($paymobOrderId === '') {
+            throw new RuntimeException(
+                'Missing order reference in webhook payload',
+                422
+            );
+        }
+
+        $payment = $this->paymentTransaction
+            ->where('transaction_reference', '=', $paymobOrderId)
+            ->orderBy('payment_transactions_id', 'DESC')
+            ->first();
+
+        if (!$payment) {
+            throw new RuntimeException(
+                'Payment transaction not found for this webhook',
+                404
+            );
+        }
+
+        /*
+         * لو الأوردر ده اتعالج بالفعل قبل كده (Paymob بيبعت الـ
+         * webhook أكتر من مرة أحيانًا)، منعملش حاجة تاني
+         */
+        $currentStatus = $this->paymentStatus->find(
+            (int) $payment['payment_statuses_id']
+        );
+
+        if (
+            $currentStatus &&
+            in_array(
+                $currentStatus['payment_status_code'],
+                ['PAID', 'FAILED'],
+                true
+            )
+        ) {
+            return;
+        }
+
+        $success = (bool) ($obj['success'] ?? false);
+        $pending = (bool) ($obj['pending'] ?? false);
+
+        $newStatusCode = ($success && !$pending) ? 'PAID' : 'FAILED';
+
+        $newStatus = $this->getPaymentStatusByCode($newStatusCode);
+
+        $this->paymentTransaction->update(
+            (int) $payment['payment_transactions_id'],
+            [
+                'gateway_transaction_id' => (string) (
+                    $obj['id'] ?? $payment['gateway_transaction_id']
+                ),
+                'payment_statuses_id' =>
+                    $newStatus['payment_statuses_id']
+            ]
+        );
+
+        /*
+         * تحديث نسخة الحالة المختصرة على الأوردر نفسه كمان
+         * (للعرض السريع بدون الحاجة تجيب PaymentTransaction كل مرة)
+         */
+        $this->order->update(
+            (int) $payment['order_id'],
+            [
+                'payment_status' => $newStatusCode
+            ]
+        );
+    }
+}

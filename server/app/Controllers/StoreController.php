@@ -254,4 +254,39 @@ class StoreController
             );
         }
     }
+    public function publicIndex(): void
+    {
+        try {
+            $result = $this->storeService->publicList();
+
+            Response::success(
+                $result,
+                'Stores fetched successfully'
+            );
+        } catch (Throwable $e) {
+            Response::error(
+                $e->getMessage(),
+                $this->statusFromException($e)
+            );
+        }
+    }
+
+    public function publicShow(): void
+    {
+        try {
+            $storeId = $this->resolveStoreId([]);
+
+            $result = $this->storeService->publicShow($storeId);
+
+            Response::success(
+                $result,
+                'Store fetched successfully'
+            );
+        } catch (Throwable $e) {
+            Response::error(
+                $e->getMessage(),
+                $this->statusFromException($e)
+            );
+        }
+    }
 }

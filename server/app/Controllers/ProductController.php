@@ -215,4 +215,54 @@ class ProductController
             );
         }
     }
+    public function publicIndex(): void
+    {
+        try {
+            $storeId = $_GET['store_id'] ?? null;
+
+            if ($storeId !== null) {
+                if (
+                    filter_var($storeId, FILTER_VALIDATE_INT) === false
+                ) {
+                    throw new RuntimeException(
+                        'A valid store_id is required',
+                        422
+                    );
+                }
+
+                $storeId = (int) $storeId;
+            }
+
+            $result = $this->productService->publicList($storeId);
+
+            Response::success(
+                $result,
+                'Products fetched successfully'
+            );
+        } catch (Throwable $e) {
+            Response::error(
+                $e->getMessage(),
+                $this->statusFromException($e)
+            );
+        }
+    }
+
+    public function publicShow(): void
+    {
+        try {
+            $productId = $this->resolveId([], 'product_id');
+
+            $result = $this->productService->publicShow($productId);
+
+            Response::success(
+                $result,
+                'Product fetched successfully'
+            );
+        } catch (Throwable $e) {
+            Response::error(
+                $e->getMessage(),
+                $this->statusFromException($e)
+            );
+        }
+    }
 }

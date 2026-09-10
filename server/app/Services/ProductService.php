@@ -512,4 +512,84 @@ class ProductService
 
         return $this->product->delete($productId);
     }
+    /**
+     * Public: جلب المنتجات النشطة
+     *
+     * لو storeId موجود:
+     * يرجع منتجات المحل فقط.
+     *
+     * لو null:
+     * يرجع كل المنتجات النشطة.
+     */
+    public function publicList(?int $storeId = null): array
+    {
+        if ($storeId !== null) {
+            $store = $this->store->find($storeId);
+
+            if (!$store) {
+                throw new RuntimeException(
+                    'Store not found',
+                    404
+                );
+            }
+
+            if ((int) $store['is_active'] !== 1) {
+                throw new RuntimeException(
+                    'Store is not available',
+                    404
+                );
+            }
+
+            return $this->product
+                ->where('store_id', '=', $storeId)
+                ->where('is_active', '=', 1)
+                ->get();
+        }
+
+        return $this->product
+            ->where('is_active', '=', 1)
+            ->get();
+    }
+
+    /**
+     * Public: عرض منتج نشط واحد
+     * GET /api/products/show?product_id=1
+     */
+    public function publicShow(int $productId): array
+    {
+        $product = $this->product->find($productId);
+
+        if (!$product) {
+            throw new RuntimeException(
+                'Product not found',
+                404
+            );
+        }
+
+        if ((int) $product['is_active'] !== 1) {
+            throw new RuntimeException(
+                'Product is not available',
+                404
+            );
+        }
+
+        // نتأكد إن المحل نفسه Active
+        if (empty($product['store_id'])) {
+            throw new RuntimeException(
+                'Product is not linked to any store',
+                404
+            );
+        }
+
+        $store = $this->store->find((int) $product['store_id']);
+
+        if (!$store || (int) $store['is_active'] !== 1) {
+            throw new RuntimeException(
+                'Product is not available',
+                404
+            );
+        }
+
+        return $product;
+    }
 }
