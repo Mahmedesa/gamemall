@@ -473,12 +473,26 @@ class PaymentController
 
             $payload = $this->getRequestBody();
 
+            // Paymob sends HMAC in the query string:
+            // /api/payment/paymob/webhook?hmac=...
+            $hmac = trim((string) ($_GET['hmac'] ?? ''));
+
+            if ($hmac === '') {
+                throw new RuntimeException(
+                    'Paymob webhook HMAC is missing',
+                    401
+                );
+            }
+
+            // Add HMAC to the payload so PaymentService can verify it
+            $payload['hmac'] = $hmac;
+
             $this->paymentService->handlePaymobWebhook($payload);
 
             /*
-             * Paymob بيحتاج رد 200 بسيط عشان يعتبر إن الـ webhook
-             * اتسلّم بنجاح، وإلا هيعيد المحاولة تاني بعدين
-             */
+            * Paymob needs a 200 response after receiving the webhook
+            * successfully, otherwise it may retry the callback.
+            */
             Response::success(
                 [],
                 'Webhook processed successfully'

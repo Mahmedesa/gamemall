@@ -12,7 +12,7 @@ import MallFloor from "../Componant/Mall/MallFloor";
 import MallDetails from "../Componant/Mall/MallDetails";
 import SecondFloorShell from "../Componant/Mall/SecondFloorShell";
 import MallFacade from "../Componant/Mall/MallFacade";
-import AtriumRoof from "../Componant/Mall/AtriumRoof";
+//import AtriumRoof from "../Componant/Mall/AtriumRoof";
 import MallLighting from "../Componant/Mall/MallLighting";
 
 
@@ -35,7 +35,7 @@ function MallScene() {
             <MallFacade />
 
             {/* Atrium roof */}
-            <AtriumRoof />
+           {/* <AtriumRoof /> */}
 
             {/* Atrium */}
             <Atrium />

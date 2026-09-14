@@ -21,36 +21,30 @@ function MallFloor() {
         const depth = 120;
         const tileSize = 5;
 
+        // Vertical tile lines
         for (let x = -width / 2; x <= width / 2; x += tileSize) {
             result.push(
                 <mesh
                     key={`v-${x}`}
                     position={[x, 0.015, 0]}
                     rotation={[-Math.PI / 2, 0, 0]}
+                    material={mallMaterials.floorTile}
                 >
                     <planeGeometry args={[0.025, depth]} />
-
-                    <meshStandardMaterial
-                        color="#c9c9ce"
-                        roughness={0.9}
-                    />
                 </mesh>
             );
         }
 
+        // Horizontal tile lines
         for (let z = -depth / 2; z <= depth / 2; z += tileSize) {
             result.push(
                 <mesh
                     key={`h-${z}`}
                     position={[0, 0.016, z]}
                     rotation={[-Math.PI / 2, 0, 0]}
+                    material={mallMaterials.floorTile}
                 >
                     <planeGeometry args={[width, 0.025]} />
-
-                    <meshStandardMaterial
-                        color="#c9c9ce"
-                        roughness={0.9}
-                    />
                 </mesh>
             );
         }
@@ -71,12 +65,6 @@ function MallFloor() {
                 material={mallMaterials.floor}
             >
                 <planeGeometry args={[135, 120]} />
-
-                <meshStandardMaterial
-                    color="#dedee2"
-                    roughness={0.82}
-                    metalness={0.05}
-                />
             </mesh>
 
 
@@ -99,12 +87,6 @@ function MallFloor() {
                 material={mallMaterials.corridor}
             >
                 <ringGeometry args={[22, 31, 96]} />
-
-                <meshStandardMaterial
-                    color="#eeeeef"
-                    roughness={0.65}
-                    metalness={0.08}
-                />
             </mesh>
 
 
@@ -118,12 +100,6 @@ function MallFloor() {
                 material={mallMaterials.atriumFloor}
             >
                 <ringGeometry args={[15, 21, 96]} />
-
-                <meshStandardMaterial
-                    color="#d2d3d8"
-                    roughness={0.6}
-                    metalness={0.1}
-                />
             </mesh>
 
 
@@ -137,12 +113,6 @@ function MallFloor() {
                 material={mallMaterials.atriumBorder}
             >
                 <ringGeometry args={[31, 32, 96]} />
-
-                <meshStandardMaterial
-                    color="#aeb4bd"
-                    roughness={0.45}
-                    metalness={0.25}
-                />
             </mesh>
 
 

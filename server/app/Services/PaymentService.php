@@ -916,7 +916,11 @@ class PaymentService
         $success = (bool) ($obj['success'] ?? false);
         $pending = (bool) ($obj['pending'] ?? false);
 
-        $newStatusCode = ($success && !$pending) ? 'PAID' : 'FAILED';
+        if ($pending) {
+            return;
+        }
+
+        $newStatusCode = $success ? 'PAID' : 'FAILED';
 
         $newStatus = $this->getPaymentStatusByCode($newStatusCode);
 
