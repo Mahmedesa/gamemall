@@ -4,6 +4,7 @@ namespace App\Core;
 
 use App\Models\AuthAccount;
 use App\Models\AuthSession;
+use App\Models\Vendor;
 use RuntimeException;
 
 class Auth
@@ -107,7 +108,7 @@ class Auth
             );
         }
 
-        /*
+        /**
          * Check expiration
          */
         if (
@@ -119,7 +120,7 @@ class Auth
             );
         }
 
-        /*
+        /**
          * Get Auth Account
          */
         $accountModel = new AuthAccount();
@@ -138,7 +139,7 @@ class Auth
             );
         }
 
-        /*
+        /**
          * Check account
          */
         if ($account['status'] !== 'active') {
@@ -153,7 +154,42 @@ class Auth
             );
         }
 
-        /*
+        /**
+         * Get Vendor Profile
+         *
+         * auth_account.vendor_id
+         *      ↓
+         * shop_vendors_com.Vendors_com_id
+         */
+        $vendor = null;
+
+        if (
+            $account['account_type'] === 'vendor' &&
+            !empty($account['vendor_id'])
+        ) {
+            $vendorModel = new Vendor();
+
+            $vendor = $vendorModel
+                ->where(
+                    'Vendors_com_id',
+                    '=',
+                    (int) $account['vendor_id']
+                )
+                ->where(
+                    'is_active',
+                    '=',
+                    1
+                )
+                ->first();
+
+            if (!$vendor) {
+                throw new RuntimeException(
+                    'Vendor profile not found or inactive'
+                );
+            }
+        }
+
+        /**
          * Update session
          */
         $sessionModel->update(
@@ -164,6 +200,9 @@ class Auth
             ]
         );
 
+        /**
+         * Build authenticated user
+         */
         self::$account = [
             'session_id' =>
                 (int) $session['session_id'],
@@ -184,7 +223,22 @@ class Auth
                 $account['customer_id'] ?? null,
 
             'vendor_id' =>
-                $account['vendor_id'] ?? null
+                $account['vendor_id'] ?? null,
+
+            /*
+             * Vendor profile data
+             */
+            'email' =>
+                $vendor['email'] ?? null,
+
+            'vendor_name' =>
+                $vendor['Vendors_com_name'] ?? null,
+
+            'trade_name' =>
+                $vendor['Trade_name'] ?? null,
+
+            'owner_name' =>
+                $vendor['com_owner_name'] ?? null,
         ];
 
         return self::$account;
@@ -263,18 +317,29 @@ class Auth
     {
         return self::type() === $type;
     }
+
+    /**
+     * Check customer account
+     */
     public static function isCustomer(): bool
     {
         return self::is('customer');
     }
 
+    /**
+     * Check vendor account
+     */
     public static function isVendor(): bool
     {
         return self::is('vendor');
     }
 
+    /**
+     * Check user account
+     */
     public static function isUser(): bool
     {
         return self::is('user');
     }
 }
+

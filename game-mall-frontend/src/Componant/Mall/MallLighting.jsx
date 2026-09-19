@@ -6,12 +6,12 @@ export default function MallLighting() {
     const { scene } = useThree();
 
     useEffect(() => {
-        scene.background = new THREE.Color("#111722");
+        scene.background = new THREE.Color("#0b1020");
 
         scene.fog = new THREE.Fog(
-            "#111722",
-            90,
-            180
+            "#0b1020",
+            100,
+            190
         );
 
         return () => {
@@ -21,75 +21,82 @@ export default function MallLighting() {
 
     return (
         <group>
-            {/* General mall light */}
-            <ambientLight intensity={1.4} />
 
-            {/* Main daylight */}
+            {/* =================================
+                General Ambient & Sky Light (سلس للرندر)
+            ================================= */}
+
+            <ambientLight
+                intensity={1.8}
+                color="#c8d8ff"
+            />
+
+            <hemisphereLight
+                skyColor="#8ddcff"
+                groundColor="#201035"
+                intensity={1.2}
+            />
+
+            {/* =================================
+                Main Mall / Daylight
+            ================================= */}
+
             <directionalLight
                 position={[0, 35, 20]}
-                intensity={2.2}
-                castShadow
+                intensity={2.0}
+                color="#fff4df"
             />
 
-            {/* Front light */}
+
+            {/* =================================
+                Optimized Key Point Lights (5 بدلاً من 18)
+            ================================= */}
+
+            {/* 1. Entrance Lighting */}
             <pointLight
-                position={[0, 8, -35]}
-                intensity={35}
-                distance={70}
+                position={[0, 8, -45]}
+                intensity={30}
+                distance={80}
                 decay={2}
+                color="#8ddcff"
             />
 
-            {/* Atrium lights */}
+            {/* 2. Central Atrium & Fountain Glow */}
             <pointLight
-                position={[-18, 8, -12]}
+                position={[0, 6, 0]}
                 intensity={25}
-                distance={45}
+                distance={50}
                 decay={2}
+                color="#38bdf8"
             />
 
+            {/* 3. Left Wing Light */}
             <pointLight
-                position={[18, 8, -12]}
-                intensity={25}
-                distance={45}
+                position={[-30, 8, 0]}
+                intensity={22}
+                distance={60}
                 decay={2}
+                color="#8ddcff"
             />
 
+            {/* 4. Right Wing Light */}
             <pointLight
-                position={[-18, 8, 12]}
-                intensity={25}
-                distance={45}
+                position={[30, 8, 0]}
+                intensity={22}
+                distance={60}
                 decay={2}
+                color="#8ddcff"
             />
 
+            {/* 5. Back Mall Ambient Light */}
             <pointLight
-                position={[18, 8, 12]}
-                intensity={25}
-                distance={45}
+                position={[0, 8, 40]}
+                intensity={20}
+                distance={60}
                 decay={2}
+                color="#a855f7"
             />
 
-            {/* Fountain light */}
-            <pointLight
-                position={[0, 4, 0]}
-                intensity={18}
-                distance={25}
-                decay={2}
-            />
-
-            {/* Back mall lights */}
-            <pointLight
-                position={[-35, 7, 35]}
-                intensity={18}
-                distance={45}
-                decay={2}
-            />
-
-            <pointLight
-                position={[35, 7, 35]}
-                intensity={18}
-                distance={45}
-                decay={2}
-            />
         </group>
     );
 }

@@ -1,219 +1,214 @@
 import { Text } from "@react-three/drei";
+import { Instances, Instance } from "@react-three/drei";
 
-function Column({ position, height = 5.5 }) {
+/*
+|--------------------------------------------------------------------------
+| تحسين الأداء:
+|--------------------------------------------------------------------------
+| 1) Column (×8) / Plant (×4) / Bench (×4) بقوا GPU Instanced -
+|    بدل 58 mesh منفصل بقوا حوالي 10 draw calls بس (Instance
+|    واحد لكل جزء متكرر: جسم العمود، تاجه، الأصيص، الجذع،
+|    الورق الكبير، الورق الجانبي، مقعد البنش، ظهره، أرجله)
+| 2) CeilingLight: الـ mesh المضيء لسه ظاهر في كل الـ 6 أماكن
+|    (Instanced برضو)، لكن قللنا عدد pointLight الحقيقي من 6
+|    لـ 3 بس (موزعين كويس، بيدوا إحساس بإضاءة كافية للأتريوم
+|    من غير ما نثقّل حساب الإضاءة على المشهد كله)
+|--------------------------------------------------------------------------
+*/
+
+const columnPositions = [
+    [-20, 0, -38], [20, 0, -38],
+    [-35, 0, -20], [35, 0, -20],
+    [-35, 0, 18], [35, 0, 18],
+    [-20, 0, 38], [20, 0, 38],
+];
+
+const plantPositions = [
+    [-18, 0, -18], [18, 0, -18],
+    [-18, 0, 18], [18, 0, 18],
+];
+
+const benches = [
+    { position: [-12, 0, -18], rotation: Math.PI / 2 },
+    { position: [12, 0, -18], rotation: -Math.PI / 2 },
+    { position: [-12, 0, 18], rotation: Math.PI / 2 },
+    { position: [12, 0, 18], rotation: -Math.PI / 2 },
+];
+
+const ceilingLightPositions = [
+    [-18, 5, -15], [18, 5, -15],
+    [-18, 5, 15], [18, 5, 15],
+    [0, 5, -25], [0, 5, 25],
+];
+
+const activeLightPositions = [
+    [-18, 5, -15],
+    [18, 5, 15],
+    [0, 5, -25],
+];
+
+const COLUMN_HEIGHT = 5.5;
+
+export default function MallDetails() {
     return (
-        <group position={position}>
-            <mesh position={[0, height / 2, 0]}>
-                <cylinderGeometry args={[0.45, 0.55, height, 20]} />
+        <group>
+
+            <Instances limit={columnPositions.length}>
+                <cylinderGeometry args={[0.45, 0.55, COLUMN_HEIGHT, 20]} />
                 <meshStandardMaterial
                     color="#b8bcc4"
                     metalness={0.35}
                     roughness={0.35}
                 />
-            </mesh>
+                {columnPositions.map((pos, i) => (
+                    <Instance
+                        key={i}
+                        position={[pos[0], pos[1] + COLUMN_HEIGHT / 2, pos[2]]}
+                    />
+                ))}
+            </Instances>
 
-            <mesh position={[0, height + 0.15, 0]}>
+            <Instances limit={columnPositions.length}>
                 <cylinderGeometry args={[0.65, 0.65, 0.3, 20]} />
                 <meshStandardMaterial
                     color="#d5d7dc"
                     metalness={0.4}
                     roughness={0.3}
                 />
-            </mesh>
-        </group>
-    );
-}
+                {columnPositions.map((pos, i) => (
+                    <Instance
+                        key={i}
+                        position={[pos[0], pos[1] + COLUMN_HEIGHT + 0.15, pos[2]]}
+                    />
+                ))}
+            </Instances>
 
-function Plant({ position }) {
-    return (
-        <group position={position}>
-            {/* Pot */}
-            <mesh position={[0, 0.45, 0]}>
+            <Instances limit={plantPositions.length}>
                 <cylinderGeometry args={[0.8, 0.65, 0.9, 24]} />
-                <meshStandardMaterial
-                    color="#555b62"
-                    roughness={0.7}
-                />
-            </mesh>
+                <meshStandardMaterial color="#555b62" roughness={0.7} />
+                {plantPositions.map((pos, i) => (
+                    <Instance key={i} position={[pos[0], 0.45, pos[2]]} />
+                ))}
+            </Instances>
 
-            {/* Stem */}
-            <mesh position={[0, 1.8, 0]}>
+            <Instances limit={plantPositions.length}>
                 <cylinderGeometry args={[0.12, 0.16, 2.2, 12]} />
-                <meshStandardMaterial
-                    color="#5c4935"
-                    roughness={0.8}
-                />
-            </mesh>
+                <meshStandardMaterial color="#5c4935" roughness={0.8} />
+                {plantPositions.map((pos, i) => (
+                    <Instance key={i} position={[pos[0], 1.8, pos[2]]} />
+                ))}
+            </Instances>
 
-            {/* Leaves */}
-            <mesh position={[0, 2.8, 0]}>
+            <Instances limit={plantPositions.length}>
                 <sphereGeometry args={[1.25, 16, 12]} />
-                <meshStandardMaterial
-                    color="#477052"
-                    roughness={0.8}
-                />
-            </mesh>
+                <meshStandardMaterial color="#477052" roughness={0.8} />
+                {plantPositions.map((pos, i) => (
+                    <Instance key={i} position={[pos[0], 2.8, pos[2]]} />
+                ))}
+            </Instances>
 
-            <mesh position={[0.8, 2.5, 0.2]}>
+            <Instances limit={plantPositions.length * 2}>
                 <sphereGeometry args={[0.7, 14, 10]} />
-                <meshStandardMaterial
-                    color="#527d5b"
-                    roughness={0.8}
-                />
-            </mesh>
+                <meshStandardMaterial color="#527d5b" roughness={0.8} />
+                {plantPositions.map((pos, i) => (
+                    <group key={i}>
+                        <Instance
+                            position={[pos[0] + 0.8, 2.5, pos[2] + 0.2]}
+                        />
+                        <Instance
+                            position={[pos[0] - 0.7, 2.5, pos[2] - 0.2]}
+                        />
+                    </group>
+                ))}
+            </Instances>
 
-            <mesh position={[-0.7, 2.5, -0.2]}>
-                <sphereGeometry args={[0.7, 14, 10]} />
-                <meshStandardMaterial
-                    color="#527d5b"
-                    roughness={0.8}
-                />
-            </mesh>
-        </group>
-    );
-}
-
-function Bench({ position, rotation = 0 }) {
-    return (
-        <group
-            position={position}
-            rotation={[0, rotation, 0]}
-        >
-            {/* Seat */}
-            <mesh position={[0, 0.7, 0]}>
+            <Instances limit={benches.length}>
                 <boxGeometry args={[3.2, 0.25, 0.8]} />
-                <meshStandardMaterial
-                    color="#6c727a"
-                    roughness={0.7}
-                />
-            </mesh>
+                <meshStandardMaterial color="#6c727a" roughness={0.7} />
+                {benches.map((b, i) => (
+                    <Instance
+                        key={i}
+                        position={[b.position[0], 0.7, b.position[2]]}
+                        rotation={[0, b.rotation, 0]}
+                    />
+                ))}
+            </Instances>
 
-            {/* Back */}
-            <mesh position={[0, 1.2, 0.3]}>
+            <Instances limit={benches.length}>
                 <boxGeometry args={[3.2, 0.8, 0.2]} />
-                <meshStandardMaterial
-                    color="#565c64"
-                    roughness={0.7}
-                />
-            </mesh>
+                <meshStandardMaterial color="#565c64" roughness={0.7} />
+                {benches.map((b, i) => {
+                    const c = Math.cos(b.rotation);
+                    const s = Math.sin(b.rotation);
+                    const ox = 0.3 * s;
+                    const oz = 0.3 * c;
+                    return (
+                        <Instance
+                            key={i}
+                            position={[
+                                b.position[0] + ox,
+                                1.2,
+                                b.position[2] + oz,
+                            ]}
+                            rotation={[0, b.rotation, 0]}
+                        />
+                    );
+                })}
+            </Instances>
 
-            {/* Legs */}
-            <mesh position={[-1.1, 0.35, 0]}>
+            <Instances limit={benches.length * 2}>
                 <boxGeometry args={[0.18, 0.7, 0.18]} />
                 <meshStandardMaterial
                     color="#343942"
                     metalness={0.6}
                     roughness={0.3}
                 />
-            </mesh>
+                {benches.map((b, i) => {
+                    const c = Math.cos(b.rotation);
+                    const s = Math.sin(b.rotation);
+                    return (
+                        <group key={i}>
+                            <Instance
+                                position={[
+                                    b.position[0] - 1.1 * c,
+                                    0.35,
+                                    b.position[2] + 1.1 * s,
+                                ]}
+                                rotation={[0, b.rotation, 0]}
+                            />
+                            <Instance
+                                position={[
+                                    b.position[0] + 1.1 * c,
+                                    0.35,
+                                    b.position[2] - 1.1 * s,
+                                ]}
+                                rotation={[0, b.rotation, 0]}
+                            />
+                        </group>
+                    );
+                })}
+            </Instances>
 
-            <mesh position={[1.1, 0.35, 0]}>
-                <boxGeometry args={[0.18, 0.7, 0.18]} />
-                <meshStandardMaterial
-                    color="#343942"
-                    metalness={0.6}
-                    roughness={0.3}
-                />
-            </mesh>
-        </group>
-    );
-}
-
-function CeilingLight({ position }) {
-    return (
-        <group position={position}>
-            <mesh>
+            <Instances limit={ceilingLightPositions.length}>
                 <cylinderGeometry args={[0.35, 0.35, 0.12, 24]} />
                 <meshStandardMaterial
                     color="#f5f5f5"
                     emissive="#ffffff"
                     emissiveIntensity={1.5}
                 />
-            </mesh>
+                {ceilingLightPositions.map((pos, i) => (
+                    <Instance key={i} position={pos} />
+                ))}
+            </Instances>
 
-            <pointLight
-                intensity={1.2}
-                distance={12}
-                position={[0, -0.2, 0]}
-            />
-        </group>
-    );
-}
-
-export default function MallDetails() {
-    return (
-        <group>
-
-            {/* =========================
-                MAIN COLUMNS
-            ========================= */}
-
-            <Column position={[-20, 0, -38]} />
-            <Column position={[20, 0, -38]} />
-
-            <Column position={[-35, 0, -20]} />
-            <Column position={[35, 0, -20]} />
-
-            <Column position={[-35, 0, 18]} />
-            <Column position={[35, 0, 18]} />
-
-            <Column position={[-20, 0, 38]} />
-            <Column position={[20, 0, 38]} />
-
-
-            {/* =========================
-                ATRIUM PLANTS
-            ========================= */}
-
-            <Plant position={[-18, 0, -18]} />
-            <Plant position={[18, 0, -18]} />
-
-            <Plant position={[-18, 0, 18]} />
-            <Plant position={[18, 0, 18]} />
-
-
-            {/* =========================
-                SEATING
-            ========================= */}
-
-            <Bench
-                position={[-12, 0, -18]}
-                rotation={Math.PI / 2}
-            />
-
-            <Bench
-                position={[12, 0, -18]}
-                rotation={-Math.PI / 2}
-            />
-
-            <Bench
-                position={[-12, 0, 18]}
-                rotation={Math.PI / 2}
-            />
-
-            <Bench
-                position={[12, 0, 18]}
-                rotation={-Math.PI / 2}
-            />
-
-
-            {/* =========================
-                LIGHTS
-            ========================= */}
-
-            <CeilingLight position={[-18, 5, -15]} />
-            <CeilingLight position={[18, 5, -15]} />
-
-            <CeilingLight position={[-18, 5, 15]} />
-            <CeilingLight position={[18, 5, 15]} />
-
-            <CeilingLight position={[0, 5, -25]} />
-            <CeilingLight position={[0, 5, 25]} />
-
-
-            {/* =========================
-                ATRIUM SIGN
-            ========================= */}
+            {activeLightPositions.map((pos, i) => (
+                <pointLight
+                    key={i}
+                    position={[pos[0], pos[1] - 0.2, pos[2]]}
+                    intensity={2.2}
+                    distance={18}
+                />
+            ))}
 
             <Text
                 position={[0, 4.5, 0]}

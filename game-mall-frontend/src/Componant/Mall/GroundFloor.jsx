@@ -13,7 +13,7 @@ import Store3D from "./Store3D";
     لدوران المحور Y) - صفر تداخلات مؤكدة بين أي محلين.
 */
 
-const stores = [
+const DEFAULT_STORES  = [
     {
         id: "U-01",
         position: [-53.18, 0, -9.38],
@@ -184,7 +184,7 @@ const stores = [
     },
 ];
 
-export default function GroundFloor() {
+export default function GroundFloor({ stores = DEFAULT_STORES }) {
     return (
         <group>
             {stores.map((store) => (

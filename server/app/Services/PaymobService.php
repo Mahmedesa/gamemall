@@ -204,19 +204,16 @@ class PaymobService
 
         if ($httpCode < 200 || $httpCode >= 300) {
 
-            $message =
-                $result['message']
-                ?? $result['detail']
-                ?? 'Paymob payment intention failed';
-
-            throw new RuntimeException(
-                $message,
-                502
-            );
-        }
+    throw new RuntimeException(
+        'Paymob API Error | HTTP ' . $httpCode .
+        ' | Response: ' . $response,
+        502
+    );
+}
 
         return $result;
     }
+
     /**
      * إنشاء رابط Paymob Unified Checkout
      */
@@ -236,11 +233,8 @@ class PaymobService
     }
 
     /**
-     * الحقول الـ 20 الرسمية اللي Paymob بيستخدمها لحساب الـ HMAC
-     * بتاع TRANSACTION callback، لازم تتقرا بالترتيب الأبجدي ده بالظبط
-     * وتتلزق مع بعض من غير أي فاصل، بعدين نعمل عليها HMAC-SHA512.
-     *
-     * المرجع الرسمي: Paymob Developers - HMAC Calculation
+     * الحقول الرسمية التي يستخدمها Paymob
+     * لحساب HMAC الخاص بـ TRANSACTION callback.
      */
     private const HMAC_FIELDS = [
         'amount_cents',
@@ -266,12 +260,13 @@ class PaymobService
     ];
 
     /**
-     * التحقق من إن الـ webhook فعلاً جاي من Paymob ومحدش لعب فيه
-     * في الطريق. بناخد الـ obj (بيانات الأوردر/الترانزاكشن) والـ hmac
-     * اللي جالنا، ونعيد حساب الـ hash بنفسنا ونقارنهم.
+     * التحقق من HMAC الخاص بالـ Paymob webhook
      */
-    public function verifyHmac(array $obj, string $receivedHmac): bool
-    {
+    public function verifyHmac(
+        array $obj,
+        string $receivedHmac
+    ): bool {
+
         if ($receivedHmac === '') {
             return false;
         }
@@ -280,48 +275,79 @@ class PaymobService
 
         foreach (self::HMAC_FIELDS as $field) {
 
-            $value = $this->extractHmacFieldValue($obj, $field);
+            $value =
+                $this->extractHmacFieldValue(
+                    $obj,
+                    $field
+                );
 
             $concatenated .= $value;
         }
 
-        $calculatedHmac = hash_hmac(
-            'sha512',
-            $concatenated,
-            $this->hmacSecret
-        );
+        $calculatedHmac =
+            hash_hmac(
+                'sha512',
+                $concatenated,
+                $this->hmacSecret
+            );
 
-        return hash_equals($calculatedHmac, strtolower($receivedHmac));
+        return hash_equals(
+            $calculatedHmac,
+            strtolower($receivedHmac)
+        );
     }
 
     /**
-     * جلب قيمة حقل من الـ obj، مع دعم الحقول المتداخلة زي
-     * order.id و source_data.pan (بيبقوا arrays متداخلة جوه الـ obj)
+     * جلب قيمة حقل من الـ obj
+     *
+     * يدعم:
+     *
+     * order.id
+     * source_data.pan
+     * source_data.type
      */
-    private function extractHmacFieldValue(array $obj, string $field): string
-    {
+    private function extractHmacFieldValue(
+        array $obj,
+        string $field
+    ): string {
+
         if (!str_contains($field, '.')) {
 
-            $value = $obj[$field] ?? '';
+            $value =
+                $obj[$field] ?? '';
 
-            return $this->stringifyHmacValue($value);
+            return $this->stringifyHmacValue(
+                $value
+            );
         }
 
-        [$parent, $child] = explode('.', $field, 2);
+        [$parent, $child] =
+            explode(
+                '.',
+                $field,
+                2
+            );
 
-        $value = $obj[$parent][$child] ?? '';
+        $value =
+            $obj[$parent][$child] ?? '';
 
-        return $this->stringifyHmacValue($value);
+        return $this->stringifyHmacValue(
+            $value
+        );
     }
 
     /**
-     * Paymob بيحوّل الـ boolean لـ "true"/"false" نصيًا وقت حساب
-     * الـ HMAC، فلازم نطابق نفس التحويل بالظبط
+     * تحويل القيم إلى الشكل الذي يستخدمه Paymob
+     * أثناء حساب HMAC.
      */
-    private function stringifyHmacValue($value): string
-    {
+    private function stringifyHmacValue(
+        $value
+    ): string {
+
         if (is_bool($value)) {
-            return $value ? 'true' : 'false';
+            return $value
+                ? 'true'
+                : 'false';
         }
 
         if ($value === null) {

@@ -44,12 +44,14 @@ class MallService
         $sql = "
             SELECT
                 s.store_id,
+                s.store_code,
                 s.Vendors_com_id,
                 s.shop_name,
                 s.floor_num,
                 s.shop_logo,
                 s.shop_specializes,
                 s.is_active,
+                s.store_status,
 
                 l.id AS location_record_id,
                 l.location_id,
@@ -109,12 +111,14 @@ class MallService
         $sql = "
             SELECT
                 s.store_id,
+                s.store_code,
                 s.Vendors_com_id,
                 s.shop_name,
                 s.floor_num,
                 s.shop_logo,
                 s.shop_specializes,
                 s.is_active,
+                s.store_status,
 
                 l.id AS location_record_id,
                 l.location_id,

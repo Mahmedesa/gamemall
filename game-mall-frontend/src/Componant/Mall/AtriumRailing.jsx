@@ -5,7 +5,6 @@ function CurvedRailing({
     radiusZ = 16,
     y = 5.7,
 }) {
-
     const segments = 64;
     const pieces = [];
 
@@ -35,6 +34,11 @@ function CurvedRailing({
         const rotation =
             Math.atan2(-dz, dx);
 
+        /*
+         * Every 4 segments gets a vertical support
+         */
+        const showSupport = i % 4 === 0;
+
         pieces.push(
             <group
                 key={i}
@@ -42,10 +46,19 @@ function CurvedRailing({
                 rotation={[0, rotation, 0]}
             >
 
-                {/* Metal top rail */}
-                <mesh position={[0, 1.05, 0]}>
+                {/* =================================================
+                    METAL TOP RAIL
+                ================================================= */}
+
+                <mesh
+                    position={[0, 1.05, 0]}
+                >
                     <boxGeometry
-                        args={[length + 0.08, 0.12, 0.12]}
+                        args={[
+                            length + 0.08,
+                            0.12,
+                            0.12,
+                        ]}
                     />
 
                     <meshStandardMaterial
@@ -56,10 +69,46 @@ function CurvedRailing({
                 </mesh>
 
 
-                {/* Glass */}
-                <mesh position={[0, 0.55, 0]}>
+                {/* =================================================
+                    TOP LED
+                ================================================= */}
+
+                <mesh
+                    position={[
+                        0,
+                        1.14,
+                        0.015,
+                    ]}
+                >
                     <boxGeometry
-                        args={[length, 1.0, 0.06]}
+                        args={[
+                            length,
+                            0.045,
+                            0.045,
+                        ]}
+                    />
+
+                    <meshStandardMaterial
+                        color="#a855f7"
+                        emissive="#a855f7"
+                        emissiveIntensity={2.5}
+                    />
+                </mesh>
+
+
+                {/* =================================================
+                    GLASS
+                ================================================= */}
+
+                <mesh
+                    position={[0, 0.55, 0]}
+                >
+                    <boxGeometry
+                        args={[
+                            length,
+                            1.0,
+                            0.06,
+                        ]}
                     />
 
                     <meshPhysicalMaterial
@@ -74,10 +123,19 @@ function CurvedRailing({
                 </mesh>
 
 
-                {/* Bottom rail */}
-                <mesh position={[0, 0.08, 0]}>
+                {/* =================================================
+                    BOTTOM METAL RAIL
+                ================================================= */}
+
+                <mesh
+                    position={[0, 0.08, 0]}
+                >
                     <boxGeometry
-                        args={[length + 0.08, 0.12, 0.12]}
+                        args={[
+                            length + 0.08,
+                            0.12,
+                            0.12,
+                        ]}
                     />
 
                     <meshStandardMaterial
@@ -87,6 +145,62 @@ function CurvedRailing({
                     />
                 </mesh>
 
+
+                {/* =================================================
+                    BOTTOM LED
+                ================================================= */}
+
+                <mesh
+                    position={[
+                        0,
+                        0.16,
+                        0.075,
+                    ]}
+                >
+                    <boxGeometry
+                        args={[
+                            length,
+                            0.055,
+                            0.055,
+                        ]}
+                    />
+
+                    <meshStandardMaterial
+                        color="#38bdf8"
+                        emissive="#38bdf8"
+                        emissiveIntensity={3}
+                    />
+                </mesh>
+
+
+                {/* =================================================
+                    VERTICAL METAL SUPPORT
+                ================================================= */}
+
+                {showSupport && (
+                    <mesh
+                        position={[
+                            0,
+                            0.55,
+                            0,
+                        ]}
+                    >
+                        <boxGeometry
+                            args={[
+                                0.08,
+                                1.95,
+                                0.1,
+                            ]}
+                        />
+
+                        <meshStandardMaterial
+                            color="#737d8a"
+                            metalness={0.85}
+                            roughness={0.22}
+                        />
+                    </mesh>
+                )}
+
             </group>
         );
     }
@@ -95,13 +209,21 @@ function CurvedRailing({
 }
 
 
+/* =====================================================
+   ATRIUM RAILING
+===================================================== */
+
 export default function AtriumRailing() {
 
     return (
-        <CurvedRailing
-            radiusX={22}
-            radiusZ={16}
-            y={5.7}
-        />
+        <group>
+
+            <CurvedRailing
+                radiusX={22}
+                radiusZ={16}
+                y={5.7}
+            />
+
+        </group>
     );
 }

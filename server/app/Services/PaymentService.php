@@ -599,6 +599,39 @@ class PaymentService
             );
         }
 
+        $paymentMethod = $this->paymentMethod
+    ->where(
+        'payment_method_id',
+        '=',
+        (int) ($payment['payment_method_id'] ?? 0)
+    )
+    ->where(
+        'is_active',
+        '=',
+        1
+    )
+    ->first();
+
+if (!$paymentMethod) {
+    throw new RuntimeException(
+        'Payment method not found or inactive',
+        422
+    );
+}
+
+$paymentCode = strtolower(
+    trim(
+        (string) ($paymentMethod['payment_code'] ?? '')
+    )
+);
+
+if ($paymentCode !== 'paymob_card') {
+    throw new RuntimeException(
+        'This payment method is not configured for Paymob card payments',
+        422
+    );
+}
+
         /*
         * Get currency
         */

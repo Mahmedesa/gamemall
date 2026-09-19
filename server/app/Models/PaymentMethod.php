@@ -11,6 +11,7 @@ class PaymentMethod extends BaseModel
     protected array $fillable = [
         'payment_name_AR',
         'payment_name_EN',
+        'payment_code',
         'is_active',
     ];
 

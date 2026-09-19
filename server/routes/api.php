@@ -18,6 +18,8 @@ use App\Controllers\PaymentController;
 use App\Controllers\GameController;
 use App\Controllers\MallController;
 use App\Controllers\CurrencyController;
+use App\Controllers\RentalController;
+use App\Http\Controllers\PaymobCallbackController;
 
 /** @var App\Core\Router $router */
 
@@ -627,3 +629,40 @@ $router->post(
     '/api/payment/paymob/webhook',
     [PaymentController::class, 'paymobWebhook']
 );
+
+$router->get(
+    '/api/vendor/rentals/available',
+    [RentalController::class, 'availableStores'],
+    [
+        AuthMiddleware::class,
+        [RoleMiddleware::class, 'vendor']
+    ]
+);
+
+$router->get(
+    '/api/vendor/rentals',
+    [RentalController::class, 'index'],
+    [
+        AuthMiddleware::class,
+        [RoleMiddleware::class, 'vendor']
+    ]
+);
+
+$router->post(
+    '/api/vendor/rentals',
+    [RentalController::class, 'store'],
+    [
+        AuthMiddleware::class,
+        [RoleMiddleware::class, 'vendor']
+    ]
+);
+$router->post(
+    '/api/vendor/rentals/paymob/start',
+    [RentalController::class, 'startPaymob'],
+    [
+        AuthMiddleware::class,
+        [RoleMiddleware::class, 'vendor']
+    ]
+);
+// مثال في ملف الـ routes
+$router->post('/api/paymob/callback/processed', [PaymobCallbackController::class, 'handleProcessed']);

@@ -5,7 +5,6 @@ export default function SecondFloorShell() {
     const outerRadiusX = 67.5;
     const outerRadiusZ = 60;
 
-    // فتحة الـ Atrium حول النافورة
     const innerRadiusX = 21;
     const innerRadiusZ = 15;
 
@@ -15,7 +14,6 @@ export default function SecondFloorShell() {
     const shape = useMemo(() => {
         const outer = new THREE.Shape();
 
-        // الشكل الخارجي البيضاوي
         outer.absellipse(
             0,
             0,
@@ -27,7 +25,6 @@ export default function SecondFloorShell() {
             0
         );
 
-        // الفتحة الداخلية البيضاوية
         const hole = new THREE.Path();
 
         hole.absellipse(
@@ -48,6 +45,11 @@ export default function SecondFloorShell() {
 
     return (
         <group>
+
+            {/* =====================================================
+                SECOND FLOOR SHELL
+            ===================================================== */}
+
             <mesh
                 position={[0, floorY, 0]}
                 rotation={[-Math.PI / 2, 0, 0]}
@@ -70,6 +72,97 @@ export default function SecondFloorShell() {
                     side={THREE.DoubleSide}
                 />
             </mesh>
+
+
+            {/* =====================================================
+                OUTER LOWER LED RING
+            ===================================================== */}
+
+            <mesh
+                position={[0, floorY - 0.08, 0]}
+                rotation={[-Math.PI / 2, 0, 0]}
+            >
+                <ringGeometry
+                    args={[
+                        59.5,
+                        59.75,
+                        128,
+                    ]}
+                />
+
+                <meshStandardMaterial
+                    color="#38bdf8"
+                    emissive="#38bdf8"
+                    emissiveIntensity={2.5}
+                    transparent
+                    opacity={0.85}
+                />
+            </mesh>
+
+
+            {/* =====================================================
+                INNER ATRIUM EDGE LIGHT
+            ===================================================== */}
+
+            <mesh
+                position={[0, floorY - 0.02, 0]}
+                rotation={[-Math.PI / 2, 0, 0]}
+            >
+                <ringGeometry
+                    args={[
+                        21.05,
+                        21.18,
+                        128,
+                ]}
+                />
+
+                <meshStandardMaterial
+                    color="#a855f7"
+                    emissive="#a855f7"
+                    emissiveIntensity={2}
+                    transparent
+                    opacity={0.8}
+                />
+            </mesh>
+
+
+            {/* =====================================================
+                OUTER TOP ACCENT
+            ===================================================== */}
+
+            <mesh
+                position={[0, floorY + thickness + 0.03, 0]}
+                rotation={[-Math.PI / 2, 0, 0]}
+            >
+                <ringGeometry
+                    args={[
+                        66.7,
+                        67.15,
+                        128,
+                    ]}
+                />
+
+                <meshStandardMaterial
+                    color="#7c3cff"
+                    emissive="#7c3cff"
+                    emissiveIntensity={1.8}
+                    transparent
+                    opacity={0.7}
+                />
+            </mesh>
+
+
+            {/* =====================================================
+                OUTER AMBIENT LIGHT
+            ===================================================== */}
+
+            <pointLight
+                position={[0, floorY - 0.2, 0]}
+                color="#38bdf8"
+                intensity={2}
+                distance={18}
+            />
+
         </group>
     );
 }

@@ -22,10 +22,10 @@ export default function SecondFloor({ stores = DEFAULT_STORES }) {
     return (
         <group>
             {stores.map((store) => (
-                <Store3D
-                    key={store.id}
-                    {...store}
-                />
+                            <Store3D
+                                key={store.id}
+                                {...store}
+                            />
             ))}
         </group>
     );
