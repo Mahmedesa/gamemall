@@ -19,6 +19,7 @@ use App\Controllers\GameController;
 use App\Controllers\MallController;
 use App\Controllers\CurrencyController;
 use App\Controllers\RentalController;
+use App\Controllers\StoreLayoutController;
 use App\Http\Controllers\PaymobCallbackController;
 
 /** @var App\Core\Router $router */
@@ -587,6 +588,12 @@ $router->get(
     [MallController::class, 'floor']
 );
 
+$router->get(
+    '/api/mall/store/access',
+    [MallController::class, 'storeAccess'],
+    [AuthMiddleware::class]
+);
+
 $router->post(
     '/api/payment/paymob/start',
     [PaymentController::class, 'startPaymobPayment'],
@@ -666,3 +673,35 @@ $router->post(
 );
 // مثال في ملف الـ routes
 $router->post('/api/paymob/callback/processed', [PaymobCallbackController::class, 'handleProcessed']);
+
+// ============================================================
+// STORE LAYOUT
+// ============================================================
+
+// GET layout
+// /api/vendor/store-layout?store_id=1
+$router->get(
+    '/api/vendor/store-layout',
+    [StoreLayoutController::class, 'index']
+);
+
+// CREATE layout item
+// POST /api/vendor/store-layout
+$router->post(
+    '/api/vendor/store-layout',
+    [StoreLayoutController::class, 'store']
+);
+
+// UPDATE layout item
+// POST /api/vendor/store-layout/update
+$router->post(
+    '/api/vendor/store-layout/update',
+    [StoreLayoutController::class, 'update']
+);
+
+// DELETE layout item
+// POST /api/vendor/store-layout/delete
+$router->post(
+    '/api/vendor/store-layout/delete',
+    [StoreLayoutController::class, 'destroy']
+);

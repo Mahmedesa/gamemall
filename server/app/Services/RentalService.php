@@ -819,8 +819,13 @@ class RentalService
                 'store_id'          => (int) $rental['store_id'],
                 'Vendors_com_id'    => (int) $rental['Vendors_com_id'],
                 'assignment_status' => 'ACTIVE',
-                'assigned_at'       => date('Y-m-d H:i:s'),
+                'start_date'        => date('Y-m-d H:i:s'),
             ]);
+            if (!$assignmentCreated) {
+    throw new RuntimeException("Failed to create store assignment");
+}
+
+error_log('ASSIGNMENT CREATED: ' . print_r($assignmentCreated, true));
 
             if (!$assignmentCreated) {
                 throw new RuntimeException("Failed to create store assignment");
@@ -832,6 +837,13 @@ class RentalService
                 ->where('Vendors_com_id', '=', (int) $rental['Vendors_com_id'])
                 ->where('assignment_status', '=', 'ACTIVE')
                 ->first();
+                error_log('ASSIGNMENT FETCHED: ' . print_r($assignment, true));
+
+if (!$assignment) {
+    throw new RuntimeException(
+        "Assignment was not found after creation for store {$rental['store_id']} and vendor {$rental['Vendors_com_id']}"
+    );
+}
         }
 
         // 4. تحديث الـ Rental إلى ACTIVE وتمرير الـ assignment_id
@@ -847,7 +859,7 @@ class RentalService
         $this->store->update(
             (int) $rental['store_id'],
             [
-                'store_status' => 'RENTED',
+                'store_status' => 'OCCUPIED',
             ]
         );
 

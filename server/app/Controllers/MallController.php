@@ -100,4 +100,53 @@ class MallController
             );
         }
     }
+
+    /**
+     * GET /api/mall/store/access?store_id=1
+     *
+     * Check whether the authenticated user can access a store
+     */
+    public function storeAccess(): void
+    {
+        try {
+
+            $storeId = $_GET['store_id'] ?? null;
+
+            if (
+                $storeId === null ||
+                filter_var($storeId, FILTER_VALIDATE_INT) === false
+            ) {
+                throw new RuntimeException(
+                    'A valid store_id is required',
+                    422
+                );
+            }
+
+            $result = $this->mallService->checkStoreAccess(
+                (int) $storeId
+            );
+
+            Response::success(
+                $result,
+                'Store access checked successfully'
+            );
+
+        } catch (Throwable $e) {
+
+            $code = (int) $e->getCode();
+
+            if (!in_array(
+                $code,
+                [400, 401, 403, 404, 409, 422],
+                true
+            )) {
+                $code = 400;
+            }
+
+            Response::error(
+                $e->getMessage(),
+                $code
+            );
+        }
+    }
 }

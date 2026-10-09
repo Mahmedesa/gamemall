@@ -1,16 +1,135 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, Suspense, Component } from "react";
 import { useFrame } from "@react-three/fiber";
+import { useGLTF, useAnimations } from "@react-three/drei";
+import * as THREE from "three";
+
+import avatarModelPath from "../../assets/Avatar.glb?url";
+
+/*
+|--------------------------------------------------------------------------
+| ملحوظة: الملف فيه أنيميشن واحد بس (Human.rigAction) — دورة مشي كاملة.
+| مفيش حركة "وقوف" منفصلة، فمنطق التشغيل هو: شغّلي الحركة وهي بتتحرك،
+| ووقّفيها (pause) في مكانها لما تقف.
+|
+| كمان الملف فيه 4 Shape Keys (ملامح شكل MakeHuman). بتتحكمي فيهم عن
+| طريق الـ prop "shapeKeyValues" (array من 4 أرقام بين 0 و1).
+|--------------------------------------------------------------------------
+*/
+
+class ModelErrorBoundary extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error) {
+        console.warn(
+            "تعذّر تحميل موديل الأفاتار (GLB):",
+            error?.message || error
+        );
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <mesh position={[0, 1, 0]}>
+                    <capsuleGeometry args={[0.4, 1.2, 8, 16]} />
+                    <meshStandardMaterial color="#7c3cff" />
+                </mesh>
+            );
+        }
+        return this.props.children;
+    }
+}
+
+function LoadedAvatarModel({ isMovingRef, shapeKeyValues }) {
+    const group = useRef();
+    const morphMeshRef = useRef(null);
+    const { scene, animations } = useGLTF(avatarModelPath);
+    const { actions, names } = useAnimations(animations, group);
+    const wasMovingRef = useRef(false);
+
+    // إصلاح الخامات ولقاء الميش اللي عليه Shape Keys
+    useEffect(() => {
+        scene.traverse((child) => {
+            if (child.isMesh && child.material) {
+                child.material.transparent = false;
+                child.material.opacity = 1;
+                child.material.depthWrite = true;
+                child.material.needsUpdate = true;
+            }
+
+            if (child.isMesh && child.morphTargetInfluences) {
+                morphMeshRef.current = child;
+            }
+        });
+    }, [scene]);
+
+    // تطبيق قيم السلايدرز على الـ Shape Keys
+    useEffect(() => {
+        const mesh = morphMeshRef.current;
+        if (!mesh || !mesh.morphTargetInfluences || !shapeKeyValues) return;
+
+        shapeKeyValues.forEach((value, i) => {
+            if (mesh.morphTargetInfluences[i] !== undefined) {
+                mesh.morphTargetInfluences[i] = value;
+            }
+        });
+    }, [shapeKeyValues]);
+
+    const walkAction = actions[names[0]];
+
+    useEffect(() => {
+        if (!walkAction) return;
+
+        walkAction.setLoop(THREE.LoopRepeat, Infinity);
+        walkAction.clampWhenFinished = false;
+        walkAction.play();
+        walkAction.paused = true;
+
+        return () => {
+            walkAction?.stop();
+        };
+    }, [walkAction]);
+
+    useFrame(() => {
+        if (!walkAction) return;
+
+        const isMoving = isMovingRef.current;
+
+        if (isMoving !== wasMovingRef.current) {
+            walkAction.paused = !isMoving;
+            wasMovingRef.current = isMoving;
+        }
+    });
+
+    return (
+        <primitive
+            ref={group}
+            object={scene}
+            position={[0, 0.2, 0]}
+            renderOrder={1}
+        />
+    );
+}
+
+useGLTF.preload(avatarModelPath);
 
 export default function Avatar({
     position = [0, 0, 22],
     isTransitioning = false,
     onPositionUpdate,
     canMove,
-    joystickInput, // مدخلات الجويستيك للجوال { x, z }
+    joystickInput,
+    shapeKeyValues,
 }) {
     const avatarRef = useRef();
-    const meshGroupRef = useRef();
     const keys = useRef({});
+    const isMovingRef = useRef(false);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -43,9 +162,8 @@ export default function Avatar({
 
         if (isTransitioning) return;
 
-        const moveSpeed = 12 * delta;
+        const moveSpeed = 8 * delta;
 
-        // مدخلات لوحة المفاتيح
         const isUp = keys.current["w"] || keys.current["arrowup"] || keys.current["KeyW"];
         const isDown = keys.current["s"] || keys.current["arrowdown"] || keys.current["KeyS"];
         const isLeft = keys.current["a"] || keys.current["arrowleft"] || keys.current["KeyA"];
@@ -59,33 +177,19 @@ export default function Avatar({
         if (isLeft) moveX -= moveSpeed;
         if (isRight) moveX += moveSpeed;
 
-        // دمج حركة الجويستيك إن وُجدت
         if (joystickInput && (joystickInput.x !== 0 || joystickInput.z !== 0)) {
             moveX = joystickInput.x * moveSpeed;
             moveZ = joystickInput.z * moveSpeed;
         }
 
         const isMoving = moveX !== 0 || moveZ !== 0;
-
-        // 1. إضافة أنيميشن مشي مجسم للأفاتار عند الحركة
-        if (meshGroupRef.current) {
-            if (isMoving) {
-                const t = state.clock.getElapsedTime() * 12;
-                meshGroupRef.current.position.y = Math.sin(t) * 0.08;
-                meshGroupRef.current.rotation.z = Math.sin(t * 0.5) * 0.05;
-            } else {
-                meshGroupRef.current.position.y = 0;
-                meshGroupRef.current.rotation.z = 0;
-            }
-        }
+        isMovingRef.current = isMoving;
 
         if (!isMoving) return;
 
-        // الدوران باتجاه الحركة
         const angle = Math.atan2(moveX, moveZ);
         avatarRef.current.rotation.y = angle;
 
-        // التأكد من عدم الاصطدام بالهيئات
         const nextPosition = [pos.x + moveX, pos.y, pos.z + moveZ];
 
         if (canMove && !canMove(nextPosition)) {
@@ -99,24 +203,18 @@ export default function Avatar({
 
     return (
         <group ref={avatarRef} position={position}>
-            <group ref={meshGroupRef}>
-                {/* جسم اللاعب */}
-                <mesh position={[0, 1.1, 0]}>
-                    <capsuleGeometry args={[0.45, 1.2, 8, 16]} />
-                    <meshStandardMaterial color="#7c3cff" roughness={0.3} />
-                </mesh>
+            <ModelErrorBoundary>
+                <Suspense fallback={null}>
+                    <LoadedAvatarModel
+                        isMovingRef={isMovingRef}
+                        shapeKeyValues={shapeKeyValues}
+                    />
+                </Suspense>
+            </ModelErrorBoundary>
 
-                {/* علامة اتجاه النظر */}
-                <mesh position={[0, 1.5, 0.4]}>
-                    <boxGeometry args={[0.5, 0.15, 0.1]} />
-                    <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
-                </mesh>
-            </group>
-
-            {/* ظل اللاعب */}
-            <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <ringGeometry args={[0.2, 0.6, 32]} />
-                <meshBasicMaterial color="#000000" transparent opacity={0.4} />
+            <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[0.1, 0.4, 32]} />
+                <meshBasicMaterial color="#000000" transparent opacity={0.3} />
             </mesh>
         </group>
     );

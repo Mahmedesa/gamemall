@@ -16,11 +16,28 @@ import SecondFloorShell from "../Componant/Mall/SecondFloorShell";
 import MallFacade from "../Componant/Mall/MallFacade";
 import MallLighting from "../Componant/Mall/MallLighting";
 import Avatar from "../Componant/Mall/Avatar";
+import StoreInterior from "../Componant/Mall/StoreInterior";
+import AvatarCustomizer from "../Componant/Mall/AvatarCustomizer";
+import { DEFAULT_CUSTOMIZATION } from "../Componant/Mall/AvatarBody";
+import { useAuth } from "../context/AuthContext";
+import { createStoreLayout } from "../Componant/Mall/StoreLayout";
+import VendorStoreEditor from "../Componant/Mall/VendorStoreEditor";
+
+const AVATAR_STORAGE_KEY = "mall_avatar_customization";
 
 const API_BASE_URL = "http://localhost/gmaemalling/server/public";
 
 const ESCALATOR_LEFT_GROUND = [-33.5, 0, 0];
 const ESCALATOR_LEFT_SECOND = [-20.5, 5.5, 0];
+
+const ESCALATOR_RIGHT_GROUND = [33.5, 0, 0];
+const ESCALATOR_RIGHT_SECOND = [20.5, 5.5, 0];
+
+/* قائمة موحّدة بكل السلالم؛ أي سلم جديد يتضاف هنا بس */
+const ESCALATORS = [
+    { id: "left", groundPos: ESCALATOR_LEFT_GROUND, secondPos: ESCALATOR_LEFT_SECOND },
+    { id: "right", groundPos: ESCALATOR_RIGHT_GROUND, secondPos: ESCALATOR_RIGHT_SECOND },
+];
 
 function mapApiStore(store) {
     const code = store.store_code || store.shop_name;
@@ -51,6 +68,39 @@ function mapApiStore(store) {
 }
 
 /* =========================================================
+   MOBILE DETECTION HOOK
+========================================================= */
+
+function isMobileDevice() {
+    if (typeof window === "undefined") return false;
+
+    const smallScreen = window.innerWidth <= 820;
+    const touchCapable =
+        "ontouchstart" in window ||
+        (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+
+    return smallScreen && touchCapable;
+}
+
+function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(() => isMobileDevice());
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(isMobileDevice());
+
+        window.addEventListener("resize", handleResize);
+        window.addEventListener("orientationchange", handleResize);
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            window.removeEventListener("orientationchange", handleResize);
+        };
+    }, []);
+
+    return isMobile;
+}
+
+/* =========================================================
    CAMERA FOLLOWER
 ========================================================= */
 
@@ -58,6 +108,7 @@ function CameraFollower({ avatarMeshRef, controlsRef }) {
     const prevAvatarPos = useRef(null);
     const { scene, camera } = useThree();
     const raycaster = useMemo(() => new THREE.Raycaster(), []);
+    const frameCount = useRef(0);
 
     useFrame(() => {
         if (!avatarMeshRef.current || !controlsRef.current) return;
@@ -77,36 +128,43 @@ function CameraFollower({ avatarMeshRef, controlsRef }) {
             controlsRef.current.object.position.y += deltaY;
             controlsRef.current.object.position.z += deltaZ;
 
-            const targetVec = controlsRef.current.target.clone();
-            const camVec = camera.position.clone();
+            // فحص الحجب (occlusion) مكلّف جدًا (raycast على كل المشهد recursive)
+            // مش محتاجينه كل فريم؛ كل 4 فريمات (~15 مرة/ثانية) كفاية بصريًا
+            // وبيقلل التكلفة لحوالي ربع القيمة الأصلية
+            frameCount.current += 1;
 
-            const dir = camVec.clone().sub(targetVec).normalize();
-            const maxDist = camVec.distanceTo(targetVec);
+            if (frameCount.current % 4 === 0) {
+                const targetVec = controlsRef.current.target.clone();
+                const camVec = camera.position.clone();
 
-            raycaster.set(targetVec, dir);
+                const dir = camVec.clone().sub(targetVec).normalize();
+                const maxDist = camVec.distanceTo(targetVec);
 
-            const intersects = raycaster.intersectObjects(
-                scene.children,
-                true
-            );
+                raycaster.set(targetVec, dir);
 
-            const validIntersects = intersects.filter(
-                (hit) =>
-                    hit.distance < maxDist &&
-                    hit.object !== avatarMeshRef.current
-            );
-
-            if (validIntersects.length > 0) {
-                const safeDist = Math.max(
-                    validIntersects[0].distance - 0.5,
-                    2.0
+                const intersects = raycaster.intersectObjects(
+                    scene.children,
+                    true
                 );
 
-                const newCamPos = targetVec
-                    .clone()
-                    .add(dir.multiplyScalar(safeDist));
+                const validIntersects = intersects.filter(
+                    (hit) =>
+                        hit.distance < maxDist &&
+                        hit.object !== avatarMeshRef.current
+                );
 
-                camera.position.lerp(newCamPos, 0.2);
+                if (validIntersects.length > 0) {
+                    const safeDist = Math.max(
+                        validIntersects[0].distance - 0.5,
+                        2.0
+                    );
+
+                    const newCamPos = targetVec
+                        .clone()
+                        .add(dir.multiplyScalar(safeDist));
+
+                    camera.position.lerp(newCamPos, 0.2);
+                }
             }
 
             controlsRef.current.update();
@@ -188,6 +246,163 @@ function worldToStoreLocal(point, store) {
         z: dx * sin + dz * cos,
     };
 }
+function isInsideInteriorObstacle(point, store) {
+    if (!store) return false;
+
+    const local = worldToStoreLocal(point, store);
+
+    const avatarRadius = 0.65;
+
+    const layout = createStoreLayout(store);
+
+    // ==========================================
+    // SHELVES
+    // ==========================================
+
+    for (const shelf of layout.shelves) {
+        const dx = local.x - shelf.position[0];
+        const dz = local.z - shelf.position[2];
+
+        const cos = Math.cos(-shelf.rotation);
+        const sin = Math.sin(-shelf.rotation);
+
+        const obstacleX =
+            dx * cos - dz * sin;
+
+        const obstacleZ =
+            dx * sin + dz * cos;
+
+        const halfWidth =
+            0.7 / 2 + avatarRadius;
+
+        const halfDepth =
+            shelf.width / 2 + avatarRadius;
+
+        if (
+            Math.abs(obstacleX) <= halfWidth &&
+            Math.abs(obstacleZ) <= halfDepth
+        ) {
+            return true;
+        }
+    }
+
+    // ==========================================
+    // COUNTER
+    // ==========================================
+
+    const counter = layout.counter;
+
+    const counterDX =
+        local.x - counter.position[0];
+
+    const counterDZ =
+        local.z - counter.position[2];
+
+    const counterHalfWidth =
+        counter.width / 2 + avatarRadius;
+
+    const counterHalfDepth =
+        counter.depth / 2 + avatarRadius;
+
+    if (
+        Math.abs(counterDX) <= counterHalfWidth &&
+        Math.abs(counterDZ) <= counterHalfDepth
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+function storeLocalToWorld(localPoint, store) {
+    const cos = Math.cos(store.rotation || 0);
+    const sin = Math.sin(store.rotation || 0);
+
+    return [
+        store.position[0] + localPoint.x * cos - localPoint.z * sin,
+        store.position[1] + localPoint.y,
+        store.position[2] + localPoint.x * sin + localPoint.z * cos,
+    ];
+}
+
+/* =========================================================
+   STORE INTERIOR COLLISION
+========================================================= */
+
+function createStoreInteriorCollisionChecker(store, onExit) {
+    return (nextPosition) => {
+        if (!store) return true;
+
+        const local = worldToStoreLocal(nextPosition, store);
+
+        const avatarRadius = 0.65;
+
+        const halfWidth = store.width / 2;
+        const halfDepth = store.depth / 2;
+
+        const innerMinX = -halfWidth + avatarRadius;
+        const innerMaxX = halfWidth - avatarRadius;
+
+        const innerMinZ = -halfDepth + avatarRadius;
+        const innerMaxZ = halfDepth - avatarRadius;
+
+        const entranceWidth = Math.min(
+            store.width * 0.32,
+            2.4
+        );
+
+        const doorHalfWidth = entranceWidth / 2 + 0.45;
+
+        const insideWidth =
+            local.x >= innerMinX &&
+            local.x <= innerMaxX;
+
+        const insideDepth =
+            local.z >= innerMinZ &&
+            local.z <= innerMaxZ;
+
+        /*
+         * الحركة الطبيعية داخل المحل
+         */
+        if (insideWidth && insideDepth) {
+            return true;
+        }
+
+        /*
+         * السماح بالخروج فقط من منطقة الباب
+         */
+        const inDoorWidth =
+            Math.abs(local.x) <= doorHalfWidth;
+
+        const atFrontDoor =
+            local.z > innerMaxZ &&
+            local.z <= halfDepth + 1.4;
+
+        if (inDoorWidth && atFrontDoor) {
+            return true;
+        }
+
+        /*
+         * لو خرج من الباب لمسافة كافية
+         * نرجعه للمول
+         */
+        if (
+            inDoorWidth &&
+            local.z > halfDepth + 0.8
+        ) {
+            if (onExit) {
+                onExit();
+            }
+
+            return true;
+        }
+
+        /*
+         * ممنوع الخروج من الحوائط
+         */
+        return false;
+    };
+}
 
 function isInsideStoreCollision(point, store) {
     const isAvatarOnGround = point[1] < 3.0;
@@ -220,6 +435,69 @@ function isInsideStoreCollision(point, store) {
     const insideDoor = Math.abs(local.x) <= doorHalfWidth;
 
     if (nearFront && insideDoor) {
+        return false;
+    }
+
+    return true;
+}
+
+function isValidInsideStorePosition(point, store) {
+    if (!store) return true;
+
+    const local = worldToStoreLocal(point, store);
+
+    const avatarRadius = 0.65;
+
+    const halfWidth = store.width / 2 - avatarRadius;
+    const halfDepth = store.depth / 2 - avatarRadius;
+
+    const entranceWidth = Math.min(
+        store.width * 0.32,
+        2.4
+    );
+
+    const doorHalfWidth = entranceWidth / 2 + 0.35;
+
+    // حدود المحل
+    const insideX =
+        Math.abs(local.x) <= halfWidth;
+
+    const insideZ =
+        Math.abs(local.z) <= halfDepth;
+
+    if (insideX && insideZ) {
+        return true;
+    }
+
+    // السماح بالخروج والدخول من منطقة الباب فقط
+    const nearEntrance =
+        local.z > store.depth / 2 - 1.5;
+
+    const insideDoor =
+        Math.abs(local.x) <= doorHalfWidth;
+
+    if (nearEntrance && insideDoor) {
+        return true;
+    }
+
+    return false;
+}
+
+function isInsideActiveStore(point, store) {
+    if (!store) return true;
+
+    const local = worldToStoreLocal(point, store);
+
+    const avatarRadius = 0.55;
+
+    const halfWidth = store.width / 2 - avatarRadius;
+    const halfDepth = store.depth / 2 - avatarRadius;
+
+    // حدود المحل من الداخل
+    if (
+        Math.abs(local.x) > halfWidth ||
+        Math.abs(local.z) > halfDepth
+    ) {
         return false;
     }
 
@@ -274,12 +552,12 @@ function isInsideAtriumRailing(point) {
         const distance = Math.hypot(x, z);
         const ATRIUM_RAILING_RADIUS = 21.0;
 
-        const nearEscalator = Math.hypot(
-            x - ESCALATOR_LEFT_SECOND[0],
-            z - ESCALATOR_LEFT_SECOND[2]
-        ) < 4.0;
+        const nearAnyEscalator = ESCALATORS.some(
+            (esc) =>
+                Math.hypot(x - esc.secondPos[0], z - esc.secondPos[2]) < 4.0
+        );
 
-        if (nearEscalator) {
+        if (nearAnyEscalator) {
             return false;
         }
 
@@ -299,12 +577,59 @@ function isOutsideMall(point) {
     return x < -58 || x > 58 || z < -53 || z > 53;
 }
 
+
+function getStoreEntrancePosition(store, inside = true) {
+    const entranceOffset = store.depth / 2 + (inside ? -1.5 : 1.5);
+
+    const localPosition = new THREE.Vector3(
+        0,
+        store.position[1],
+        entranceOffset
+    );
+
+    const rotation = new THREE.Euler(0, store.rotation, 0);
+
+    localPosition.applyEuler(rotation);
+
+    return [
+        store.position[0] + localPosition.x,
+        store.position[1],
+        store.position[2] + localPosition.z,
+    ];
+}
 /* =========================================================
    MASTER COLLISION CHECKER
 ========================================================= */
 
-function createCollisionChecker(stores) {
+function createCollisionChecker(stores, activeStore, isInsideStore) {
     return (nextPosition) => {
+
+        // ==========================================
+        // داخل المحل
+        // ==========================================
+        if (isInsideStore && activeStore) {
+
+    // Collision مع الرفوف والـ Counter
+    if (
+        isInsideInteriorObstacle(
+            nextPosition,
+            activeStore
+        )
+    ) {
+        return false;
+    }
+
+    // حدود المحل والباب
+    return isValidInsideStorePosition(
+        nextPosition,
+        activeStore
+    );
+}
+
+        // ==========================================
+        // المول
+        // ==========================================
+
         if (isOutsideMall(nextPosition)) {
             return false;
         }
@@ -346,7 +671,12 @@ function MallScene({
     controlsRef,
     canMove,
     joystickInput,
-}) {
+    activeStore,
+    onExitStore,
+    avatarCustomization,
+    isInsideStore,
+    avatarStartPosition,
+}) { 
     return (
         <>
             <color attach="background" args={["#111722"]} />
@@ -361,17 +691,25 @@ function MallScene({
             <GroundFloor stores={groundStores} />
             <SecondFloor stores={secondStores} />
 
+            {isInsideStore && activeStore && (
+    <StoreInterior
+        store={activeStore}
+        onExit={onExitStore}
+    />
+)}
+
             <MainEntrance />
             <Escalators />
             <VerticalCores />
             <MallDetails />
 
-            <Avatar
-                position={[0, 0, 22]}
+            <Avatar 
+    position={avatarStartPosition}
                 isTransitioning={isTransitioning}
                 onPositionUpdate={onAvatarMove}
                 canMove={canMove}
                 joystickInput={joystickInput}
+                customization={avatarCustomization}
             />
 
             <CameraFollower
@@ -413,6 +751,7 @@ function VirtualJoystick({ onMove }) {
     const touchRef = useRef(null);
     const [stickPos, setStickPos] = useState({ x: 0, y: 0 });
     const [active, setActive] = useState(false);
+   
 
     const handleTouchStart = (e) => {
         setActive(true);
@@ -488,32 +827,288 @@ function VirtualJoystick({ onMove }) {
 }
 
 /* =========================================================
+   MINI MAP
+========================================================= */
+
+function MiniMap({ stores, avatarPos }) {
+    const MAP_SIZE = 170;
+    const WORLD_MIN_X = -60;
+    const WORLD_MAX_X = 60;
+    const WORLD_MIN_Z = -55;
+    const WORLD_MAX_Z = 55;
+
+    const isGroundFloor = avatarPos[1] < 3.0;
+
+    const floorStores = stores.filter((s) => {
+        const onGround = s.position[1] < 3.0;
+        return onGround === isGroundFloor;
+    });
+
+    const toMapCoords = (x, z) => {
+        const px =
+            ((x - WORLD_MIN_X) / (WORLD_MAX_X - WORLD_MIN_X)) * MAP_SIZE;
+        const py =
+            ((z - WORLD_MIN_Z) / (WORLD_MAX_Z - WORLD_MIN_Z)) * MAP_SIZE;
+        return { px, py };
+    };
+
+    const avatarMapPos = toMapCoords(avatarPos[0], avatarPos[2]);
+    const centerMapPos = toMapCoords(0, 0);
+
+    return (
+        <div
+            style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                zIndex: 260,
+                background: "rgba(15,23,42,0.85)",
+                border: "2px solid rgba(124,60,255,0.5)",
+                borderRadius: "12px",
+                padding: "10px",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
+                pointerEvents: "none",
+                userSelect: "none",
+            }}
+        >
+            <div
+                style={{
+                    color: "#fff",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    marginBottom: "6px",
+                    textAlign: "center",
+                }}
+            >
+                {isGroundFloor ? "الدور الأرضي" : "الدور الثاني"}
+            </div>
+
+            <div
+                style={{
+                    position: "relative",
+                    width: `${MAP_SIZE}px`,
+                    height: `${MAP_SIZE}px`,
+                    background: "#0d1117",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                }}
+            >
+                {/* Atrium / Fountain */}
+                <div
+                    style={{
+                        position: "absolute",
+                        left: `${centerMapPos.px - 18}px`,
+                        top: `${centerMapPos.py - 18}px`,
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "50%",
+                        background: "rgba(143,211,255,0.25)",
+                        border: "1px solid rgba(143,211,255,0.5)",
+                    }}
+                />
+
+                {/* Escalator markers (كل السلالم في الدور الحالي) */}
+                {ESCALATORS.map((esc) => {
+                    const escPos = isGroundFloor ? esc.groundPos : esc.secondPos;
+                    const { px, py } = toMapCoords(escPos[0], escPos[2]);
+
+                    return (
+                        <div
+                            key={esc.id}
+                            style={{
+                                position: "absolute",
+                                left: `${px - 4}px`,
+                                top: `${py - 4}px`,
+                                width: "8px",
+                                height: "8px",
+                                borderRadius: "2px",
+                                background: "#f59e0b",
+                                boxShadow: "0 0 6px rgba(245,158,11,0.8)",
+                            }}
+                        />
+                    );
+                })}
+
+                {/* Stores */}
+                {floorStores.map((store) => {
+                    const { px, py } = toMapCoords(
+                        store.position[0],
+                        store.position[2]
+                    );
+                    const color =
+                        store.storeStatus === "AVAILABLE"
+                            ? "#10b981"
+                            : "#ef4444";
+
+                    return (
+                        <div
+                            key={store.id}
+                            style={{
+                                position: "absolute",
+                                left: `${px - 3}px`,
+                                top: `${py - 3}px`,
+                                width: "6px",
+                                height: "6px",
+                                borderRadius: "2px",
+                                background: color,
+                            }}
+                        />
+                    );
+                })}
+
+                {/* Avatar */}
+                <div
+                    style={{
+                        position: "absolute",
+                        left: `${avatarMapPos.px - 5}px`,
+                        top: `${avatarMapPos.py - 5}px`,
+                        width: "10px",
+                        height: "10px",
+                        borderRadius: "50%",
+                        background: "#7c3cff",
+                        boxShadow: "0 0 8px 3px rgba(124,60,255,0.9)",
+                        border: "2px solid #fff",
+                    }}
+                />
+            </div>
+
+            <div
+                style={{
+                    display: "flex",
+                    gap: "10px",
+                    marginTop: "6px",
+                    fontSize: "10px",
+                    color: "#ccc",
+                    justifyContent: "center",
+                }}
+            >
+                <span>
+                    <span
+                        style={{
+                            display: "inline-block",
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "2px",
+                            background: "#10b981",
+                            marginLeft: "4px",
+                        }}
+                    />
+                    متاح
+                </span>
+                <span>
+                    <span
+                        style={{
+                            display: "inline-block",
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "2px",
+                            background: "#ef4444",
+                            marginLeft: "4px",
+                        }}
+                    />
+                    محجوز
+                </span>
+            </div>
+        </div>
+    );
+}
+
+
+
+/* =========================================================
    MAIN MALL
 ========================================================= */
 
 export default function Mall() {
+    
+    const { token, user } = useAuth();
+
+    // التحقق هل المستخدم vendor ولديه محل مرتبط أم لا
+const isVendor = user?.role === "vendor" || user?.is_vendor; 
+const vendorStoreId = user?.store_id; // أو المعرف الخاص بمحله
+
     const [groundStores, setGroundStores] = useState([]);
     const [secondStores, setSecondStores] = useState([]);
     const [nearbyStore, setNearbyStore] = useState(null);
     const [nearEscalator, setNearEscalator] = useState(null);
-    const [activeStoreModal, setActiveStoreModal] = useState(null);
+    const [activeStore, setActiveStore] = useState(null);
+
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [targetPos, setTargetPos] = useState(null);
-    const [joystickInput, setJoystickInput] = useState({ x: 0, z: 0 });
+
+    const [joystickInput, setJoystickInput] = useState({
+        x: 0,
+        z: 0,
+    });
+    const [avatarStartPosition, setAvatarStartPosition] = useState([
+    0,
+    0,
+    22,
+]);
+
+    const [avatarPos, setAvatarPos] = useState([0, 0, 22]);
+
+    const [avatarCustomization, setAvatarCustomization] =
+        useState(null);
+
+    // مهم جدًا
+    const [isInsideStore, setIsInsideStore] = useState(false);
+
+    const [showCustomizer, setShowCustomizer] = useState(false);
+
+    const isMobile = useIsMobile();
 
     const avatarMeshRef = useRef(null);
     const controlsRef = useRef(null);
     const storesRef = useRef([]);
 
+    // باقي الكود...
     storesRef.current = [...groundStores, ...secondStores];
 
-    const canMove = useMemo(() => {
-        return createCollisionChecker(storesRef.current);
-    }, [groundStores, secondStores]);
+
+const canMove = useMemo(() => {
+    return createCollisionChecker(
+        storesRef.current,
+        activeStore,
+        isInsideStore
+    );
+}, [
+    groundStores,
+    secondStores,
+    activeStore,
+    isInsideStore,
+]);
+    /* تحميل شكل الأفاتار المحفوظ (لو موجود)، وإلا عرض شاشة الاختيار */
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(AVATAR_STORAGE_KEY);
+
+            if (saved) {
+                setAvatarCustomization(JSON.parse(saved));
+            } else {
+                setAvatarCustomization(DEFAULT_CUSTOMIZATION);
+                setShowCustomizer(true);
+            }
+        } catch (err) {
+            console.error("Avatar customization load error:", err);
+            setAvatarCustomization(DEFAULT_CUSTOMIZATION);
+        }
+    }, []);
+
+    const handleCustomizationConfirm = (data) => {
+        setAvatarCustomization(data);
+        setShowCustomizer(false);
+
+        try {
+            localStorage.setItem(AVATAR_STORAGE_KEY, JSON.stringify(data));
+        } catch (err) {
+            console.error("Avatar customization save error:", err);
+        }
+    };
 
     /* Fetch Stores */
-    useEffect(() => {
-        const fetchAllStores = async () => {
+    useEffect(() => {        const fetchAllStores = async () => {
             try {
                 const [res1, res2] = await Promise.all([
                     fetch(`${API_BASE_URL}/api/mall/floor?floor_id=1`),
@@ -535,6 +1130,18 @@ export default function Mall() {
         fetchAllStores();
     }, []);
 
+    /* Minimap position sync (throttled, not per-frame, to avoid perf hit) */
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (avatarMeshRef.current) {
+                const p = avatarMeshRef.current.position;
+                setAvatarPos([p.x, p.y, p.z]);
+            }
+        }, 150);
+
+        return () => clearInterval(interval);
+    }, []);
+
     /* Avatar Movement & Interaction */
     const handleAvatarMove = (avatarPos, meshRef) => {
         avatarMeshRef.current = meshRef;
@@ -543,28 +1150,36 @@ export default function Mall() {
 
         const [ax, ay, az] = avatarPos;
 
-        const distGroundEsc = Math.hypot(
-            ESCALATOR_LEFT_GROUND[0] - ax,
-            ESCALATOR_LEFT_GROUND[1] - ay,
-            ESCALATOR_LEFT_GROUND[2] - az
-        );
-
-        const distSecondEsc = Math.hypot(
-            ESCALATOR_LEFT_SECOND[0] - ax,
-            ESCALATOR_LEFT_SECOND[1] - ay,
-            ESCALATOR_LEFT_SECOND[2] - az
-        );
-
         const PROXIMITY_THRESHOLD = 2.5;
 
-        if (distGroundEsc <= PROXIMITY_THRESHOLD && ay < 2.0) {
-            setNearEscalator("UP");
-            setNearbyStore(null);
-            return;
+        let matchedEscalator = null;
+
+        for (const esc of ESCALATORS) {
+            const distGroundEsc = Math.hypot(
+                esc.groundPos[0] - ax,
+                esc.groundPos[1] - ay,
+                esc.groundPos[2] - az
+            );
+
+            const distSecondEsc = Math.hypot(
+                esc.secondPos[0] - ax,
+                esc.secondPos[1] - ay,
+                esc.secondPos[2] - az
+            );
+
+            if (distGroundEsc <= PROXIMITY_THRESHOLD && ay < 2.0) {
+                matchedEscalator = { direction: "UP", target: esc.secondPos };
+                break;
+            }
+
+            if (distSecondEsc <= PROXIMITY_THRESHOLD && ay >= 4.0) {
+                matchedEscalator = { direction: "DOWN", target: esc.groundPos };
+                break;
+            }
         }
 
-        if (distSecondEsc <= PROXIMITY_THRESHOLD && ay >= 4.0) {
-            setNearEscalator("DOWN");
+        if (matchedEscalator) {
+            setNearEscalator(matchedEscalator);
             setNearbyStore(null);
             return;
         }
@@ -594,19 +1209,117 @@ export default function Mall() {
 
         setNearbyStore(closestStore);
     };
+const checkStoreAccess = async (store) => {
+    if (!token) {
+        setActiveStore({
+            ...store,
+            accessError: "يجب تسجيل الدخول أولاً",
+            canEnter: false,
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/api/mall/store/access?store_id=${store.storeId}`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            setActiveStore({
+                ...store,
+                canEnter: false,
+                accessError:
+                    result.message || "حدث خطأ أثناء التحقق من صلاحية الدخول",
+            });
+            return;
+        }
+
+        const access = result.data;
+
+        setActiveStore({
+            ...store,
+            ...access,
+            canEnter: access.can_enter,
+            canOpenRental: access.can_open_rental,
+            accessType: access.access_type,
+            accessMessage: access.message,
+            accessError: null,
+        });
+    } catch (error) {
+        console.error("Store access check failed:", error);
+
+        setActiveStore({
+            ...store,
+            canEnter: false,
+            accessError: "تعذر الاتصال بالسيرفر",
+        });
+    }
+};
+
+    const enterStore = (store) => {
+    if (!store) return;
+
+    const entrancePosition = getStoreEntrancePosition(store, true);
+
+    if (avatarMeshRef.current) {
+        avatarMeshRef.current.position.set(
+            entrancePosition[0],
+            entrancePosition[1],
+            entrancePosition[2]
+        );
+    }
+
+    setAvatarPos(entrancePosition);
+
+    setActiveStore(store);
+    setIsInsideStore(true);
+
+    setNearbyStore(null);
+    setNearEscalator(null);
+};
+
+const exitStore = () => {
+    if (!activeStore) return;
+
+    const exitPosition = getStoreEntrancePosition(
+        activeStore,
+        false
+    );
+
+    if (avatarMeshRef.current) {
+        avatarMeshRef.current.position.set(
+            exitPosition[0],
+            exitPosition[1],
+            exitPosition[2]
+        );
+    }
+
+    setAvatarPos(exitPosition);
+
+    setIsInsideStore(false);
+    setActiveStore(null);
+    setNearbyStore(null);
+    setNearEscalator(null);
+};
 
     const triggerAction = () => {
         if (isTransitioning) return;
 
-        if (nearEscalator === "UP") {
+        if (nearEscalator) {
             setIsTransitioning(true);
-            setTargetPos(ESCALATOR_LEFT_SECOND);
-        } else if (nearEscalator === "DOWN") {
-            setIsTransitioning(true);
-            setTargetPos(ESCALATOR_LEFT_GROUND);
+            setTargetPos(nearEscalator.target);
         } else if (nearbyStore) {
-            setActiveStoreModal(nearbyStore);
-        }
+    checkStoreAccess(nearbyStore);
+}
     };
 
     useEffect(() => {
@@ -630,7 +1343,45 @@ export default function Mall() {
                 overflow: "hidden",
             }}
         >
-            <VirtualJoystick onMove={setJoystickInput} />
+            {isMobile && <VirtualJoystick onMove={setJoystickInput} />}
+
+            <MiniMap stores={storesRef.current} avatarPos={avatarPos} />
+
+            {/* زرار تخصيص شكل الأفاتار */}
+            {!showCustomizer && (
+                <button
+                    onClick={() => setShowCustomizer(true)}
+                    style={{
+                        position: "absolute",
+                        top: "20px",
+                        left: "20px",
+                        zIndex: 260,
+                        background: "rgba(15,23,42,0.85)",
+                        border: "2px solid rgba(124,60,255,0.5)",
+                        borderRadius: "10px",
+                        color: "#fff",
+                        padding: "8px 14px",
+                        fontSize: "13px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
+                    }}
+                >
+                    🧑 تخصيص الشكل
+                </button>
+            )}
+
+            {showCustomizer && (
+                <AvatarCustomizer
+                    initialCustomization={avatarCustomization || DEFAULT_CUSTOMIZATION}
+                    onConfirm={handleCustomizationConfirm}
+                    onCancel={
+                        avatarCustomization
+                            ? () => setShowCustomizer(false)
+                            : undefined
+                    }
+                />
+            )}
 
             {(nearEscalator || nearbyStore) && !isTransitioning && (
                 <button
@@ -678,13 +1429,13 @@ export default function Mall() {
                     <span style={{ color: "#10b981", fontSize: "22px" }}>
                         [ E ]
                     </span>{" "}
-                    {nearEscalator === "UP"
+                    {nearEscalator.direction === "UP"
                         ? "للصعود للدور الثاني ⬆️"
                         : "للنزول للدور الأرضي ⬇️"}
                 </div>
             )}
 
-            {nearbyStore && !nearEscalator && !activeStoreModal && (
+            {nearbyStore && !nearEscalator && !activeStore && (
                 <div
                     style={{
                         position: "absolute",
@@ -710,18 +1461,18 @@ export default function Mall() {
                 </div>
             )}
 
-            {activeStoreModal && (
-                <div
-                    style={{
-                        position: "absolute",
-                        inset: 0,
-                        zIndex: 300,
-                        background: "rgba(0,0,0,0.85)",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                >
+            {activeStore && !isInsideStore && (
+    <div
+        style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 300,
+            background: "rgba(0,0,0,0.85)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+        }}
+    >
                     <div
                         style={{
                             background: "#1a1d24",
@@ -735,9 +1486,9 @@ export default function Mall() {
                             boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
                         }}
                     >
-                        {activeStoreModal.shopLogo && (
+                        {activeStore.shopLogo && (
                             <img
-                                src={`${API_BASE_URL}/uploads/${activeStoreModal.shopLogo}`}
+                                src={`${API_BASE_URL}/uploads/${activeStore.shopLogo}`}
                                 alt="Store Logo"
                                 style={{
                                     width: "90px",
@@ -750,11 +1501,11 @@ export default function Mall() {
                         )}
 
                         <h2 style={{ margin: "5px 0", fontSize: "24px" }}>
-                            {activeStoreModal.storeName || activeStoreModal.id}
+                            {activeStore.storeName || activeStore.id}
                         </h2>
 
                         <p style={{ color: "#7c3cff", fontWeight: "bold" }}>
-                            {activeStoreModal.shopSpecializes ||
+                            {activeStore.shopSpecializes ||
                                 "متجر متعدّد الأغراض"}
                         </p>
 
@@ -768,7 +1519,7 @@ export default function Mall() {
                             }}
                         >
                             <p style={{ margin: "4px 0", color: "#ccc" }}>
-                                رمز المحل: <b>{activeStoreModal.storeCode}</b>
+                                رمز المحل: <b>{activeStore.storeCode}</b>
                             </p>
 
                             <p style={{ margin: "4px 0", color: "#ccc" }}>
@@ -776,13 +1527,13 @@ export default function Mall() {
                                 <b
                                     style={{
                                         color:
-                                            activeStoreModal.storeStatus ===
+                                            activeStore.storeStatus ===
                                             "AVAILABLE"
                                                 ? "#10b981"
                                                 : "#ef4444",
                                     }}
                                 >
-                                    {activeStoreModal.storeStatus ===
+                                    {activeStore.storeStatus ===
                                     "AVAILABLE"
                                         ? "متاح للحجز"
                                         : "محجوز"}
@@ -790,51 +1541,89 @@ export default function Mall() {
                             </p>
                         </div>
 
-                        <div
-                            style={{
-                                display: "flex",
-                                gap: "10px",
-                                justifyContent: "center",
-                                marginTop: "20px",
-                            }}
-                        >
-                            {activeStoreModal.storeStatus ===
-                                "AVAILABLE" && (
-                                <button
-                                    onClick={() =>
-                                        alert(
-                                            `جاري الانتقال لحجز المحل: ${activeStoreModal.storeCode}`
-                                        )
-                                    }
-                                    style={{
-                                        padding: "10px 20px",
-                                        background: "#10b981",
-                                        color: "#fff",
-                                        border: "none",
-                                        borderRadius: "8px",
-                                        cursor: "pointer",
-                                        fontWeight: "bold",
-                                    }}
-                                >
-                                    طلب حجز المحل
-                                </button>
-                            )}
+                        {activeStore.canEnter && (
+    <p
+        style={{
+            color: "#10b981",
+            fontWeight: "bold",
+            marginTop: "12px",
+        }}
+    >
+        ✓ يمكنك الدخول إلى هذا المحل
+    </p>
+)}
 
-                            <button
-                                onClick={() => setActiveStoreModal(null)}
-                                style={{
-                                    padding: "10px 20px",
-                                    background: "#374151",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: "8px",
-                                    cursor: "pointer",
-                                    fontWeight: "bold",
-                                }}
-                            >
-                                إغلاق
-                            </button>
-                        </div>
+{activeStore.accessError && (
+    <p
+        style={{
+            color: "#ef4444",
+            fontWeight: "bold",
+            marginTop: "12px",
+        }}
+    >
+        {activeStore.accessError}
+    </p>
+)}
+
+                        <div
+    style={{
+        display: "flex",
+        gap: "10px",
+        justifyContent: "center",
+        marginTop: "20px",
+    }}
+>
+   {activeStore.canEnter && (
+    <button
+        onClick={() => enterStore(activeStore)}
+        style={{
+            padding: "12px 24px",
+            borderRadius: "10px",
+            border: "none",
+            background: "#10b981",
+            color: "#fff",
+            fontWeight: "bold",
+            cursor: "pointer",
+        }}
+    >
+        دخول المحل
+    </button>
+)}
+
+    {activeStore.canOpenRental && (
+        <button
+            onClick={() => {
+                alert("جاري الانتقال لحجز المحل...");
+            }}
+            style={{
+                padding: "12px 24px",
+                borderRadius: "10px",
+                border: "none",
+                background: "#7c3cff",
+                color: "#fff",
+                fontWeight: "bold",
+                cursor: "pointer",
+            }}
+        >
+            حجز المحل
+        </button>
+    )}
+
+    <button
+        onClick={() => setActiveStore(null)}
+        style={{
+            padding: "12px 24px",
+            borderRadius: "10px",
+            border: "1px solid rgba(255,255,255,0.2)",
+            background: "rgba(255,255,255,0.08)",
+            color: "#fff",
+            fontWeight: "bold",
+            cursor: "pointer",
+        }}
+    >
+        إغلاق
+    </button>
+</div>
                     </div>
                 </div>
             )}
@@ -860,6 +1649,13 @@ export default function Mall() {
                     controlsRef={controlsRef}
                     canMove={canMove}
                     joystickInput={joystickInput}
+                    activeStore={activeStore}
+                    onExitStore={exitStore}
+                        
+                   
+                    avatarCustomization={avatarCustomization}
+                    isInsideStore={isInsideStore}
+                    avatarStartPosition={avatarStartPosition}   
                 />
 
                 <OrbitControls
